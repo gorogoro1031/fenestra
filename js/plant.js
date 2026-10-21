@@ -1,5 +1,7 @@
 // 몬스테라 그림(단계별 webp, 배경 투명)을 화분 바닥 기준으로 놓고 바람에 흔들리게 한다.
 // 흔들림은 화분 바닥을 축으로 한 skew라서 위쪽 잎일수록 크게 움직이고 화분은 거의 그대로다
+import { MOTION_MS, pickMotion, combine } from './motions.js';
+
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** 그림 한 장의 기준점(원본 픽셀). 다섯 단계 모두 같은 크기·같은 화분 자리로 맞춰 두었다 */
@@ -12,7 +14,6 @@ export const PLANT_IMAGE = Object.freeze({
 
 const SWAP_MS = 900;
 const GROW_MS = 1700;
-const WOBBLE_MS = 1400;
 const HIT_ALPHA = 40;
 const HIT_SCALE = 0.25;
 
@@ -33,7 +34,8 @@ export function createPlant(host) {
   let current = null;
   let hitMap = null;
   let gust = 0;
-  let wobbles = [];
+  let motions = [];
+  let lastMotion = '';
   const images = new Map();
 
   const load = (n) => {
@@ -76,15 +78,12 @@ export function createPlant(host) {
   function frame(now) {
     const t = now / 1000;
     gust *= 0.992;
-    wobbles = wobbles.filter((born) => now - born < WOBBLE_MS);
-    // 잔잔한 바람 두 겹 + 돌풍 + 건드렸을 때 출렁임 (단위: 도)
-    let skew = (Math.sin(t * 0.7) * 0.5 + Math.sin(t * 0.23 + 1.3) * 0.7) * (1 + gust * 2) + gust * 2.2;
-    wobbles.forEach((born) => {
-      const age = (now - born) / 1000;
-      skew += Math.sin(age * 10) * 2.4 * Math.exp(-age * 3);
-    });
-    const breathe = 1 + Math.sin(t * 0.5) * 0.004;
-    sway.style.transform = `skewX(${skew.toFixed(3)}deg) scaleY(${breathe.toFixed(4)})`;
+    motions = motions.filter((m) => now - m.born < MOTION_MS);
+    // 잔잔한 바람 두 겹 + 돌풍 + 건드렸을 때 반응 모션 (기울기 단위: 도)
+    const pose = combine(motions, now);
+    const skew = (Math.sin(t * 0.7) * 0.5 + Math.sin(t * 0.23 + 1.3) * 0.7) * (1 + gust * 2) + gust * 2.2 + pose.skew;
+    const breathe = 1 + Math.sin(t * 0.5) * 0.004 + pose.sy;
+    sway.style.transform = `translateY(${(-pose.dy).toFixed(1)}px) skewX(${skew.toFixed(3)}deg) scale(${(1 + pose.sx).toFixed(4)}, ${breathe.toFixed(4)})`;
     requestAnimationFrame(frame);
   }
   if (!REDUCED) requestAnimationFrame(frame);
@@ -145,7 +144,7 @@ export function createPlant(host) {
       void current.offsetWidth;
       current.classList.add('glow');
     },
-    /** 잎을 건드렸는지 확인하고, 맞으면 출렁이게 한다 (화분은 제외) */
+    /** 잎을 건드렸는지 확인하고, 맞으면 여러 반응 중 하나로 움직인다 (화분은 제외) */
     poke(x, y) {
       if (!hitMap) return false;
       const { cx, base, scale } = layout;
@@ -154,7 +153,10 @@ export function createPlant(host) {
       if (ix < 0 || iy < 0 || ix >= PLANT_IMAGE.w || iy >= PLANT_IMAGE.potTop) return false;
       const i = (Math.floor(iy * HIT_SCALE) * hitMap.w + Math.floor(ix * HIT_SCALE)) * 4 + 3;
       const hit = hitMap.data[i] > HIT_ALPHA;
-      if (hit && !REDUCED) wobbles = [...wobbles, performance.now()];
+      if (hit && !REDUCED) {
+        lastMotion = pickMotion(lastMotion);
+        motions = [...motions, { type: lastMotion, born: performance.now(), dir: x < cx ? -1 : 1 }];
+      }
       return hit;
     },
     /** 인트로 전엔 감춰 둔다 */

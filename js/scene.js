@@ -6,6 +6,8 @@ const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const WAVE = { every: 1100, life: 7000, alpha: 0.5, width: 3.2, color: '255, 214, 10' };
 // 식물 그림 배율: 1920×1200 기준, 무대가 세로로 길어지면 조금 크게
 const PLANT_SCALE = 0.674;
+// 잎을 건드리면 튀는 동그라미: 개수와 색(초록·레몬·흰색)
+const BURST = { count: 9, colors: ['#30d158', '#ecf03c', '#ffffff', '#7ee8a8'] };
 const DOCK_SPACE = 236;
 
 /**
@@ -67,6 +69,7 @@ export function createFx(canvas) {
   let raining = false;
   let streaks = [];
   let falling = [];
+  let bursts = [];
 
   const newStreak = () => ({ x: Math.random() * (canvas.width + 300), y: -Math.random() * canvas.height, len: 40 + Math.random() * 60, v: 900 + Math.random() * 500 });
 
@@ -93,6 +96,18 @@ export function createFx(canvas) {
     falling = falling
       .map((d) => ({ ...d, y: d.y + d.v * dt, v: d.v + 1400 * dt }))
       .filter((d) => d.y < d.until);
+    // 잎을 건드린 자리에서 작은 동그라미들이 톡 튀어 오른다
+    bursts = bursts
+      .map((b) => ({ ...b, x: b.x + b.vx * dt, y: b.y + b.vy * dt, vy: b.vy + 900 * dt, life: b.life - dt }))
+      .filter((b) => b.life > 0);
+    bursts.forEach((b) => {
+      ctx.globalAlpha = Math.min(1, b.life / 0.3);
+      ctx.fillStyle = b.color;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
     falling.forEach((d) => {
       ctx.fillStyle = 'rgba(120, 170, 215, .95)';
       ctx.beginPath();
@@ -107,6 +122,19 @@ export function createFx(canvas) {
     setRain(on) {
       raining = on && !REDUCED;
       streaks = raining ? Array.from({ length: 140 }, newStreak) : [];
+    },
+    /** 누른 자리에서 동그라미 몇 개를 튀긴다 */
+    burst(x, y) {
+      if (REDUCED) return;
+      const made = Array.from({ length: BURST.count }, (_, i) => {
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 2.2;
+        const speed = 260 + Math.random() * 260;
+        return {
+          x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+          r: 5 + Math.random() * 8, life: 0.7 + Math.random() * 0.4, color: BURST.colors[i % BURST.colors.length],
+        };
+      });
+      bursts = [...bursts, ...made];
     },
     /** 잎 위에서 화분 흙까지 물방울 몇 개를 떨어뜨린다 */
     water({ cx, y, potTop }) {

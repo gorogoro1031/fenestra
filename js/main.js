@@ -122,11 +122,11 @@ stageEl.addEventListener('pointerdown', (e) => {
   const scale = rect.width / stageEl.offsetWidth;
   const x = (e.clientX - rect.left) / scale;
   const y = (e.clientY - rect.top) / scale;
-  if (plant.poke(x, y)) onLeafTouched();
+  if (plant.poke(x, y)) onLeafTouched(x, y);
 });
 
-function onLeafTouched() {
-  plant.gust(0.35);
+function onLeafTouched(x, y) {
+  fx.burst(x, y);
   if (prefs.sound && audioReady) leafTouch(currentScene());
 }
 
