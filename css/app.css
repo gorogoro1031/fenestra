@@ -153,13 +153,23 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .timeline li.done .t-need { color: var(--tint); }
 
 /* ---------- 오프닝 ---------- */
-.opening { position: absolute; inset: 0; z-index: 30; background: #000; display: grid; place-items: center; transition: opacity 900ms var(--ease-ios); }
-.opening.done { opacity: 0; pointer-events: none; }
+.opening { position: absolute; inset: 0; z-index: 30; background: #000; display: grid; place-items: center; transition: background-color 1400ms ease, opacity 900ms var(--ease-ios); }
+.opening-mark { text-align: center; transition: opacity 1100ms var(--ease-ios), transform 1400ms var(--ease-ios), filter 1100ms ease; }
 .opening-word { font: italic 500 168px/1 var(--font-logo); letter-spacing: -.015em; animation: logo-in 1800ms var(--ease-ios) both; }
+.opening-tag { font-size: 30px; font-weight: 500; color: var(--label-2); margin-top: 28px; animation: logo-in 1800ms 400ms var(--ease-ios) both; }
 @keyframes logo-in { from { opacity: 0; transform: translateY(20px); filter: blur(10px); } }
+/* 막이 걷히면 로고는 위로 흐려지며 사라지고, 뒤에서 식물이 모인다 */
+.opening.reveal { background-color: transparent; }
+.opening.reveal .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); }
+.opening.done { opacity: 0; pointer-events: none; }
+
+/* 인트로 동안 위·아래 UI는 숨겼다가 식물이 다 모이면 올라온다 */
+.top, .dock { transition: opacity 900ms var(--ease-ios), transform 1100ms var(--ease-ios); }
+.stage.intro .top { opacity: 0; transform: translateY(-24px); }
+.stage.intro .dock { opacity: 0; transform: translateY(40px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .opening-word, .moon-veil, .moon-beams { animation: none; }
+  .opening-word, .opening-tag, .moon-veil, .moon-beams { animation: none; }
   .toast, .daylight { transition: none; }
 }
 

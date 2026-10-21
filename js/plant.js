@@ -192,6 +192,7 @@ export function createDotPlant(canvas) {
         y = d.sy + (y - d.sy) * e;
         dx *= e;
         dy *= e;
+        scale *= 0.25 + 0.75 * e;
       }
       const r = d.r * scale;
       path.moveTo(x + dx + r, y + dy);
@@ -246,17 +247,19 @@ export function createDotPlant(canvas) {
       if (hit && !REDUCED) ripples = [...ripples, { x, y, born: performance.now() }];
       return hit;
     },
-    /** 인트로: 흩어진 점들이 모여 식물이 된다 */
+    /** 인트로: 흩어진 점들이 모여 식물이 된다. 다 모이는 데 걸리는 시간(ms)을 돌려준다 */
     assemble() {
-      if (REDUCED) return;
+      if (REDUCED) return 0;
       const { width, height } = canvas;
       dots = dots.map((d) => ({
         ...d,
         sx: Math.random() * width,
         sy: Math.random() * height * 0.9,
-        delay: Math.random() * 500 + (1 - d.hn) * 400,
+        // 화분부터 모이고 잎 끝이 마지막
+        delay: Math.random() * 500 + d.hn * 600,
       }));
       assembleStart = performance.now();
+      return ASSEMBLE_MS + 1100;
     },
   };
 }

@@ -6,7 +6,9 @@ import { renderStatus, renderTimeline, renderChip, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 
-const OPENING_MS = 2200;
+// 인트로: 로고만 보이는 시간, 그 뒤 점이 모이는 동안 막이 걷힌다
+const LOGO_MS = 2000;
+const OPENING_FADE_MS = 1000;
 const CHARGE_TICK_MS = 60000;
 const DRIVING_SPEED_KMH = 5;
 const DRIVING_HOLD_MS = 15000;
@@ -60,12 +62,13 @@ function currentScene() {
   return h >= 18 || h < 6 ? 'night' : 'day';
 }
 
+/** @returns {Promise<void>} 식물 점이 새 단계로 준비되면 끝난다 */
 function applyScene() {
   const scene = currentScene();
   const stage = stageFor(state.growth);
   stageEl.dataset.scene = scene;
   stageEl.dataset.weather = prefs.weather;
-  plant.setStage(stage).then(() => {
+  const ready = plant.setStage(stage).then(() => {
     anchor = plant.anchor();
     arcs.set({ x: anchor.x, y: anchor.y });
   });
@@ -73,6 +76,7 @@ function applyScene() {
   fx.setRain(prefs.weather === 'rain');
   renderChip(prefs.weather);
   syncAmbient();
+  return ready;
 }
 
 const isDriving = () => Date.now() < drivingUntil;
@@ -259,12 +263,29 @@ $('demo-reset').addEventListener('click', () => {
   closeSheets();
 });
 
-/* ---------- 오프닝: 글자 로고만 ---------- */
-function startLoading() {
-  if (query.has('noloading')) { $('loading').remove(); return; }
-  const finish = () => $('loading').classList.add('done');
-  setTimeout(finish, OPENING_MS);
-  $('loading').addEventListener('click', finish, { once: true });
+/* ---------- 인트로: 로고 → 막이 걷히며 점이 모여 식물 → UI가 올라온다. 누르면 로고 단계를 건너뛴다 ---------- */
+function startIntro(plantReady) {
+  const opening = $('loading');
+  if (query.has('noloading')) { opening.remove(); return Promise.resolve(); }
+  stageEl.classList.add('intro');
+  return new Promise((resolve) => {
+    let revealed = false;
+    const reveal = async () => {
+      if (revealed) return;
+      revealed = true;
+      await plantReady;
+      const assembleMs = plant.assemble();
+      opening.classList.add('reveal');
+      setTimeout(() => stageEl.classList.remove('intro'), Math.max(OPENING_FADE_MS, assembleMs - 600));
+      setTimeout(() => {
+        opening.classList.add('done');
+        setTimeout(() => opening.remove(), OPENING_FADE_MS);
+        resolve();
+      }, Math.max(OPENING_FADE_MS, assembleMs));
+    };
+    setTimeout(reveal, LOGO_MS);
+    opening.addEventListener('click', reveal, { once: true });
+  });
 }
 
 /* ---------- 시작 ---------- */
@@ -277,8 +298,7 @@ addEventListener('pointerdown', () => {
 setInterval(() => { state = rollDay(state, todayKey()); applyScene(); render(); }, 60000);
 
 stageEl.classList.add('booting');
-startLoading();
-applyScene();
+startIntro(applyScene());
 render();
 requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('booting')));
 if (prefs.useGps) setGps(true);
