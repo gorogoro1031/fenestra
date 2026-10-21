@@ -149,7 +149,7 @@ scrim.addEventListener('click', closeSheets);
 function syncSettings() {
   $('pref-sound').setAttribute('aria-checked', String(prefs.sound));
   $('pref-gps').setAttribute('aria-checked', String(prefs.useGps));
-  [['pref-scene', prefs.scene], ['pref-weather', prefs.weather]].forEach(([id, value]) => {
+  [['pref-scene', prefs.scene], ['pref-weather', prefs.weather], ['demo-stage', String(stageFor(state.growth))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
 }
@@ -177,6 +177,16 @@ $('pref-weather').addEventListener('click', (e) => {
   if (value) { updatePrefs({ weather: value }); applyScene(); }
 });
 
+// 데모: 성장 단계를 바로 바꿔 본다. 성장 점수를 그 단계 시작점으로 맞춘다
+$('demo-stage').addEventListener('click', (e) => {
+  const value = e.target.closest('button')?.dataset.value;
+  if (value === undefined) return;
+  const stage = Number(value);
+  commit({ ...state, growth: RULES.STAGE_THRESHOLDS[stage] });
+  applyScene();
+  syncSettings();
+  toast(STAGE_NAMES[stage]);
+});
 $('demo-km').addEventListener('click', () => { commit(addDistance(state, 5)); toast('5km 달렸어요 · 물방울 +5'); });
 $('demo-charge').addEventListener('click', () => { commit(addChargeMinutes(state, 10)); toast('햇빛 +100'); });
 $('demo-drive').addEventListener('click', () => {

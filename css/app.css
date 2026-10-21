@@ -171,3 +171,6 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
   .plant-img, .opening-word, .moon-veil, .moon-beams { animation: none; }
   .plant, .plant-img, .toast, .daylight { transition: none; }
 }
+
+/* 데모 단계 선택은 칸이 5개라 버튼을 좁게 */
+#demo-stage button { min-width: 80px; padding: 0 14px; }
