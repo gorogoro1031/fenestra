@@ -1,0 +1,46 @@
+// 브라우저 저장소. 막혀 있거나 비어 있어도 앱은 그대로 돌아가야 한다
+const KEY_STATE = 'fenestra:v1:state';
+const KEY_PREFS = 'fenestra:v1:prefs';
+
+export const DEFAULT_PREFS = Object.freeze({ sound: false, useGps: false, scene: 'auto', weather: 'clear' });
+
+function read(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function write(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export const loadState = () => read(KEY_STATE);
+export const saveState = (state) => write(KEY_STATE, state);
+
+export function loadPrefs() {
+  const raw = read(KEY_PREFS) || {};
+  return {
+    sound: raw.sound === true,
+    useGps: raw.useGps === true,
+    scene: ['auto', 'day', 'night'].includes(raw.scene) ? raw.scene : DEFAULT_PREFS.scene,
+    weather: ['clear', 'rain'].includes(raw.weather) ? raw.weather : DEFAULT_PREFS.weather,
+  };
+}
+
+export const savePrefs = (prefs) => write(KEY_PREFS, prefs);
+
+export function clearAll() {
+  try {
+    localStorage.removeItem(KEY_STATE);
+  } catch {
+    // 저장소가 막혀 있으면 지울 것도 없다
+  }
+}

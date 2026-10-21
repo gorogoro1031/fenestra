@@ -1,0 +1,30 @@
+:root {
+  /* iOS 다크 모드 시스템 색 */
+  --bg: #000;
+  --label: #fff;
+  --label-2: rgba(235, 235, 245, .62);
+  --label-3: rgba(235, 235, 245, .32);
+  --fill: rgba(118, 118, 128, .24);
+  --fill-2: rgba(118, 118, 128, .16);
+  --separator: rgba(84, 84, 88, .6);
+  --grouped: #1c1c1e;
+  --grouped-2: #2c2c2e;
+  --glass: rgba(30, 30, 32, .58);
+  --glass-line: rgba(255, 255, 255, .09);
+
+  --tint: #30d158;      /* systemGreen */
+  --water: #0a84ff;     /* systemBlue */
+  --sun: #ffd60a;       /* systemYellow */
+  --destructive: #ff453a;
+
+  --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-logo: "Fraunces", Georgia, serif;
+
+  --r-lg: 36px;
+  --r-md: 24px;
+  --tap: 112px;
+
+  --ease-ios: cubic-bezier(.32, .72, 0, 1);
+  --duration-scene: 1400ms;
+  --duration-fast: 180ms;
+}

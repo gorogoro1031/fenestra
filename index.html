@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
+<title>Fenestra</title>
+<meta name="description" content="달릴수록 창이 열리는 식물">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<!-- 아이콘 모음 -->
+<svg width="0" height="0" class="sprite" aria-hidden="true">
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14H5Z"/><path d="M5 19 14 10"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M21.2 12h-2.4M5.2 12H2.8M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7M18.5 18.5l-1.7-1.7M7.2 7.2 5.5 5.5"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s-6.5 7.2-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 10.2 12 3 12 3Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4M18.7 18.7l-1.4-1.4M6.7 6.7 5.3 5.3"/></symbol>
+  <symbol id="i-road" viewBox="0 0 24 24"><path d="M8 3 5 21M16 3l3 18M12 4v2.5M12 10.5v3M12 17.5V20"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5 5 13.5h6l-1 8 8-11h-6l1-8Z"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M4 15.5 5.8 9.6A2 2 0 0 1 7.7 8.2h8.6a2 2 0 0 1 1.9 1.4L20 15.5v3h-2.5M4 15.5v3h2.5M4 15.5h16"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="16.5" cy="18.5" r="1.5"/></symbol>
+</svg>
+
+<div class="viewport">
+  <div class="stage" id="stage" data-scene="night" data-weather="clear">
+
+    <!-- 장면: 검은 바탕, 낮이면 위쪽 옅은 노랑 → 물결 → 식물 → 비 -->
+    <div class="scene" aria-hidden="true">
+      <div class="daylight"></div>
+      <canvas class="layer" id="arcs" width="1920" height="1200"></canvas>
+      <div class="plant" id="plant">
+        <img class="plant-img" id="plant-a" alt="" decoding="async">
+        <img class="plant-img hidden" id="plant-b" alt="" decoding="async">
+      </div>
+      <canvas class="layer" id="fx" width="1920" height="1200"></canvas>
+    </div>
+
+    <header class="top">
+      <div class="title-block">
+        <p class="wordmark">Fenestra</p>
+        <p class="caption" id="chip">오후 8:00 · 맑음</p>
+      </div>
+      <nav class="top-actions" aria-label="메뉴">
+        <button class="icon-btn glass" type="button" id="open-log" aria-label="성장 기록"><svg><use href="#i-leaf"/></svg></button>
+        <button class="icon-btn glass" type="button" id="open-settings" aria-label="설정"><svg><use href="#i-gear"/></svg></button>
+      </nav>
+    </header>
+
+    <p class="banner glass" id="driving-banner" role="status" hidden><svg><use href="#i-car"/></svg>운전 중에는 보기만 해요 · 차를 세우면 돌볼 수 있어요</p>
+    <p class="banner glass toast" id="toast" role="status" aria-live="polite"></p>
+
+    <!-- 하단 위젯 바 -->
+    <section class="dock glass" aria-label="식물 상태와 돌보기">
+      <div class="widget stage-widget">
+        <p class="w-label">성장</p>
+        <p class="w-title"><span id="stage-name">씨앗</span><span class="w-sub">창 <span id="stage-num">0</span> / 4</span></p>
+        <div class="bar"><div class="bar-fill tint" id="progress-fill"></div></div>
+      </div>
+      <div class="widget">
+        <p class="w-label"><svg class="w-icon water"><use href="#i-drop"/></svg>물방울</p>
+        <p class="w-value"><span id="drops-num">0</span><span class="w-unit">/ 12</span></p>
+        <div class="bar"><div class="bar-fill water" id="drops-fill"></div></div>
+      </div>
+      <div class="widget">
+        <p class="w-label"><svg class="w-icon sun"><use href="#i-sun"/></svg>햇빛</p>
+        <p class="w-value"><span id="light-num">0</span><span class="w-unit">/ 100</span></p>
+        <div class="bar"><div class="bar-fill sun" id="light-fill"></div></div>
+      </div>
+      <div class="widget">
+        <p class="w-label"><svg class="w-icon"><use href="#i-road"/></svg>오늘</p>
+        <p class="w-value"><span id="today-km">0.0</span><span class="w-unit">km</span></p>
+      </div>
+      <div class="dock-actions">
+        <button class="capsule secondary" type="button" id="charge-btn" aria-pressed="false">
+          <svg><use href="#i-bolt"/></svg><span><span class="c-title">충전 중</span><span class="c-sub" id="charge-sub">햇빛 모으기</span></span>
+        </button>
+        <button class="capsule primary" type="button" id="water-btn">
+          <svg><use href="#i-drop"/></svg><span><span class="c-title">물 주기</span><span class="c-sub" id="water-sub">물방울 1개</span></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 기록 -->
+    <dialog class="sheet" id="log-sheet" aria-labelledby="log-title">
+      <div class="sheet-head">
+        <h2 id="log-title">성장 기록</h2>
+        <button class="text-btn" type="button" data-close>완료</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><p class="s-label">누적 거리</p><p class="s-value"><span id="stat-km">0</span> km</p></div>
+        <div class="stat"><p class="s-label">물 준 횟수</p><p class="s-value"><span id="stat-water">0</span>번</p></div>
+        <div class="stat"><p class="s-label">성장 점수</p><p class="s-value" id="stat-growth">0</p></div>
+      </div>
+      <p class="section-label">단계</p>
+      <ol class="group timeline" id="timeline"></ol>
+    </dialog>
+
+    <!-- 설정 -->
+    <dialog class="sheet" id="settings-sheet" aria-labelledby="settings-title">
+      <div class="sheet-head">
+        <h2 id="settings-title">설정</h2>
+        <button class="text-btn" type="button" data-close>완료</button>
+      </div>
+      <p class="section-label">일반</p>
+      <div class="group">
+        <div class="row">
+          <div><p class="r-title">잔잔한 소리</p><p class="r-sub">차 스피커로 바람·빗소리를 작게</p></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-sound" aria-label="잔잔한 소리"></button>
+        </div>
+        <div class="row">
+          <div><p class="r-title">실제 주행으로 물 모으기</p><p class="r-sub">위치 권한 필요 · 이 화면을 열어 둔 동안만</p></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-gps" aria-label="실제 주행으로 물 모으기"></button>
+        </div>
+      </div>
+      <p class="section-label">화면</p>
+      <div class="group">
+        <div class="row">
+          <div><p class="r-title">낮과 밤</p><p class="r-sub">자동은 저녁 6시부터 아침 6시까지 밤</p></div>
+          <div class="segmented" id="pref-scene">
+            <button type="button" data-value="auto">자동</button><button type="button" data-value="day">낮</button><button type="button" data-value="night">밤</button>
+          </div>
+        </div>
+        <div class="row">
+          <div><p class="r-title">날씨</p><p class="r-sub">프로토타입이라 직접 골라요</p></div>
+          <div class="segmented" id="pref-weather">
+            <button type="button" data-value="clear">맑음</button><button type="button" data-value="rain">비</button>
+          </div>
+        </div>
+      </div>
+      <p class="section-label">데모</p>
+      <div class="group">
+        <button class="row link" type="button" id="demo-km">5km 달린 것으로 하기</button>
+        <button class="row link" type="button" id="demo-charge">10분 충전한 것으로 하기</button>
+        <button class="row link" type="button" id="demo-drive">운전 중 화면 보기</button>
+        <button class="row link destructive" type="button" id="demo-reset">처음부터 다시</button>
+      </div>
+    </dialog>
+
+    <!-- 오프닝: 글자 로고만 -->
+    <div class="opening" id="loading">
+      <p class="opening-word">Fenestra</p>
+    </div>
+  </div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
