@@ -23,6 +23,10 @@ python3 -m http.server 5173
 | `?plant=cactus` | `?preview`와 함께, 볼 식물 종 (monstera·cactus·sansevieria·rubber) |
 | `?tutorial` | 처음 안내를 다시 띄우기 |
 
+## 배포
+
+배포 전에 `npm run stamp` 로 index.html의 CSS·JS 주소에 버전을 붙인다. 차 브라우저가 파일마다 따로 캐시해 옛 파일과 새 파일이 섞이는 것을 막는다.
+
 ## 테스트
 
 ```bash
