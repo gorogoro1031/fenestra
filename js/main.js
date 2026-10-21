@@ -150,7 +150,7 @@ $('water-btn').addEventListener('click', () => {
     const stage = stageFor(state.growth);
     setTimeout(() => {
       applyScene();
-      toast(stage === before + 1 ? `창이 열렸어요 · ${STAGE_NAMES[stage]}` : '창이 열렸어요');
+      toast(stage === before + 1 ? `한 뼘 자랐어요 · ${STAGE_NAMES[stage]}` : '한 뼘 자랐어요');
       if (prefs.sound) chime();
     }, 600);
   } else {

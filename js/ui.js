@@ -45,7 +45,7 @@ export function renderTimeline(list, state) {
     title.textContent = name;
     const need = document.createElement('p');
     need.className = 't-need';
-    need.textContent = i <= stage ? '창이 열렸어요' : `성장 ${RULES.STAGE_THRESHOLDS[i]}점에서 열려요`;
+    need.textContent = i <= stage ? '자랐어요' : `성장 ${RULES.STAGE_THRESHOLDS[i]}점이면 자라요`;
     text.append(title, need);
     li.append(img, text);
     return li;

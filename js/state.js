@@ -8,11 +8,11 @@ export const RULES = Object.freeze({
   LIGHT_COST: 20,
   GROWTH_PER_WATER: 1,
   GROWTH_WITH_LIGHT: 2,
-  // 단계별 필요한 누적 성장 점수: 씨앗, 새싹, 첫 창, 창가, 페네스트라
+  // 단계별 필요한 누적 성장 점수: 씨앗, 새싹, 첫 잎, 큰 잎, 다 자람
   STAGE_THRESHOLDS: Object.freeze([0, 4, 10, 20, 35]),
 });
 
-export const STAGE_NAMES = Object.freeze(['씨앗', '새싹', '첫 창', '창가', '페네스트라']);
+export const STAGE_NAMES = Object.freeze(['씨앗', '새싹', '첫 잎', '큰 잎', '다 자람']);
 export const LAST_STAGE = RULES.STAGE_THRESHOLDS.length - 1;
 
 /** @returns {{drops:number, kmRemainder:number, light:number, growth:number, totalKm:number, todayKm:number, today:string, waterCount:number}} */
