@@ -3,7 +3,7 @@ import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createDotPlant } from './plant.js';
 import { renderStatus, renderTimeline, renderChip, toast } from './ui.js';
-import { setAmbient, drip, chime, unlock } from './sound.js';
+import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 
 const OPENING_MS = 2200;
@@ -114,6 +114,7 @@ stageEl.addEventListener('pointerdown', (e) => {
 
 function onLeafTouched() {
   plant.gust(0.35);
+  if (prefs.sound && audioReady) leafTouch(currentScene());
 }
 
 function scheduleGust() {
@@ -126,7 +127,9 @@ function scheduleGust() {
   }, min + Math.random() * (max - min));
 }
 
-function onGust() {}
+function onGust(strength) {
+  if (prefs.sound && audioReady) rustle(strength);
+}
 
 /* ---------- 돌보기 ---------- */
 $('water-btn').addEventListener('click', () => {
