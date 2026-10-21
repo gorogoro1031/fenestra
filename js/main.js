@@ -56,7 +56,7 @@ function applyScene() {
   stageEl.dataset.weather = prefs.weather;
   anchor = placePlant($('plant'), stage);
   swapPlant(stage);
-  arcs.set({ x: anchor.x, y: anchor.y });
+  arcs.set({ x: anchor.x, y: anchor.y, scene });
   fx.setRain(prefs.weather === 'rain');
   renderChip(prefs.weather);
   if (prefs.sound) setAmbient(prefs.weather === 'rain' ? 'rain' : 'wind');

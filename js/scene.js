@@ -10,10 +10,13 @@ const PLANT_RATIO = 1400 / 1600;
 const PLANT_TOP = [0.74, 0.52, 0.35, 0.29, 0.28];
 const POT_HEIGHT = 0.2;
 
-// 충전 중일 때만 화분에서 햇빛 물결이 퍼진다
-const ARC_COLOR = '255, 214, 10';
-const ARC_LIFE_MS = 7000;
-const ARC_EVERY_MS = 1400;
+// 화분 위로 퍼지는 파장. 평소엔 옅고 느리게, 충전 중이면 노랗고 빠르게
+const WAVE = {
+  idle: { every: 1900, life: 11000, alpha: 0.32, width: 2.6 },
+  charging: { every: 1100, life: 7000, alpha: 0.55, width: 3.2 },
+};
+const WAVE_COLOR = { day: '255, 236, 200', night: '190, 210, 255', charging: '255, 214, 10' };
+const WAVE_MAX_R = 1250;
 
 /** 식물 자리를 잡고, 동심원이 퍼질 중심점을 돌려준다 */
 export function placePlant(el, stage) {
@@ -51,38 +54,53 @@ export function createPlantSwap(imgA, imgB) {
   };
 }
 
-/** 햇빛 물결: 켜져 있으면 중심에서 원이 퍼지고, 꺼지면 남은 원만 사라진다 */
+/** 파장: 중심에서 원이 계속 퍼지고 사라진다. 원마다 생길 때의 색·속도를 기억한다 */
 export function createArcs(canvas) {
   const ctx = canvas.getContext('2d');
   let origin = { x: W / 2, y: H / 3 };
   let rings = [];
-  let on = false;
+  let charging = false;
+  let scene = 'night';
   let lastSpawn = -Infinity;
-  let maxR = 900;
-  let raf = 0;
+
+  const style = () => (charging ? { ...WAVE.charging, color: WAVE_COLOR.charging } : { ...WAVE.idle, color: WAVE_COLOR[scene] });
+
+  function drawRing(r, color, alpha, width) {
+    ctx.strokeStyle = `rgba(${color}, ${alpha})`;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.arc(origin.x, origin.y, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 
   function frame(now) {
     ctx.clearRect(0, 0, W, H);
-    if (on && now - lastSpawn > ARC_EVERY_MS) { rings = [...rings, now]; lastSpawn = now; }
-    rings = rings.filter((born) => now - born < ARC_LIFE_MS);
-    ctx.lineWidth = 2;
-    rings.forEach((born) => {
-      const p = (now - born) / ARC_LIFE_MS;
-      ctx.strokeStyle = `rgba(${ARC_COLOR}, ${Math.sin(Math.PI * p) * 0.45})`;
-      ctx.beginPath();
-      ctx.arc(origin.x, origin.y, 60 + p * maxR, 0, Math.PI * 2);
-      ctx.stroke();
+    const s = style();
+    if (now - lastSpawn > s.every) { rings = [...rings, { born: now, ...s }]; lastSpawn = now; }
+    rings = rings.filter((ring) => now - ring.born < ring.life);
+    rings.forEach((ring) => {
+      const p = (now - ring.born) / ring.life;
+      // 바깥으로 갈수록 느려지는 퍼짐
+      const eased = 1 - (1 - p) ** 2;
+      drawRing(50 + eased * WAVE_MAX_R, ring.color, Math.sin(Math.PI * p) * ring.alpha, ring.width);
     });
-    raf = on || rings.length ? requestAnimationFrame(frame) : 0;
+    requestAnimationFrame(frame);
   }
 
+  function drawStill() {
+    ctx.clearRect(0, 0, W, H);
+    const s = style();
+    [160, 330, 520, 740].forEach((r, i) => drawRing(r, s.color, s.alpha * (1 - i * 0.2), s.width));
+  }
+
+  if (REDUCED) drawStill(); else requestAnimationFrame(frame);
+
   return {
-    set({ x, y, active, radius }) {
+    set({ x, y, active, scene: nextScene }) {
       if (x !== undefined) origin = { x, y };
-      if (radius) maxR = radius;
-      if (active === undefined) return;
-      on = active && !REDUCED;
-      if (on && !raf) raf = requestAnimationFrame(frame);
+      if (nextScene) scene = nextScene;
+      if (active !== undefined) charging = active;
+      if (REDUCED) drawStill();
     },
   };
 }
