@@ -1,15 +1,16 @@
-// 몬스테라 그림(단계별 webp, 배경 투명)을 화분 바닥 기준으로 놓고 바람에 흔들리게 한다.
+// 식물 그림(종·단계별 webp, 배경 투명)을 화분 바닥 기준으로 놓고 바람에 흔들리게 한다.
 // 흔들림은 화분 바닥을 축으로 한 skew라서 위쪽 잎일수록 크게 움직이고 화분은 거의 그대로다
 import { MOTION_MS, pickMotion, combine } from './motions.js';
+import { plantImage } from './plants.js';
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** 그림 한 장의 기준점(원본 픽셀). 다섯 단계 모두 같은 크기·같은 화분 자리로 맞춰 두었다 */
+/** 그림 한 장의 기준점(원본 픽셀). 모든 종·단계가 같은 크기·같은 화분 자리로 맞춰져 있다 */
 export const PLANT_IMAGE = Object.freeze({
-  w: 1145, h: 990,
-  potX: 508.5, potBottom: 985, potTop: 765,
-  // 시안에서 식물을 감싸던 원: 해·달이 정오·자정에 오는 자리
-  ringX: 510.4, ringY: 202.4, ringR: 353.5,
+  w: 1150, h: 1163,
+  potX: 510.5, potBottom: 1153, potTop: 933,
+  // 몬스테라 시안에서 식물을 감싸던 원: 해·달이 정오·자정에 오는 자리
+  ringX: 512.4, ringY: 370.4, ringR: 353.5,
 });
 
 const SWAP_MS = 900;
@@ -30,7 +31,7 @@ export function createPlant(host) {
   host.append(sway);
 
   let layout = { cx: 960, base: 964, scale: 0.674 };
-  let stage = -1;
+  let shown = '';
   let current = null;
   let hitMap = null;
   let gust = 0;
@@ -38,16 +39,16 @@ export function createPlant(host) {
   let lastMotion = '';
   const images = new Map();
 
-  const load = (n) => {
-    if (!images.has(n)) {
-      images.set(n, new Promise((resolve, reject) => {
+  const load = (src) => {
+    if (!images.has(src)) {
+      images.set(src, new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
         img.onerror = reject;
-        img.src = `assets/plant-${n}.webp`;
+        img.src = src;
       }));
     }
-    return images.get(n);
+    return images.get(src);
   };
 
   // 잎을 건드렸는지 알기 위해 그림을 작게 줄여 투명도만 읽어 둔다
@@ -89,9 +90,9 @@ export function createPlant(host) {
   if (!REDUCED) requestAnimationFrame(frame);
 
   /** 새 그림을 위에 얹어 화분에서 자라나듯 나타나게, 이전 그림은 흐려지며 사라지게 */
-  async function show(n, { animate }) {
-    const img = await load(n);
-    if (n !== stage) return;
+  async function show(src, { animate }) {
+    const img = await load(src);
+    if (src !== shown) return;
     const layer = img.cloneNode();
     layer.alt = '';
     layer.className = animate ? 'plant-img entering' : 'plant-img';
@@ -110,12 +111,13 @@ export function createPlant(host) {
   place();
 
   return {
-    /** 단계 그림을 바꾼다. 처음이면 바로, 이후엔 자라나는 전환 */
-    async setStage(n) {
-      if (n === stage) return;
-      const animate = stage !== -1 && !REDUCED;
-      stage = n;
-      await show(n, { animate });
+    /** 종·단계 그림을 바꾼다. 처음이면 바로, 이후엔 자라나는 전환 */
+    async setStage(id, n) {
+      const src = plantImage(id, n);
+      if (src === shown) return;
+      const animate = shown !== '' && !REDUCED;
+      shown = src;
+      await show(src, { animate });
     },
     /** @param {{cx:number, base:number, scale:number}} next 화분 바닥 가운데 자리와 그림 배율 */
     setLayout(next) {

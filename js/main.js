@@ -1,9 +1,10 @@
-import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageFor, STAGE_NAMES } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageOf, buyPlant, selectPlant, STAGE_NAMES } from './state.js';
+import { PLANTS } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
 import { createSky, orbPosition } from './sky.js';
-import { renderStatus, renderTimeline, renderChip, toast } from './ui.js';
+import { renderStatus, renderGreenhouse, renderChip, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
@@ -25,9 +26,14 @@ const SCENE_OVERRIDE = ['day', 'night'].includes(query.get('scene')) ? query.get
 const HOUR_OVERRIDE = query.has('hour') && Number.isFinite(Number(query.get('hour'))) ? Number(query.get('hour')) : null;
 const todayKey = () => new Date().toLocaleDateString('sv-SE');
 
-// ?preview=0~4 : 해당 단계로 꾸민 임시 상태로 보기 (저장하지 않음)
+// ?preview=0~4 : 해당 단계로 꾸민 임시 상태로 보기, ?plant=cactus 처럼 종도 고를 수 있다 (저장하지 않음)
 const PREVIEW_STAGE = query.has('preview') ? Math.min(4, Math.max(0, Number(query.get('preview')) || 0)) : null;
-const previewState = (stage) => ({ ...createState(todayKey()), growth: RULES.STAGE_THRESHOLDS[stage], drops: 6, light: 60, todayKm: 8.2, totalKm: 64.5, waterCount: 31 });
+const PREVIEW_PLANT = PLANTS[query.get('plant')] ? query.get('plant') : 'monstera';
+const previewState = (stage) => {
+  const plant = { growth: PLANTS[PREVIEW_PLANT].thresholds[stage], waterToday: 0, grown: false };
+  const plants = { monstera: { growth: 9, waterToday: 0, grown: false }, [PREVIEW_PLANT]: plant };
+  return { ...createState(todayKey()), active: PREVIEW_PLANT, plants, drops: 6, light: 60, todayKm: 8.2, totalKm: 164.5, waterCount: 31, coins: 140 };
+};
 
 let state = PREVIEW_STAGE !== null ? previewState(PREVIEW_STAGE) : rollDay(sanitize(loadState(), todayKey()), todayKey());
 let prefs = loadPrefs();
@@ -77,10 +83,9 @@ const currentScene = () => (orbPosition(currentHours()).isDay ? 'day' : 'night')
 /** @returns {Promise<void>} 식물 그림이 새 단계로 준비되면 끝난다 */
 function applyScene() {
   const scene = currentScene();
-  const stage = stageFor(state.growth);
   stageEl.dataset.scene = scene;
   stageEl.dataset.weather = prefs.weather;
-  const ready = plant.setStage(stage);
+  const ready = plant.setStage(state.active, stageOf(state));
   sky.draw({ hours: currentHours(), raining: prefs.weather === 'rain' });
   fx.setRain(prefs.weather === 'rain');
   renderChip(prefs.weather);
@@ -103,7 +108,7 @@ function syncAmbient() {
 }
 
 function render() {
-  renderStatus(state, { charging, driving: isDriving() });
+  renderStatus(state, { charging, driving: isDriving(), isNight: currentScene() === 'night' });
 }
 
 function commit(next) {
@@ -147,22 +152,23 @@ function onGust(strength) {
 /* ---------- 돌보기 ---------- */
 $('water-btn').addEventListener('click', () => {
   if (isDriving()) return;
-  const before = stageFor(state.growth);
-  const result = water(state);
+  const before = stageOf(state);
+  const result = water(state, { isNight: currentScene() === 'night' });
   if (!result.grew) return;
   fx.water(anchor);
   if (prefs.sound) drip();
   plant.glow();
   commit(result.state);
   if (result.stageUp) {
-    const stage = stageFor(state.growth);
+    const stage = stageOf(state);
     setTimeout(() => {
       applyScene();
-      toast(stage === before + 1 ? `한 뼘 자랐어요 · ${STAGE_NAMES[stage]}` : '한 뼘 자랐어요');
+      if (result.grownNow) toast(`${PLANTS[state.active].name}가 다 자랐어요 · 꽃씨 +${RULES.GROWN_REWARD}`);
+      else toast(stage === before + 1 ? `한 뼘 자랐어요 · ${STAGE_NAMES[stage]}` : '한 뼘 자랐어요');
       if (prefs.sound) chime();
     }, 600);
   } else {
-    toast(result.usedLight ? `햇빛과 함께 +${result.grew}` : `+${result.grew}`);
+    toast(result.bonus ? `두 배로 +${result.grew}` : `+${result.grew}`);
   }
 });
 
@@ -200,8 +206,21 @@ const scrim = document.createElement('div');
 scrim.className = 'scrim';
 stageEl.append(scrim);
 
+/* 온실: 가진 식물로 바꿔 키우거나, 꽃씨로 새 식물을 들인다 */
+function renderGreenhouseSheet() {
+  renderGreenhouse(state, (action, id) => {
+    const next = action === 'buy' ? buyPlant(state, id) : selectPlant(state, id);
+    if (next === state) return;
+    commit(next);
+    applyScene();
+    renderGreenhouseSheet();
+    toast(action === 'buy' ? `${PLANTS[id].name}를 들였어요` : `${PLANTS[id].name}를 키워요`);
+    if (action === 'buy' && prefs.sound) chime();
+  });
+}
+
 function openSheet(sheet) {
-  if (sheet.id === 'log-sheet') renderTimeline($('timeline'), state);
+  if (sheet.id === 'greenhouse-sheet') renderGreenhouseSheet();
   syncSettings();
   sheet.show();
   scrim.classList.add('show');
@@ -210,7 +229,7 @@ function closeSheets() {
   document.querySelectorAll('dialog[open]').forEach((d) => d.close());
   scrim.classList.remove('show');
 }
-$('open-log').addEventListener('click', () => openSheet($('log-sheet')));
+$('open-greenhouse').addEventListener('click', () => openSheet($('greenhouse-sheet')));
 $('open-settings').addEventListener('click', () => openSheet($('settings-sheet')));
 $('album-card').addEventListener('click', () => openSheet($('album-sheet')));
 document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeSheets));
@@ -219,7 +238,7 @@ scrim.addEventListener('click', closeSheets);
 function syncSettings() {
   $('pref-sound').setAttribute('aria-checked', String(prefs.sound));
   $('pref-gps').setAttribute('aria-checked', String(prefs.useGps));
-  [['pref-scene', prefs.scene], ['pref-weather', prefs.weather], ['demo-stage', String(stageFor(state.growth))]].forEach(([id, value]) => {
+  [['pref-scene', prefs.scene], ['pref-weather', prefs.weather], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
 }
@@ -252,13 +271,15 @@ $('demo-stage').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;
   if (value === undefined) return;
   const stage = Number(value);
-  commit({ ...state, growth: RULES.STAGE_THRESHOLDS[stage] });
+  const current = state.plants[state.active];
+  commit({ ...state, plants: { ...state.plants, [state.active]: { ...current, growth: PLANTS[state.active].thresholds[stage], grown: false } } });
   applyScene();
   syncSettings();
   toast(STAGE_NAMES[stage]);
 });
-$('demo-km').addEventListener('click', () => { commit(addDistance(state, 5)); toast('5km 달렸어요 · 물방울 +5'); });
-$('demo-charge').addEventListener('click', () => { commit(addChargeMinutes(state, 10)); toast('햇빛 +100'); });
+$('demo-km').addEventListener('click', () => { commit(addDistance(state, 30)); toast('30km 달렸어요 · 물방울 +3 · 꽃씨 +30'); });
+$('demo-coins').addEventListener('click', () => { commit({ ...state, coins: state.coins + 100 }); toast('꽃씨 +100'); });
+$('demo-charge').addEventListener('click', () => { commit(addChargeMinutes(state, 10)); toast(`햇빛 +${10 * RULES.LIGHT_PER_MINUTE}`); });
 $('demo-drive').addEventListener('click', () => {
   closeSheets();
   drivingUntil = Date.now() + DEMO_DRIVE_MS;
@@ -323,6 +344,7 @@ stageEl.classList.add('booting');
 renderAlbum(todayKey());
 startIntro(applyScene()).then(() => { if (shouldShowTutorial()) tutorial.open(); });
 render();
+syncSettings();
 requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('booting')));
 if (prefs.useGps) setGps(true);
 scheduleGust();

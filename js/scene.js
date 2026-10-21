@@ -5,17 +5,20 @@ const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 // 충전하는 동안만 식물 뒤에서 노란 파장이 퍼진다 (평소엔 해·달 고리가 그 자리를 맡는다)
 const WAVE = { every: 1100, life: 7000, alpha: 0.5, width: 3.2, color: '255, 214, 10' };
 // 식물 그림 배율: 1920×1200 기준, 무대가 세로로 길어지면 조금 크게
-const PLANT_SCALE = 0.674;
+const PLANT_SCALE = 0.72;
 // 잎을 건드리면 튀는 동그라미: 개수와 색(초록·레몬·흰색)
 const BURST = { count: 9, colors: ['#30d158', '#ecf03c', '#ffffff', '#7ee8a8'] };
-const DOCK_SPACE = 236;
+// 화분 바닥은 화면 아래에서 이만큼 위
+const POT_MARGIN = 70;
+// 위젯 격자가 차지하는 폭(가장자리 여백 포함). css/tokens.css의 --wd·--wd-gap과 맞춘다
+const WIDGETS_SPACE = 56 + 284 * 2 + 22;
 
 /**
- * 무대 크기에 맞춘 화분 자리. 무대는 항상 1920×1200 이상이고 남는 쪽으로 넓어진다
+ * 무대 크기에 맞춘 화분 자리. 왼쪽 아래 위젯 격자를 뺀 공간의 가운데에 선다
  * @returns {{cx:number, base:number, scale:number}} 가운데 x, 화분 바닥 y, 그림 배율
  */
 export function plantLayout(W, H) {
-  return { cx: W / 2, base: H - DOCK_SPACE, scale: PLANT_SCALE * Math.min(1.25, 1 + Math.max(0, H - 1200) / 2000) };
+  return { cx: WIDGETS_SPACE + (W - WIDGETS_SPACE) / 2, base: H - POT_MARGIN, scale: PLANT_SCALE * Math.min(1.25, 1 + Math.max(0, H - 1200) / 2000) };
 }
 
 /** 파장: 충전 중에 중심에서 원이 계속 퍼지고 사라진다 */

@@ -11,7 +11,8 @@ const setCover = (img, src) => {
 /** @param {string} dateKey YYYY-MM-DD */
 export function renderAlbum(dateKey) {
   const album = albumFor(dateKey);
-  setCover($('album-art'), album.art.replace('600x600', '200x200'));
+  // 위젯은 표지를 바탕으로 꽉 채운다. 못 불러오면 회색 바탕 그대로
+  $('album-card').style.backgroundImage = `url("${album.art.replace('600x600', '400x400')}")`;
   $('album-title').textContent = album.title;
   $('album-artist').textContent = album.artist;
   $('album-card').setAttribute('aria-label', `오늘의 앨범 ${album.title}, ${album.artist}`);

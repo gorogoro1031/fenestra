@@ -40,71 +40,69 @@
     </div>
 
     <header class="top">
-      <div class="title-block">
+      <div class="brand">
         <p class="wordmark">Fenestra</p>
-        <p class="caption" id="chip">오후 8:00 · 맑음</p>
-        <button class="album-card glass" type="button" id="album-card" aria-haspopup="dialog">
-          <img class="album-art" id="album-art" alt="" width="96" height="96">
-          <span class="album-text">
-            <span class="a-label">오늘의 앨범</span>
-            <span class="a-title" id="album-title"></span>
-            <span class="a-artist" id="album-artist"></span>
-          </span>
-        </button>
+        <p class="caption"><span id="chip">오후 8:00 · 맑음</span> · 오늘 <span id="today-km">0.0</span>km</p>
       </div>
-      <nav class="top-actions" aria-label="메뉴">
-        <button class="icon-btn glass" type="button" id="open-log" aria-label="성장 기록"><svg><use href="#i-leaf"/></svg></button>
-        <button class="icon-btn glass" type="button" id="open-settings" aria-label="설정"><svg><use href="#i-gear"/></svg></button>
+      <nav class="tools" aria-label="메뉴">
+        <span class="coin-pill" aria-label="꽃씨"><i class="coin-dot" aria-hidden="true"></i>꽃씨 <b id="coin-num">0</b></span>
+        <button class="icon-btn" type="button" id="open-greenhouse" aria-label="온실"><svg><use href="#i-leaf"/></svg></button>
+        <button class="icon-btn" type="button" id="open-settings" aria-label="설정"><svg><use href="#i-gear"/></svg></button>
       </nav>
     </header>
 
     <p class="banner glass" id="driving-banner" role="status" hidden><svg><use href="#i-car"/></svg>운전 중에는 보기만 해요 · 차를 세우면 돌볼 수 있어요</p>
     <p class="banner glass toast" id="toast" role="status" aria-live="polite"></p>
 
-    <!-- 하단 위젯 바 -->
-    <section class="dock glass" aria-label="식물 상태와 돌보기">
-      <div class="widget stage-widget">
-        <p class="w-label">성장</p>
-        <p class="w-title"><span id="stage-name">씨앗</span><span class="w-sub">단계 <span id="stage-num">0</span> / 4</span></p>
-        <div class="dots tint" id="progress-dots" aria-hidden="true"></div>
+    <!-- 위젯 격자: 운전석 모드면 왼쪽 아래, 조수석 모드면 오른쪽 아래 -->
+    <section class="widgets" id="widgets" aria-label="식물 상태와 돌보기">
+      <button class="wd album" type="button" id="album-card" aria-haspopup="dialog">
+        <span class="album-badge" aria-hidden="true"><svg><use href="#i-music"/></svg></span>
+        <span class="album-meta">
+          <span class="a-label">오늘의 앨범</span>
+          <span class="a-title" id="album-title"></span>
+          <span class="a-artist" id="album-artist"></span>
+        </span>
+      </button>
+      <div class="wd" style="--c: var(--tint)">
+        <p class="wd-key" id="plant-name">몬스테라</p>
+        <p class="wd-title" id="stage-name">씨앗</p>
+        <p class="wd-sub" id="stage-sub">단계 0 / 4</p>
+        <div class="dots cols-4" id="progress-dots" aria-hidden="true"></div>
       </div>
-      <div class="widget">
-        <p class="w-label"><svg class="w-icon water"><use href="#i-drop"/></svg>물방울</p>
-        <p class="w-value"><span id="drops-num">0</span><span class="w-unit">/ 12</span></p>
-        <div class="dots water" id="drops-dots" aria-hidden="true"></div>
+      <div class="wd" style="--c: var(--water)">
+        <p class="wd-key">물방울</p>
+        <p class="wd-num"><span id="drops-num">0</span><small>/ 12</small></p>
+        <div class="dots cols-6" id="drops-dots" aria-hidden="true"></div>
       </div>
-      <div class="widget">
-        <p class="w-label"><svg class="w-icon sun"><use href="#i-sun"/></svg>햇빛</p>
-        <p class="w-value"><span id="light-num">0</span><span class="w-unit">/ 100</span></p>
-        <div class="dots sun" id="light-dots" aria-hidden="true"></div>
+      <div class="wd" style="--c: var(--sun)">
+        <p class="wd-key">햇빛</p>
+        <p class="wd-num"><span id="light-num">0</span><small>/ 100</small></p>
+        <div class="dots cols-5" id="light-dots" aria-hidden="true"></div>
       </div>
-      <div class="widget">
-        <p class="w-label"><svg class="w-icon"><use href="#i-road"/></svg>오늘</p>
-        <p class="w-value"><span id="today-km">0.0</span><span class="w-unit">km</span></p>
-      </div>
-      <div class="dock-actions">
-        <button class="capsule secondary" type="button" id="charge-btn" aria-pressed="false">
-          <svg><use href="#i-bolt"/></svg><span><span class="c-title">충전 중</span><span class="c-sub" id="charge-sub">햇빛 모으기</span></span>
-        </button>
-        <button class="capsule primary" type="button" id="water-btn">
-          <svg><use href="#i-drop"/></svg><span><span class="c-title">물 주기</span><span class="c-sub" id="water-sub">물방울 1개</span></span>
-        </button>
-      </div>
+      <button class="act water" type="button" id="water-btn">
+        <span class="act-ic" aria-hidden="true"><svg><use href="#i-drop"/></svg></span>
+        <span class="act-tx"><b>물 주기</b><span id="water-sub">물방울 1개</span></span>
+      </button>
+      <button class="act sun" type="button" id="charge-btn" aria-pressed="false">
+        <span class="act-ic" aria-hidden="true"><svg><use href="#i-bolt"/></svg></span>
+        <span class="act-tx"><b>충전 중</b><span id="charge-sub">햇빛 모으기</span></span>
+      </button>
     </section>
 
-    <!-- 기록 -->
-    <dialog class="sheet" id="log-sheet" aria-labelledby="log-title">
+    <!-- 온실: 식물 고르기·들이기 -->
+    <dialog class="sheet" id="greenhouse-sheet" aria-labelledby="greenhouse-title">
       <div class="sheet-head">
-        <h2 id="log-title">성장 기록</h2>
+        <h2 id="greenhouse-title">온실</h2>
         <button class="text-btn" type="button" data-close>완료</button>
       </div>
+      <p class="gh-coins"><i class="coin-dot" aria-hidden="true"></i>꽃씨 <b id="gh-coin-num">0</b>개 <span>· 1km 달리면 1개 · 다 키우면 +50</span></p>
+      <ul class="gh-grid" id="gh-grid"></ul>
       <div class="stats">
         <div class="stat"><p class="s-label">누적 거리</p><p class="s-value"><span id="stat-km">0</span> km</p></div>
         <div class="stat"><p class="s-label">물 준 횟수</p><p class="s-value"><span id="stat-water">0</span>번</p></div>
-        <div class="stat"><p class="s-label">성장 점수</p><p class="s-value" id="stat-growth">0</p></div>
+        <div class="stat"><p class="s-label">다 키운 식물</p><p class="s-value"><span id="stat-grown">0</span>종</p></div>
       </div>
-      <p class="section-label">단계</p>
-      <ol class="group timeline" id="timeline"></ol>
     </dialog>
 
     <!-- 오늘의 앨범 -->
@@ -162,11 +160,12 @@
         <div class="row">
           <div><p class="r-title">단계 바로 보기</p><p class="r-sub">누르면 그 단계로</p></div>
           <div class="segmented" id="demo-stage">
-            <button type="button" data-value="0">씨앗</button><button type="button" data-value="1">새싹</button><button type="button" data-value="2">첫 잎</button><button type="button" data-value="3">큰 잎</button><button type="button" data-value="4">완성</button>
+            <button type="button" data-value="0">씨앗</button><button type="button" data-value="1">새싹</button><button type="button" data-value="2">첫 잎</button><button type="button" data-value="3">큰 잎</button><button type="button" data-value="4">다 자람</button>
           </div>
         </div>
         <a class="row link" href="music-test.html">Apple Music 링크 확인 (차에서)</a>
-        <button class="row link" type="button" id="demo-km">5km 달린 것으로 하기</button>
+        <button class="row link" type="button" id="demo-km">30km 달린 것으로 하기</button>
+        <button class="row link" type="button" id="demo-coins">꽃씨 +100</button>
         <button class="row link" type="button" id="demo-charge">10분 충전한 것으로 하기</button>
         <button class="row link" type="button" id="demo-drive">운전 중 화면 보기</button>
         <button class="row link destructive" type="button" id="demo-reset">처음부터 다시</button>
@@ -180,7 +179,7 @@
         <h2 id="tour-title"></h2>
         <p class="tour-body" id="tour-body"></p>
       </div>
-      <div class="tour-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="tour-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="tour-actions">
         <button class="text-btn muted" type="button" id="tour-skip">건너뛰기</button>
         <div class="tour-nav">

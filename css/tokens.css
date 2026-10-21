@@ -18,8 +18,13 @@
   --destructive: #ff453a;
   /* 폴카닷 포인트 */
   --polka-light: rgba(255, 255, 255, .28);
-  --polka-sun: rgba(236, 240, 60, .55);
-  --polka-faint: rgba(255, 255, 255, .05);
+  --dot-off: rgba(118, 118, 128, .28);
+  /* 위젯 격자 */
+  --panel: #161618;
+  --wd: 284px;
+  --wd-gap: 22px;
+  --act-h: 160px;
+  --r-wd: 46px;
 
   --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-logo: "Fraunces", Georgia, serif;

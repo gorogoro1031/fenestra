@@ -1,70 +1,123 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  RULES, createState, stageFor, progressToNext, addDistance, addChargeMinutes, water, rollDay, sanitize, LAST_STAGE,
+  RULES, createState, stageFor, progressToNext, addDistance, addChargeMinutes, water, waterCheck, rollDay, sanitize,
+  buyPlant, selectPlant, growthOf, stageOf, LAST_STAGE,
 } from '../js/state.js';
+import { PLANTS } from '../js/plants.js';
 
-test('1km마다 물방울이 하나씩 쌓이고 자투리는 이어서 센다', () => {
-  const s1 = addDistance(createState(), 0.6);
+const withGrowth = (s, growth, patch = {}) => ({ ...s, plants: { ...s.plants, [s.active]: { ...s.plants[s.active], growth, ...patch } } });
+const cactusState = (patch = {}) => ({ ...createState(), active: 'cactus', plants: { monstera: { growth: 0, waterToday: 0, grown: false }, cactus: { growth: 0, waterToday: 0, grown: false } }, ...patch });
+
+test('10km마다 물방울이 하나, 자투리는 이어서 센다', () => {
+  const s1 = addDistance(createState(), 6);
   assert.equal(s1.drops, 0);
-  const s2 = addDistance(s1, 0.6);
+  const s2 = addDistance(s1, 6);
   assert.equal(s2.drops, 1);
-  assert.ok(Math.abs(s2.kmRemainder - 0.2) < 1e-9);
-  assert.ok(Math.abs(s2.todayKm - 1.2) < 1e-9);
+  assert.ok(Math.abs(s2.kmRemainder - 2) < 1e-9);
+  assert.ok(Math.abs(s2.todayKm - 12) < 1e-9);
+});
+
+test('1km마다 꽃씨가 하나씩, 자투리도 이어서 센다', () => {
+  const s = addDistance(addDistance(createState(), 2.6), 0.6);
+  assert.equal(s.coins, 3);
+  assert.ok(Math.abs(s.coinRemainder - 0.2) < 1e-9);
 });
 
 test('물방울은 최대치를 넘지 않는다', () => {
-  const s = addDistance(createState(), 100);
+  const s = addDistance(createState(), 1000);
   assert.equal(s.drops, RULES.MAX_DROPS);
   assert.equal(s.kmRemainder, 0);
-  assert.equal(s.totalKm, 100);
 });
 
-test('음수나 숫자가 아닌 거리는 무시한다', () => {
+test('음수나 숫자가 아닌 거리는 무시하고 원래 상태를 바꾸지 않는다', () => {
   const s = createState();
   assert.equal(addDistance(s, -3), s);
   assert.equal(addDistance(s, Number.NaN), s);
-});
-
-test('원래 상태를 바꾸지 않는다', () => {
-  const s = createState();
-  addDistance(s, 5);
+  addDistance(s, 50);
   assert.equal(s.drops, 0);
 });
 
-test('충전 시간만큼 햇빛이 차고 최대치에서 멈춘다', () => {
-  assert.equal(addChargeMinutes(createState(), 3).light, 30);
-  assert.equal(addChargeMinutes(createState(), 99).light, RULES.MAX_LIGHT);
+test('충전 10분이면 햇빛 한 번 쓸 만큼 차고 최대치에서 멈춘다', () => {
+  assert.equal(addChargeMinutes(createState(), 10).light, RULES.LIGHT_COST);
+  assert.equal(addChargeMinutes(createState(), 999).light, RULES.MAX_LIGHT);
 });
 
 test('물방울이 없으면 물을 줄 수 없다', () => {
-  const result = water(createState());
-  assert.equal(result.grew, 0);
-  assert.equal(result.state.growth, 0);
+  assert.deepEqual(waterCheck(createState()), { ok: false, reason: 'no-drops' });
+  assert.equal(water(createState()).grew, 0);
 });
 
-test('햇빛이 충분하면 물 줄 때 더 자라고 햇빛을 쓴다', () => {
-  const s = { ...createState(), drops: 2, light: 30 };
-  const result = water(s);
-  assert.equal(result.grew, RULES.GROWTH_WITH_LIGHT);
-  assert.equal(result.usedLight, true);
-  assert.equal(result.state.light, 10);
-  assert.equal(result.state.drops, 1);
+test('몬스테라: 햇빛이 있으면 두 배로 자라고 햇빛을 쓴다', () => {
+  const r = water({ ...createState(), drops: 2, light: 30 });
+  assert.equal(r.grew, 2);
+  assert.equal(r.usedLight, true);
+  assert.equal(r.state.light, 10);
+  assert.equal(r.state.drops, 1);
+  assert.equal(water({ ...createState(), drops: 1 }).grew, 1);
 });
 
-test('단계 경계를 넘으면 stageUp이 참', () => {
-  const s = { ...createState(), drops: 1, growth: RULES.STAGE_THRESHOLDS[1] - 1 };
-  const result = water(s);
-  assert.equal(result.stageUp, true);
-  assert.equal(stageFor(result.state.growth), 1);
+test('선인장: 한 번에 두 배지만 하루 두 번까지, 날이 바뀌면 다시', () => {
+  let s = cactusState({ drops: 5, light: 50 });
+  s = water(s).state;
+  const second = water(s);
+  assert.equal(second.grew, 2);
+  assert.equal(second.usedLight, false);
+  assert.equal(second.state.light, 50);
+  assert.deepEqual(waterCheck(second.state), { ok: false, reason: 'dry-limit' });
+  assert.equal(waterCheck(rollDay(second.state, 'next-day')).ok, true);
 });
 
-test('단계와 다음 단계까지 진행률', () => {
+test('산세베리아: 밤에만 두 배', () => {
+  const s = { ...createState(), drops: 2, active: 'sansevieria', plants: { monstera: { growth: 0, waterToday: 0, grown: false }, sansevieria: { growth: 0, waterToday: 0, grown: false } } };
+  assert.equal(water(s, { isNight: true }).grew, 2);
+  assert.equal(water(s, { isNight: false }).grew, 1);
+});
+
+test('고무나무: 오늘 30km 넘게 달린 날 두 배', () => {
+  const s = { ...createState(), drops: 2, active: 'rubber', plants: { monstera: { growth: 0, waterToday: 0, grown: false }, rubber: { growth: 0, waterToday: 0, grown: false } } };
+  assert.equal(water({ ...s, todayKm: 31 }).grew, 2);
+  assert.equal(water({ ...s, todayKm: 12 }).grew, 1);
+});
+
+test('다 자라는 순간 꽃씨 덤을 받고, 그 뒤로는 물을 줄 수 없다', () => {
+  const last = PLANTS.monstera.thresholds[LAST_STAGE];
+  const s = withGrowth({ ...createState(), drops: 2, coins: 5 }, last - 1);
+  const r = water(s);
+  assert.equal(r.grownNow, true);
+  assert.equal(r.stageUp, true);
+  assert.equal(r.state.coins, 5 + RULES.GROWN_REWARD);
+  assert.deepEqual(waterCheck(r.state), { ok: false, reason: 'grown' });
+});
+
+test('꽃씨로 식물을 사면 바로 그 식물을 키우고, 모자라거나 이미 있으면 그대로', () => {
+  const poor = { ...createState(), coins: 10 };
+  assert.equal(buyPlant(poor, 'cactus'), poor);
+  const rich = { ...createState(), coins: 500 };
+  const bought = buyPlant(rich, 'cactus');
+  assert.equal(bought.coins, 500 - PLANTS.cactus.price);
+  assert.equal(bought.active, 'cactus');
+  assert.equal(growthOf(bought), 0);
+  assert.equal(buyPlant(bought, 'cactus'), bought);
+  assert.equal(buyPlant(rich, 'nope'), rich);
+});
+
+test('가진 식물끼리만 바꿔 키울 수 있고, 식물마다 성장은 따로', () => {
+  const s = buyPlant(withGrowth({ ...createState(), coins: 500 }, 9), 'cactus');
+  assert.equal(growthOf(s), 0);
+  const back = selectPlant(s, 'monstera');
+  assert.equal(growthOf(back), 9);
+  assert.equal(selectPlant(back, 'rubber'), back);
+});
+
+test('단계와 다음 단계까지 진행률은 종마다 다른 기준을 쓴다', () => {
   assert.equal(stageFor(0), 0);
-  assert.equal(stageFor(10), 2);
+  assert.equal(stageFor(2), 1);
   assert.equal(stageFor(999), LAST_STAGE);
-  assert.equal(progressToNext(7), 0.5);
+  assert.equal(progressToNext(5), 0.5);
   assert.equal(progressToNext(999), 1);
+  assert.equal(stageFor(10, PLANTS.rubber.thresholds), 2);
+  assert.equal(stageOf(withGrowth(createState(), 8)), 2);
 });
 
 test('날짜가 바뀌면 오늘 거리만 초기화', () => {
@@ -75,11 +128,17 @@ test('날짜가 바뀌면 오늘 거리만 초기화', () => {
   assert.equal(rollDay(s, '2026-10-21'), s);
 });
 
-test('저장소 값이 깨져 있어도 안전한 상태로 복구', () => {
+test('저장소 값이 깨져 있어도 안전하게, 예전 한 종짜리 저장값은 몬스테라로 옮긴다', () => {
   assert.deepEqual(sanitize(null, 'd'), createState('d'));
   const s = sanitize({ drops: 999, light: -5, growth: 'x', today: 3 }, 'd');
   assert.equal(s.drops, RULES.MAX_DROPS);
   assert.equal(s.light, 0);
-  assert.equal(s.growth, 0);
+  assert.equal(growthOf(s), 0);
   assert.equal(s.today, 'd');
+  const old = sanitize({ growth: 12, drops: 3 }, 'd');
+  assert.equal(old.active, 'monstera');
+  assert.equal(growthOf(old), 12);
+  const weird = sanitize({ active: 'rubber', plants: { cactus: { growth: 4 }, hacked: { growth: 1 } } }, 'd');
+  assert.equal(weird.active, 'monstera');
+  assert.deepEqual(Object.keys(weird.plants).sort(), ['cactus', 'monstera']);
 });

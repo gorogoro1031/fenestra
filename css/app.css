@@ -43,26 +43,55 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .plant-img.glow { animation: plant-glow 1400ms ease; }
 @keyframes plant-glow { 30% { filter: brightness(1.25) saturate(1.15); } }
 
-/* ---------- 상단 ---------- */
-.top { position: absolute; left: 56px; right: 56px; top: 44px; display: flex; justify-content: space-between; align-items: flex-start; }
-/* 오늘의 앨범: 로고 아래 작은 카드, 누르면 크게 */
-.album-card {
-  display: flex; align-items: center; gap: 20px; margin-top: 30px; padding: 12px 30px 12px 12px; border-radius: 22px; text-align: left; max-width: 520px;
-  transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast);
+/* ---------- 상단: 로고·시각 한쪽, 꽃씨·온실·설정 반대쪽 ---------- */
+.top { position: absolute; left: 56px; right: 56px; top: 48px; display: flex; justify-content: space-between; align-items: center; }
+.brand { display: flex; align-items: baseline; gap: 22px; }
+.wordmark { font: italic 500 54px/1 var(--font-logo); letter-spacing: -.01em; }
+.caption { font-size: 22px; font-weight: 600; color: var(--label-2); font-variant-numeric: tabular-nums; }
+.tools { display: flex; gap: 12px; align-items: center; }
+.icon-btn { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; font-size: 36px; background: var(--panel); transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast); }
+.icon-btn:active { transform: scale(.92); background: var(--grouped-2); }
+.coin-pill { display: inline-flex; align-items: center; gap: 10px; height: 92px; padding: 0 30px; border-radius: 999px; background: var(--panel); font-size: 23px; font-weight: 600; color: var(--label-2); }
+.coin-pill b { color: var(--label); font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.coin-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 5px rgba(236, 240, 60, .18); }
+
+.banner {
+  position: absolute; top: 52px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px;
+  padding: 20px 32px; border-radius: 999px; font-size: 26px; font-weight: 600; white-space: nowrap;
 }
-/* 오른쪽 위 모서리에 노란 점이 번지듯 */
-.album-card { position: relative; overflow: hidden; }
-.album-card::after {
-  content: ""; position: absolute; right: -6px; top: -6px; width: 120px; height: 120px; pointer-events: none;
-  background: radial-gradient(circle, var(--polka-sun) 3px, transparent 3.5px) 0 0 / 14px 14px;
-  -webkit-mask-image: radial-gradient(circle at 100% 0, #000 20%, transparent 70%); mask-image: radial-gradient(circle at 100% 0, #000 20%, transparent 70%);
-}
-.album-card:active { transform: scale(.97); background: rgba(60, 60, 64, .7); }
-.album-art { width: 96px; height: 96px; border-radius: 12px; background: var(--fill); object-fit: cover; flex-shrink: 0; box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
-.album-text { display: flex; flex-direction: column; min-width: 0; }
-.a-label { font-size: 18px; font-weight: 600; color: var(--label-2); }
-.a-title { font-size: 26px; font-weight: 700; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.a-artist { font-size: 20px; font-weight: 500; color: var(--label-2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.banner svg { font-size: 30px; color: var(--sun); }
+.toast { top: 160px; opacity: 0; transform: translate(-50%, -16px) scale(.96); pointer-events: none; transition: opacity 360ms var(--ease-ios), transform 520ms var(--ease-ios); }
+.toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+/* ---------- 위젯 격자: 같은 크기 정사각 위젯 2열, 왼쪽 아래 모서리에 붙는다 ---------- */
+.widgets { position: absolute; bottom: 48px; left: 56px; display: grid; grid-template-columns: var(--wd) var(--wd); gap: var(--wd-gap); }
+.wd { height: var(--wd); border-radius: var(--r-wd); background: var(--panel); padding: 28px 30px; position: relative; overflow: hidden; text-align: left; }
+.wd-key { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 700; color: var(--label-2); }
+.wd-key::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
+.wd-title { font-size: 40px; font-weight: 800; margin-top: 14px; letter-spacing: -.02em; }
+.wd-sub { font-size: 20px; font-weight: 600; color: var(--label-3); margin-top: 4px; }
+.wd-num { font-size: 64px; font-weight: 800; line-height: 1; margin-top: 12px; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.wd-num small { font-size: 22px; font-weight: 600; color: var(--label-3); margin-left: 6px; letter-spacing: 0; }
+
+/* 점 격자 게이지: 찬 만큼 점이 켜진다 */
+.dots { position: absolute; left: 30px; right: 30px; bottom: 28px; display: grid; gap: 10px; }
+.dots.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.dots.cols-5 { grid-template-columns: repeat(5, 1fr); }
+.dots.cols-6 { grid-template-columns: repeat(6, 1fr); }
+.dots i { aspect-ratio: 1; border-radius: 50%; background: var(--dot-off); transition: background-color 400ms ease, transform 500ms var(--ease-ios); }
+.dots i.on { background: var(--c); }
+.dots i.pop { animation: dot-pop 600ms var(--ease-ios); }
+@keyframes dot-pop { 40% { transform: scale(1.35); } }
+
+/* 오늘의 앨범: 표지가 꽉 찬 정방형 음악 위젯 */
+.wd.album { padding: 0; background: var(--grouped-2) center / cover; transition: transform var(--duration-fast) var(--ease-ios); }
+.wd.album:active { transform: scale(.97); }
+.wd.album::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, .75)); }
+.album-badge { position: absolute; top: 20px; right: 20px; z-index: 1; width: 48px; height: 48px; border-radius: 50%; background: #fa2d48; display: grid; place-items: center; font-size: 24px; }
+.album-meta { position: absolute; left: 26px; right: 26px; bottom: 22px; z-index: 1; display: flex; flex-direction: column; }
+.a-label { font-size: 16px; font-weight: 700; color: rgba(255, 255, 255, .72); }
+.a-title { font-size: 28px; font-weight: 800; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.a-artist { font-size: 19px; font-weight: 500; color: rgba(255, 255, 255, .75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .album-sheet .a-label { font-size: 22px; }
 .album-body { display: flex; gap: 40px; align-items: flex-start; }
 .album-cover { width: 320px; height: 320px; border-radius: 20px; background: var(--fill); object-fit: cover; flex-shrink: 0; box-shadow: 0 20px 50px rgba(0, 0, 0, .55); }
@@ -73,71 +102,26 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .album-how svg { font-size: 32px; color: #fa2d48; }
 .album-how b { color: var(--label); font-weight: 600; }
 
-.wordmark { font: italic 500 52px/1 var(--font-logo); letter-spacing: -.01em; }
-.caption { font-size: 24px; font-weight: 500; color: var(--label-2); margin-top: 10px; font-variant-numeric: tabular-nums; }
-.top-actions { display: flex; gap: 16px; }
-.icon-btn { width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; font-size: 40px; transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast); }
-.icon-btn:active { transform: scale(.92); background: rgba(60, 60, 64, .7); }
-
-.banner {
-  position: absolute; top: 52px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px;
-  padding: 20px 32px; border-radius: 999px; font-size: 26px; font-weight: 600; white-space: nowrap;
+/* 버튼: 넓은 알약 두 개 */
+.act { height: var(--act-h); border-radius: var(--r-wd); display: flex; align-items: center; gap: 18px; padding: 0 28px; position: relative; overflow: hidden; text-align: left; white-space: nowrap; transition: transform var(--duration-fast) var(--ease-ios), opacity 240ms, background-color 240ms; }
+.act:active { transform: scale(.96); }
+.act:disabled { opacity: .35; cursor: default; transform: none; }
+.act-ic { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; font-size: 38px; flex-shrink: 0; position: relative; }
+.act-tx { position: relative; display: flex; flex-direction: column; }
+.act-tx b { font-size: 30px; font-weight: 800; }
+.act-tx span { font-size: 18px; font-weight: 600; opacity: .72; }
+/* 물 주기: 오른쪽으로 갈수록 물방울 무늬가 진해진다 */
+.act.water { background: var(--tint); color: #00260e; }
+.act.water::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle, var(--polka-light) 5px, transparent 6px) 0 0 / 30px 30px, radial-gradient(circle, var(--polka-light) 5px, transparent 6px) 15px 15px / 30px 30px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 100%); mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
 }
-.banner svg { font-size: 30px; color: var(--sun); }
-.toast { top: 160px; opacity: 0; transform: translate(-50%, -16px) scale(.96); pointer-events: none; transition: opacity 360ms var(--ease-ios), transform 520ms var(--ease-ios); }
-.toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
-
-/* ---------- 하단 위젯 바 ---------- */
-.dock {
-  position: absolute; left: 48px; right: 48px; bottom: 44px; height: 176px; border-radius: var(--r-lg);
-  display: flex; align-items: center; gap: 12px; padding: 0 20px 0 40px;
-}
-.dock::before {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: radial-gradient(circle, var(--polka-faint) 2px, transparent 2.5px) 0 0 / 22px 22px;
-}
-.widget { flex: 1; min-width: 0; height: 104px; padding: 0 22px; display: flex; flex-direction: column; justify-content: flex-start; gap: 10px; border-left: 1px solid var(--separator); }
-.widget:first-child { border-left: 0; padding-left: 0; }
-.stage-widget { flex: 1.5; }
-.w-label { display: flex; align-items: center; gap: 8px; font-size: 21px; font-weight: 600; color: var(--label-2); }
-.w-icon { font-size: 24px; }
-.w-icon.water { color: var(--water); }
-.w-icon.sun { color: var(--sun); }
-.w-title { display: flex; align-items: baseline; gap: 14px; font-size: 36px; font-weight: 700; }
-.w-sub { font-size: 21px; font-weight: 500; color: var(--label-2); }
-.w-value { font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
-.w-unit { font-size: 22px; font-weight: 500; color: var(--label-2); margin-left: 8px; }
-/* 게이지: 막대 대신 점 줄. 찬 만큼 점이 켜진다 */
-.dots { display: flex; justify-content: space-between; align-items: center; height: 14px; }
-.dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--fill); transition: background-color 400ms ease, transform 400ms var(--ease-ios); }
-.dots i.on { transform: scale(1.08); }
-.dots.tint i.on { background: var(--tint); }
-.dots.water i.on { background: var(--water); }
-.dots.sun i.on { background: var(--sun); }
-
-.dock-actions { display: flex; gap: 14px; flex-shrink: 0; }
-.capsule {
-  height: var(--tap); padding: 0 38px 0 30px; border-radius: 999px; display: flex; align-items: center; gap: 16px; text-align: left;
-  transition: transform var(--duration-fast) var(--ease-ios), opacity 240ms, background-color 240ms;
-}
-.capsule > svg { font-size: 40px; }
-.capsule > span { display: flex; flex-direction: column; gap: 2px; }
-.c-title { font-size: 30px; font-weight: 700; }
-.c-sub { font-size: 19px; font-weight: 500; opacity: .72; }
-.capsule:active { transform: scale(.96); }
-/* 물 주기 버튼 안에 옅은 물방울 점 무늬 */
-.capsule.primary {
-  color: #000;
-  background:
-    radial-gradient(circle, var(--polka-light) 3px, transparent 3.5px) 0 0 / 16px 16px,
-    radial-gradient(circle, var(--polka-light) 3px, transparent 3.5px) 8px 8px / 16px 16px,
-    var(--tint);
-}
-.capsule.secondary { background: var(--fill); }
-.capsule.secondary > svg { color: var(--sun); }
-.capsule.secondary[aria-pressed="true"] { background: var(--sun); color: #000; }
-.capsule.secondary[aria-pressed="true"] > svg { color: #000; }
-.capsule:disabled { opacity: .35; cursor: default; transform: none; }
+.act.water .act-ic { background: rgba(0, 0, 0, .14); }
+.act.sun { background: var(--panel); }
+.act.sun .act-ic { background: var(--sun); color: #1f2000; }
+.act.sun[aria-pressed="true"] { background: var(--sun); color: #1f2000; }
+.act.sun[aria-pressed="true"] .act-ic { background: rgba(0, 0, 0, .12); }
 
 /* ---------- 시트 (iOS 폼 시트) ---------- */
 .scrim { position: absolute; inset: 0; z-index: 15; background: rgba(0, 0, 0, .5); opacity: 0; pointer-events: none; transition: opacity 320ms var(--ease-ios); }
@@ -179,13 +163,21 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .stat { background: var(--grouped-2); border-radius: var(--r-md); padding: 22px 26px; }
 .s-label { font-size: 20px; color: var(--label-2); }
 .s-value { font-size: 40px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
-.timeline li { display: flex; align-items: center; gap: 22px; padding: 12px 26px; min-height: 120px; position: relative; }
-.timeline li + li::before { content: ""; position: absolute; top: 0; left: 150px; right: 0; height: 1px; background: var(--separator); }
-.timeline img { width: 104px; height: 104px; object-fit: contain; object-position: bottom; }
-.timeline li.locked img { filter: grayscale(1) brightness(.5); }
-.t-name { font-size: 28px; font-weight: 600; }
-.t-need { font-size: 20px; color: var(--label-2); margin-top: 4px; }
-.timeline li.done .t-need { color: var(--tint); }
+/* 온실: 식물 카드 2×2 */
+.gh-coins { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 600; margin: -6px 0 24px; }
+.gh-coins b { font-size: 30px; font-weight: 800; }
+.gh-coins span { color: var(--label-2); font-weight: 500; font-size: 20px; }
+.gh-grid { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.gh-card { background: var(--grouped-2); border-radius: var(--r-md); padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 8px; position: relative; }
+.gh-card.active { box-shadow: inset 0 0 0 3px var(--tint); }
+.gh-card img { width: 100%; height: 190px; object-fit: contain; object-position: bottom; }
+.gh-card.locked img { filter: brightness(.25) saturate(0); }
+.gh-name { font-size: 28px; font-weight: 800; }
+.gh-hint { font-size: 18px; color: var(--label-2); line-height: 1.45; word-break: keep-all; min-height: 2.9em; }
+.gh-btn { margin-top: 6px; min-height: 72px; border-radius: 999px; font-size: 22px; font-weight: 700; background: var(--fill); }
+.gh-btn.buy { background: var(--sun); color: #1f2000; }
+.gh-btn.buy:disabled { background: var(--fill); color: var(--label-3); }
+.gh-btn.current { background: transparent; color: var(--tint); box-shadow: inset 0 0 0 2px rgba(48, 209, 88, .45); }
 
 /* ---------- 처음 안내 ---------- */
 .tour {
@@ -236,9 +228,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .opening.done { opacity: 0; pointer-events: none; }
 
 /* 인트로 동안 위·아래 UI는 숨겼다가 식물이 다 모이면 올라온다 */
-.top, .dock { transition: opacity 900ms var(--ease-ios), transform 1100ms var(--ease-ios); }
+.top, .widgets { transition: opacity 900ms var(--ease-ios), transform 1100ms var(--ease-ios); }
 .stage.intro .top { opacity: 0; transform: translateY(-24px); }
-.stage.intro .dock { opacity: 0; transform: translateY(40px); }
+.stage.intro .widgets { opacity: 0; transform: translateY(40px); }
 
 @media (prefers-reduced-motion: reduce) {
   .opening-word, .opening-tag { animation: none; }
