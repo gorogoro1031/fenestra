@@ -127,7 +127,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .row + .row::before { content: ""; position: absolute; top: 0; left: 26px; right: 0; height: 1px; background: var(--separator); }
 .r-title { font-size: 28px; font-weight: 500; }
 .r-sub { font-size: 20px; color: var(--label-2); margin-top: 4px; }
-.row.link { font-size: 28px; color: var(--water); }
+.row.link { font-size: 28px; color: var(--water); text-decoration: none; }
 .row.link:active { background: rgba(255, 255, 255, .06); }
 .row.destructive { color: var(--destructive); }
 
