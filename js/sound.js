@@ -1,8 +1,24 @@
 // 차 스피커로 나가는 소리. 전부 코드로 만들고 아주 작게 낸다
-const AMBIENT_GAIN = 0.05;
-const FADE_S = 1.5;
+// 앰비언트 = 낮게 깔리는 화음(패드) + 가끔 울리는 맑은 음 + 바람·빗소리, 모두 잔향을 거친다
+const MASTER_GAIN = 0.5;
+const FADE_S = 2.5;
+const PAD_VOICE_GAIN = 0.035;
+const BED_GAIN = { clear: 0.018, rain: 0.05 };
+const BELL_GAIN = 0.03;
+const BELL_EVERY_MS = [5000, 11000];
+
+// 낮은 밝은 화음(F major 9), 밤은 차분한 화음(D minor 9)
+const CHORDS = {
+  day: [87.31, 130.81, 220.0, 329.63, 392.0],
+  night: [73.42, 110.0, 174.61, 261.63, 329.63],
+};
+const BELL_NOTES = {
+  day: [523.25, 587.33, 659.25, 783.99, 880.0],
+  night: [440.0, 523.25, 587.33, 659.25, 783.99],
+};
 
 let ctx = null;
+let bus = null;
 let ambient = null;
 
 function audio() {
@@ -11,6 +27,38 @@ function audio() {
   if (!ctx) ctx = new Ctor();
   if (ctx.state === 'suspended') ctx.resume();
   return ctx;
+}
+
+/** 잔향(리버브)과 전체 볼륨을 한 번만 만든다 */
+function getBus(ac) {
+  if (bus) return bus;
+  const master = ac.createGain();
+  master.gain.value = MASTER_GAIN;
+  const tone = ac.createBiquadFilter();
+  tone.type = 'lowpass';
+  tone.frequency.value = 2400;
+  const reverb = ac.createConvolver();
+  reverb.buffer = impulse(ac, 4.5);
+  const wet = ac.createGain();
+  wet.gain.value = 0.65;
+  const dry = ac.createGain();
+  dry.gain.value = 0.45;
+  const input = ac.createGain();
+  input.connect(dry).connect(tone);
+  input.connect(reverb).connect(wet).connect(tone);
+  tone.connect(master).connect(ac.destination);
+  bus = { input };
+  return bus;
+}
+
+function impulse(ac, seconds) {
+  const length = ac.sampleRate * seconds;
+  const buffer = ac.createBuffer(2, length, ac.sampleRate);
+  for (let ch = 0; ch < 2; ch += 1) {
+    const data = buffer.getChannelData(ch);
+    for (let i = 0; i < length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 3;
+  }
+  return buffer;
 }
 
 function noiseBuffer(ac, seconds = 4) {
@@ -25,44 +73,86 @@ function noiseBuffer(ac, seconds = 4) {
   return buffer;
 }
 
-/** @param {'wind'|'rain'|null} kind */
-export function setAmbient(kind) {
-  const ac = audio();
-  if (!ac) return;
-  if (ambient) {
-    const old = ambient;
-    old.gain.gain.setTargetAtTime(0, ac.currentTime, FADE_S / 3);
-    setTimeout(() => old.source.stop(), FADE_S * 1000 + 200);
-    ambient = null;
-  }
-  if (!kind) return;
+/** 화음 한 음: 살짝 어긋난 두 오실레이터를 아주 느린 떨림으로 숨 쉬게 한다 */
+function padVoice(ac, out, freq, i) {
+  const gain = ac.createGain();
+  gain.gain.value = PAD_VOICE_GAIN;
+  const lfo = ac.createOscillator();
+  lfo.frequency.value = 0.03 + i * 0.013;
+  const depth = ac.createGain();
+  depth.gain.value = PAD_VOICE_GAIN * 0.7;
+  lfo.connect(depth).connect(gain.gain);
+  const oscs = [-4, 4].map((cents, k) => {
+    const osc = ac.createOscillator();
+    osc.type = k === 0 ? 'sine' : 'triangle';
+    osc.frequency.value = freq;
+    osc.detune.value = cents;
+    osc.connect(gain);
+    return osc;
+  });
+  gain.connect(out);
+  [lfo, ...oscs].forEach((n) => n.start());
+  return [lfo, ...oscs];
+}
+
+function noiseBed(ac, out, weather) {
   const source = ac.createBufferSource();
   source.buffer = noiseBuffer(ac);
   source.loop = true;
   const filter = ac.createBiquadFilter();
-  filter.type = kind === 'rain' ? 'highpass' : 'lowpass';
-  filter.frequency.value = kind === 'rain' ? 900 : 420;
+  filter.type = weather === 'rain' ? 'highpass' : 'lowpass';
+  filter.frequency.value = weather === 'rain' ? 900 : 380;
   const gain = ac.createGain();
-  gain.gain.value = 0;
-  gain.gain.setTargetAtTime(kind === 'rain' ? AMBIENT_GAIN * 0.8 : AMBIENT_GAIN, ac.currentTime, FADE_S / 3);
-  source.connect(filter).connect(gain).connect(ac.destination);
+  gain.gain.value = BED_GAIN[weather];
+  source.connect(filter).connect(gain).connect(out);
   source.start();
-  ambient = { source, gain };
+  return [source];
 }
 
-function tone(freq, start, duration, volume = 0.12, type = 'sine') {
-  const ac = audio();
-  if (!ac) return;
+function bell(ac, out, freq, volume = BELL_GAIN) {
+  const t = ac.currentTime;
   const osc = ac.createOscillator();
   const gain = ac.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, start);
-  gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-  osc.connect(gain).connect(ac.destination);
-  osc.start(start);
-  osc.stop(start + duration + 0.05);
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(volume, t + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
+  osc.connect(gain).connect(out);
+  osc.start(t);
+  osc.stop(t + 3.4);
+}
+
+/** @param {{scene:'day'|'night', weather:'clear'|'rain'}|null} mood null이면 끈다 */
+export function setAmbient(mood) {
+  const ac = audio();
+  if (!ac) return;
+  if (ambient) {
+    const old = ambient;
+    clearTimeout(old.bellTimer);
+    old.gain.gain.setTargetAtTime(0, ac.currentTime, FADE_S / 3);
+    setTimeout(() => old.nodes.forEach((n) => n.stop()), FADE_S * 1500);
+    ambient = null;
+  }
+  if (!mood) return;
+  const gain = ac.createGain();
+  gain.gain.value = 0;
+  gain.gain.setTargetAtTime(1, ac.currentTime, FADE_S / 3);
+  gain.connect(getBus(ac).input);
+  const nodes = [
+    ...CHORDS[mood.scene].flatMap((f, i) => padVoice(ac, gain, f, i)),
+    ...noiseBed(ac, gain, mood.weather),
+  ];
+  const current = { gain, nodes, bellTimer: 0 };
+  const scheduleBell = () => {
+    const [min, max] = BELL_EVERY_MS;
+    current.bellTimer = setTimeout(() => {
+      const notes = BELL_NOTES[mood.scene];
+      bell(ac, gain, notes[Math.floor(Math.random() * notes.length)]);
+      scheduleBell();
+    }, min + Math.random() * (max - min));
+  };
+  scheduleBell();
+  ambient = current;
 }
 
 export function drip() {
@@ -73,9 +163,9 @@ export function drip() {
   const gain = ac.createGain();
   osc.frequency.setValueAtTime(1400, t);
   osc.frequency.exponentialRampToValueAtTime(380, t + 0.12);
-  gain.gain.setValueAtTime(0.12, t);
+  gain.gain.setValueAtTime(0.1, t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
-  osc.connect(gain).connect(ac.destination);
+  osc.connect(gain).connect(getBus(ac).input);
   osc.start(t);
   osc.stop(t + 0.2);
 }
@@ -83,11 +173,11 @@ export function drip() {
 export function chime() {
   const ac = audio();
   if (!ac) return;
-  const t = ac.currentTime;
-  [659, 880, 1175].forEach((f, i) => tone(f, t + i * 0.14, 1.4, 0.08));
+  const out = getBus(ac).input;
+  [659.25, 880, 1174.66].forEach((f, i) => setTimeout(() => bell(ac, out, f, 0.07), i * 140));
 }
 
-/** 사용자가 처음 화면을 누를 때 한 번 불러 소리를 쓸 수 있게 한다 */
+/** 사용자가 처음 화면을 누를 때 불러 소리를 쓸 수 있게 한다 (브라우저 자동 재생 제한) */
 export function unlock() {
   audio();
 }

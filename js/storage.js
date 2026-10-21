@@ -1,8 +1,9 @@
 // 브라우저 저장소. 막혀 있거나 비어 있어도 앱은 그대로 돌아가야 한다
 const KEY_STATE = 'fenestra:v1:state';
-const KEY_PREFS = 'fenestra:v1:prefs';
+// v2: 소리 기본값을 켜짐으로 바꾸면서 예전 설정을 새로 시작
+const KEY_PREFS = 'fenestra:v2:prefs';
 
-export const DEFAULT_PREFS = Object.freeze({ sound: false, useGps: false, scene: 'auto', weather: 'clear' });
+export const DEFAULT_PREFS = Object.freeze({ sound: true, useGps: false, scene: 'auto', weather: 'clear' });
 
 function read(key) {
   try {
@@ -28,7 +29,7 @@ export const saveState = (state) => write(KEY_STATE, state);
 export function loadPrefs() {
   const raw = read(KEY_PREFS) || {};
   return {
-    sound: raw.sound === true,
+    sound: raw.sound !== false,
     useGps: raw.useGps === true,
     scene: ['auto', 'day', 'night'].includes(raw.scene) ? raw.scene : DEFAULT_PREFS.scene,
     weather: ['clear', 'rain'].includes(raw.weather) ? raw.weather : DEFAULT_PREFS.weather,

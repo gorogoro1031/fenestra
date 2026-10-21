@@ -59,10 +59,22 @@ function applyScene() {
   arcs.set({ x: anchor.x, y: anchor.y, scene });
   fx.setRain(prefs.weather === 'rain');
   renderChip(prefs.weather);
-  if (prefs.sound) setAmbient(prefs.weather === 'rain' ? 'rain' : 'wind');
+  syncAmbient();
 }
 
 const isDriving = () => Date.now() < drivingUntil;
+
+/* ---------- 앰비언트 소리: 첫 터치 뒤부터, 장면·날씨가 바뀔 때만 다시 고른다 ---------- */
+let audioReady = false;
+let moodKey = '';
+function syncAmbient() {
+  if (!audioReady) return;
+  const mood = prefs.sound ? { scene: currentScene(), weather: prefs.weather } : null;
+  const key = mood ? `${mood.scene}-${mood.weather}` : 'off';
+  if (key === moodKey) return;
+  moodKey = key;
+  setAmbient(mood);
+}
 
 function render() {
   renderStatus(state, { charging, driving: isDriving() });
@@ -162,7 +174,7 @@ function updatePrefs(patch) {
 
 $('pref-sound').addEventListener('click', () => {
   updatePrefs({ sound: !prefs.sound });
-  setAmbient(prefs.sound ? (prefs.weather === 'rain' ? 'rain' : 'wind') : null);
+  syncAmbient();
 });
 $('pref-gps').addEventListener('click', () => {
   updatePrefs({ useGps: !prefs.useGps });
@@ -214,7 +226,8 @@ function startLoading() {
 /* ---------- 시작 ---------- */
 addEventListener('pointerdown', () => {
   unlock();
-  if (prefs.sound) setAmbient(prefs.weather === 'rain' ? 'rain' : 'wind');
+  audioReady = true;
+  syncAmbient();
 }, { once: true });
 
 setInterval(() => { state = rollDay(state, todayKey()); applyScene(); render(); }, 60000);
