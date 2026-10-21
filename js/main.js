@@ -1,6 +1,7 @@
 import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageFor, STAGE_NAMES } from './state.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
-import { plantLayout, placePlant, createPlantSwap, createArcs, createFx } from './scene.js';
+import { plantLayout, createArcs, createFx } from './scene.js';
+import { createDotPlant } from './plant.js';
 import { renderStatus, renderTimeline, renderChip, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock } from './sound.js';
 import { watchDriving } from './drive.js';
@@ -29,7 +30,7 @@ let chargeTimer = 0;
 let drivingUntil = 0;
 let stopGps = () => {};
 
-const swapPlant = createPlantSwap($('plant-a'), $('plant-b'));
+const plant = createDotPlant($('plant-canvas'));
 const arcs = createArcs($('arcs'));
 const fx = createFx($('fx'));
 let anchor = { x: 960, y: 300, potTop: 1000, cx: 960 };
@@ -44,8 +45,9 @@ function fit() {
   stageEl.style.setProperty('--fit', String(scale));
   stageEl.style.width = `${W}px`;
   stageEl.style.height = `${H}px`;
-  ['arcs', 'fx'].forEach((id) => { $(id).width = W; $(id).height = H; });
+  ['arcs', 'fx', 'plant-canvas'].forEach((id) => { $(id).width = W; $(id).height = H; });
   layout = plantLayout(W, H);
+  plant.setLayout(layout);
 }
 addEventListener('resize', () => { fit(); applyScene(); });
 fit();
@@ -63,9 +65,11 @@ function applyScene() {
   const stage = stageFor(state.growth);
   stageEl.dataset.scene = scene;
   stageEl.dataset.weather = prefs.weather;
-  anchor = placePlant($('plant'), stage, layout);
-  swapPlant(stage);
-  arcs.set({ x: anchor.x, y: anchor.y, scene });
+  plant.setStage(stage).then(() => {
+    anchor = plant.anchor();
+    arcs.set({ x: anchor.x, y: anchor.y });
+  });
+  arcs.set({ scene });
   fx.setRain(prefs.weather === 'rain');
   renderChip(prefs.weather);
   syncAmbient();
@@ -95,6 +99,35 @@ function commit(next) {
   render();
 }
 
+/* ---------- 잎 터치·바람 ---------- */
+const GUST_EVERY_MS = [6000, 14000];
+
+// 무대 바깥 UI가 아닌 빈 곳을 누르면 잎을 건드린 것인지 본다
+stageEl.addEventListener('pointerdown', (e) => {
+  if (e.target !== stageEl && !e.target.closest('.scene')) return;
+  const rect = stageEl.getBoundingClientRect();
+  const scale = rect.width / stageEl.offsetWidth;
+  const x = (e.clientX - rect.left) / scale;
+  const y = (e.clientY - rect.top) / scale;
+  if (plant.poke(x, y)) onLeafTouched();
+});
+
+function onLeafTouched() {
+  plant.gust(0.35);
+}
+
+function scheduleGust() {
+  const [min, max] = GUST_EVERY_MS;
+  setTimeout(() => {
+    const strength = 0.4 + Math.random() * 0.6;
+    plant.gust(strength);
+    onGust(strength);
+    scheduleGust();
+  }, min + Math.random() * (max - min));
+}
+
+function onGust() {}
+
 /* ---------- 돌보기 ---------- */
 $('water-btn').addEventListener('click', () => {
   if (isDriving()) return;
@@ -103,8 +136,7 @@ $('water-btn').addEventListener('click', () => {
   if (!result.grew) return;
   fx.water(anchor);
   if (prefs.sound) drip();
-  $('plant').classList.add('glow');
-  setTimeout(() => $('plant').classList.remove('glow'), 700);
+  plant.glow();
   commit(result.state);
   if (result.stageUp) {
     const stage = stageFor(state.growth);
@@ -247,3 +279,4 @@ applyScene();
 render();
 requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('booting')));
 if (prefs.useGps) setGps(true);
+scheduleGust();

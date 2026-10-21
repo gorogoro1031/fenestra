@@ -1,11 +1,6 @@
-// 장면 모션: 파장, 비, 물 주기 물방울, 식물 배치·단계 바꾸기
+// 장면 모션: 파장, 비, 물 주기 물방울, 화분 자리 계산 (식물 그리기는 plant.js)
 // 캔버스 크기는 화면 비율에 따라 바뀌므로 그릴 때마다 canvas.width/height를 쓴다
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-const PLANT_RATIO = 1400 / 1600;
-// 단계별 잎 꼭대기가 그림 높이의 어디쯤인지 (0=위, 1=아래)
-const PLANT_TOP = [0.74, 0.52, 0.35, 0.29, 0.28];
-const POT_HEIGHT = 0.2;
 
 // 화분 위로 퍼지는 파장. 평소엔 옅고 느리게, 충전 중이면 노랗고 빠르게
 const WAVE = {
@@ -19,43 +14,7 @@ const WAVE_COLOR = { day: '255, 236, 200', night: '190, 210, 255', charging: '25
  * @returns {{cx:number, base:number, h:number}} 가운데 x, 화분 바닥 y, 식물 그림 높이
  */
 export function plantLayout(W, H) {
-  return { cx: W / 2, base: H - 240, h: Math.min(1000, 800 + (H - 1200) * 0.6) };
-}
-
-/** 식물 자리를 잡고, 파장이 퍼질 중심점을 돌려준다 */
-export function placePlant(el, stage, layout) {
-  const { cx, base, h } = layout;
-  const w = h * PLANT_RATIO;
-  Object.assign(el.style, { left: `${cx - w / 2}px`, top: `${base - h}px`, width: `${w}px`, height: `${h}px` });
-  return { x: cx, y: base - h + h * PLANT_TOP[stage] - 30, potTop: base - h * POT_HEIGHT, cx };
-}
-
-/** 두 장을 번갈아 써서 단계 그림을 부드럽게 바꾼다 */
-export function createPlantSwap(imgA, imgB) {
-  let front = imgA;
-  let back = imgB;
-  let current = -1;
-  back.classList.add('hidden');
-  return (stage) => {
-    if (stage === current) return;
-    const src = `assets/plant-${stage}.webp`;
-    if (current === -1) { front.src = src; current = stage; return; }
-    current = stage;
-    const incoming = back;
-    const outgoing = front;
-    [front, back] = [back, front];
-    // decode()는 화면이 숨겨진 동안 끝나지 않을 수 있어 load 이벤트와 시간 제한으로 기다린다
-    const ready = new Promise((resolve) => {
-      incoming.onload = resolve;
-      incoming.onerror = resolve;
-      setTimeout(resolve, 1500);
-    });
-    incoming.src = src;
-    ready.then(() => {
-      incoming.classList.remove('hidden');
-      outgoing.classList.add('hidden');
-    });
-  };
+  return { cx: W / 2, base: H - 236, h: Math.min(1180, 960 + (H - 1200) * 0.6) };
 }
 
 /** 파장: 중심에서 원이 계속 퍼지고 사라진다. 원마다 생길 때의 색·속도를 기억한다 */

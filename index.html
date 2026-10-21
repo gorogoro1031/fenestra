@@ -29,15 +29,12 @@
 <div class="viewport">
   <div class="stage" id="stage" data-scene="night" data-weather="clear">
 
-    <!-- 장면: 검은 바탕, 낮이면 위쪽 옅은 노랑 → 물결 → 식물 → 비 -->
+    <!-- 장면: 검은 바탕, 낮이면 위쪽 옅은 노랑 / 밤이면 달빛 → 파장 → 도트 식물 → 비 -->
     <div class="scene" aria-hidden="true">
       <div class="daylight"></div>
       <div class="moonlight"><div class="moon-veil"></div><div class="moon-beams"></div></div>
       <canvas class="layer" id="arcs" width="1920" height="1200"></canvas>
-      <div class="plant" id="plant">
-        <img class="plant-img" id="plant-a" alt="" decoding="async">
-        <img class="plant-img hidden" id="plant-b" alt="" decoding="async">
-      </div>
+      <canvas class="layer" id="plant-canvas" width="1920" height="1200"></canvas>
       <canvas class="layer" id="fx" width="1920" height="1200"></canvas>
     </div>
 
