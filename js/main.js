@@ -59,7 +59,7 @@ function fit() {
   stageEl.style.width = `${W}px`;
   stageEl.style.height = `${H}px`;
   ['arcs', 'fx'].forEach((id) => { $(id).width = W; $(id).height = H; });
-  layout = plantLayout(W, H);
+  layout = plantLayout(W, H, prefs.hand);
   plant.setLayout(layout);
   const ring = plant.ring();
   sky.setLayout(ring, { W, H, horizon: layout.base });
@@ -84,6 +84,7 @@ const currentScene = () => (orbPosition(currentHours()).isDay ? 'day' : 'night')
 function applyScene() {
   const scene = currentScene();
   stageEl.dataset.scene = scene;
+  stageEl.dataset.hand = prefs.hand;
   stageEl.dataset.weather = prefs.weather;
   const ready = plant.setStage(state.active, stageOf(state));
   sky.draw({ hours: currentHours(), raining: prefs.weather === 'rain' });
@@ -238,7 +239,7 @@ scrim.addEventListener('click', closeSheets);
 function syncSettings() {
   $('pref-sound').setAttribute('aria-checked', String(prefs.sound));
   $('pref-gps').setAttribute('aria-checked', String(prefs.useGps));
-  [['pref-scene', prefs.scene], ['pref-weather', prefs.weather], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
+  [['pref-scene', prefs.scene], ['pref-weather', prefs.weather], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
 }
@@ -260,6 +261,14 @@ $('pref-gps').addEventListener('click', () => {
 $('pref-scene').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;
   if (value) { updatePrefs({ scene: value }); applyScene(); }
+});
+// 버튼 위치: 운전석이면 왼쪽 아래, 조수석이면 오른쪽 아래. 식물은 남은 공간 가운데로
+$('pref-hand').addEventListener('click', (e) => {
+  const value = e.target.closest('button')?.dataset.value;
+  if (!value || value === prefs.hand) return;
+  updatePrefs({ hand: value });
+  fit();
+  applyScene();
 });
 $('pref-weather').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;

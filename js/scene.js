@@ -14,11 +14,14 @@ const POT_MARGIN = 70;
 const WIDGETS_SPACE = 56 + 284 * 2 + 22;
 
 /**
- * 무대 크기에 맞춘 화분 자리. 왼쪽 아래 위젯 격자를 뺀 공간의 가운데에 선다
+ * 무대 크기에 맞춘 화분 자리. 위젯 격자가 없는 쪽 공간의 가운데에 선다
+ * @param {'driver'|'passenger'} hand 운전석이면 위젯이 왼쪽, 조수석이면 오른쪽
  * @returns {{cx:number, base:number, scale:number}} 가운데 x, 화분 바닥 y, 그림 배율
  */
-export function plantLayout(W, H) {
-  return { cx: WIDGETS_SPACE + (W - WIDGETS_SPACE) / 2, base: H - POT_MARGIN, scale: PLANT_SCALE * Math.min(1.25, 1 + Math.max(0, H - 1200) / 2000) };
+export function plantLayout(W, H, hand = 'driver') {
+  const free = W - WIDGETS_SPACE;
+  const cx = hand === 'passenger' ? free / 2 : WIDGETS_SPACE + free / 2;
+  return { cx, base: H - POT_MARGIN, scale: PLANT_SCALE * Math.min(1.25, 1 + Math.max(0, H - 1200) / 2000) };
 }
 
 /** 파장: 충전 중에 중심에서 원이 계속 퍼지고 사라진다 */

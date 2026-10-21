@@ -3,7 +3,7 @@ const KEY_STATE = 'fenestra:v1:state';
 // v2: 소리 기본값을 켜짐으로 바꾸면서 예전 설정을 새로 시작
 const KEY_PREFS = 'fenestra:v2:prefs';
 
-export const DEFAULT_PREFS = Object.freeze({ sound: true, useGps: false, scene: 'auto', weather: 'clear', tutorialSeen: false });
+export const DEFAULT_PREFS = Object.freeze({ sound: true, useGps: false, scene: 'auto', weather: 'clear', tutorialSeen: false, hand: 'driver' });
 
 function read(key) {
   try {
@@ -34,6 +34,7 @@ export function loadPrefs() {
     scene: ['auto', 'day', 'night'].includes(raw.scene) ? raw.scene : DEFAULT_PREFS.scene,
     weather: ['clear', 'rain'].includes(raw.weather) ? raw.weather : DEFAULT_PREFS.weather,
     tutorialSeen: raw.tutorialSeen === true,
+    hand: raw.hand === 'passenger' ? 'passenger' : 'driver',
   };
 }
 

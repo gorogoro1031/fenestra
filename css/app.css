@@ -43,8 +43,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .plant-img.glow { animation: plant-glow 1400ms ease; }
 @keyframes plant-glow { 30% { filter: brightness(1.25) saturate(1.15); } }
 
-/* ---------- 상단: 로고·시각 한쪽, 꽃씨·온실·설정 반대쪽 ---------- */
+/* ---------- 상단: 로고·시각 한쪽, 꽃씨·버튼 위치·온실·설정 반대쪽 (조수석 모드면 좌우가 바뀐다) ---------- */
 .top { position: absolute; left: 56px; right: 56px; top: 48px; display: flex; justify-content: space-between; align-items: center; }
+.stage[data-hand="passenger"] .top, .stage[data-hand="passenger"] .tools { flex-direction: row-reverse; }
 .brand { display: flex; align-items: baseline; gap: 22px; }
 .wordmark { font: italic 500 54px/1 var(--font-logo); letter-spacing: -.01em; }
 .caption { font-size: 22px; font-weight: 600; color: var(--label-2); font-variant-numeric: tabular-nums; }
@@ -54,6 +55,10 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .coin-pill { display: inline-flex; align-items: center; gap: 10px; height: 92px; padding: 0 30px; border-radius: 999px; background: var(--panel); font-size: 23px; font-weight: 600; color: var(--label-2); }
 .coin-pill b { color: var(--label); font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .coin-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 5px rgba(236, 240, 60, .18); }
+.segmented.hand { background: var(--panel); padding: 6px; border-radius: 999px; }
+.segmented.hand button { min-height: 80px; border-radius: 999px; padding: 0 30px; font-size: 23px; font-weight: 700; color: var(--label-2); }
+.segmented.hand button[aria-pressed="true"] { background: #fff; color: #000; display: inline-flex; align-items: center; gap: 10px; }
+.segmented.hand button[aria-pressed="true"]::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--tint); }
 
 .banner {
   position: absolute; top: 52px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px;
@@ -63,8 +68,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .toast { top: 160px; opacity: 0; transform: translate(-50%, -16px) scale(.96); pointer-events: none; transition: opacity 360ms var(--ease-ios), transform 520ms var(--ease-ios); }
 .toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 
-/* ---------- 위젯 격자: 같은 크기 정사각 위젯 2열, 왼쪽 아래 모서리에 붙는다 ---------- */
+/* ---------- 위젯 격자: 같은 크기 정사각 위젯 2열, 아래 모서리에 붙는다 ---------- */
 .widgets { position: absolute; bottom: 48px; left: 56px; display: grid; grid-template-columns: var(--wd) var(--wd); gap: var(--wd-gap); }
+.stage[data-hand="passenger"] .widgets { left: auto; right: 56px; }
 .wd { height: var(--wd); border-radius: var(--r-wd); background: var(--panel); padding: 28px 30px; position: relative; overflow: hidden; text-align: left; }
 .wd-key { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 700; color: var(--label-2); }
 .wd-key::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
