@@ -13,7 +13,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* 1920×1200 무대를 화면 크기에 맞춰 축소·확대 */
 .viewport { position: fixed; inset: 0; overflow: hidden; }
 .stage {
-  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1200px; overflow: hidden; background: var(--bg);
+  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1200px; overflow: hidden; background: var(--bg); /* 실제 크기는 main.js가 화면 비율에 맞춰 정함 */
   transform: translate(-50%, -50%) scale(var(--fit, 1));
 }
 .stage.booting, .stage.booting * { transition: none !important; }
@@ -118,7 +118,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .scrim.show { opacity: 1; pointer-events: auto; }
 .sheet {
   position: absolute; z-index: 20; inset: 0; margin: auto; width: 880px; max-height: 1060px; height: max-content;
-  padding: 36px 40px 44px; border: 0; border-radius: var(--r-lg); background: var(--grouped); color: var(--label); overflow-y: auto;
+  padding: 36px 40px 44px; border: 0; border-radius: var(--r-lg); max-height: calc(100% - 80px); background: var(--grouped); color: var(--label); overflow-y: auto;
   box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
 }
 .sheet[open] { animation: sheet-in 520ms var(--ease-ios); }

@@ -1,6 +1,6 @@
 import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageFor, STAGE_NAMES } from './state.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
-import { placePlant, createPlantSwap, createArcs, createFx } from './scene.js';
+import { plantLayout, placePlant, createPlantSwap, createArcs, createFx } from './scene.js';
 import { renderStatus, renderTimeline, renderChip, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock } from './sound.js';
 import { watchDriving } from './drive.js';
@@ -33,12 +33,21 @@ const swapPlant = createPlantSwap($('plant-a'), $('plant-b'));
 const arcs = createArcs($('arcs'));
 const fx = createFx($('fx'));
 let anchor = { x: 960, y: 300, potTop: 1000, cx: 960 };
+let layout = plantLayout(1920, 1200);
 
-/* ---------- 화면 맞춤 ---------- */
+/* ---------- 화면 맞춤: 1920×1200 기준으로 축소·확대하되, 남는 쪽은 무대를 넓혀 여백 없이 채운다 ---------- */
+const DESIGN = { w: 1920, h: 1200 };
 function fit() {
-  stageEl.style.setProperty('--fit', String(Math.min(innerWidth / 1920, innerHeight / 1200)));
+  const scale = Math.min(innerWidth / DESIGN.w, innerHeight / DESIGN.h);
+  const W = Math.round(innerWidth / scale);
+  const H = Math.round(innerHeight / scale);
+  stageEl.style.setProperty('--fit', String(scale));
+  stageEl.style.width = `${W}px`;
+  stageEl.style.height = `${H}px`;
+  ['arcs', 'fx'].forEach((id) => { $(id).width = W; $(id).height = H; });
+  layout = plantLayout(W, H);
 }
-addEventListener('resize', fit);
+addEventListener('resize', () => { fit(); applyScene(); });
 fit();
 
 /* ---------- 장면 ---------- */
@@ -54,7 +63,7 @@ function applyScene() {
   const stage = stageFor(state.growth);
   stageEl.dataset.scene = scene;
   stageEl.dataset.weather = prefs.weather;
-  anchor = placePlant($('plant'), stage);
+  anchor = placePlant($('plant'), stage, layout);
   swapPlant(stage);
   arcs.set({ x: anchor.x, y: anchor.y, scene });
   fx.setRain(prefs.weather === 'rain');

@@ -1,10 +1,7 @@
-// 장면 모션: 금색 동심원, 비, 물 주기 물방울, 식물 배치·단계 바꾸기
-const W = 1920;
-const H = 1200;
+// 장면 모션: 파장, 비, 물 주기 물방울, 식물 배치·단계 바꾸기
+// 캔버스 크기는 화면 비율에 따라 바뀌므로 그릴 때마다 canvas.width/height를 쓴다
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// 화분 자리: 가운데 x, 화분 바닥 y, 식물 그림 높이 (그림 비율 1400×1600). 낮·밤 같은 자리
-const LAYOUT = { cx: 960, base: 960, h: 800 };
 const PLANT_RATIO = 1400 / 1600;
 // 단계별 잎 꼭대기가 그림 높이의 어디쯤인지 (0=위, 1=아래)
 const PLANT_TOP = [0.74, 0.52, 0.35, 0.29, 0.28];
@@ -16,11 +13,18 @@ const WAVE = {
   charging: { every: 1100, life: 7000, alpha: 0.55, width: 3.2 },
 };
 const WAVE_COLOR = { day: '255, 236, 200', night: '190, 210, 255', charging: '255, 214, 10' };
-const WAVE_MAX_R = 1250;
 
-/** 식물 자리를 잡고, 동심원이 퍼질 중심점을 돌려준다 */
-export function placePlant(el, stage) {
-  const { cx, base, h } = LAYOUT;
+/**
+ * 무대 크기에 맞춘 화분 자리. 무대는 항상 1920×1200 이상이고 남는 쪽으로 넓어진다
+ * @returns {{cx:number, base:number, h:number}} 가운데 x, 화분 바닥 y, 식물 그림 높이
+ */
+export function plantLayout(W, H) {
+  return { cx: W / 2, base: H - 240, h: Math.min(1000, 800 + (H - 1200) * 0.6) };
+}
+
+/** 식물 자리를 잡고, 파장이 퍼질 중심점을 돌려준다 */
+export function placePlant(el, stage, layout) {
+  const { cx, base, h } = layout;
   const w = h * PLANT_RATIO;
   Object.assign(el.style, { left: `${cx - w / 2}px`, top: `${base - h}px`, width: `${w}px`, height: `${h}px` });
   return { x: cx, y: base - h + h * PLANT_TOP[stage] - 30, potTop: base - h * POT_HEIGHT, cx };
@@ -57,7 +61,7 @@ export function createPlantSwap(imgA, imgB) {
 /** 파장: 중심에서 원이 계속 퍼지고 사라진다. 원마다 생길 때의 색·속도를 기억한다 */
 export function createArcs(canvas) {
   const ctx = canvas.getContext('2d');
-  let origin = { x: W / 2, y: H / 3 };
+  let origin = { x: canvas.width / 2, y: canvas.height / 3 };
   let rings = [];
   let charging = false;
   let scene = 'night';
@@ -74,7 +78,7 @@ export function createArcs(canvas) {
   }
 
   function frame(now) {
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const s = style();
     if (now - lastSpawn > s.every) { rings = [...rings, { born: now, ...s }]; lastSpawn = now; }
     rings = rings.filter((ring) => now - ring.born < ring.life);
@@ -82,13 +86,13 @@ export function createArcs(canvas) {
       const p = (now - ring.born) / ring.life;
       // 바깥으로 갈수록 느려지는 퍼짐
       const eased = 1 - (1 - p) ** 2;
-      drawRing(50 + eased * WAVE_MAX_R, ring.color, Math.sin(Math.PI * p) * ring.alpha, ring.width);
+      drawRing(50 + eased * Math.hypot(canvas.width, canvas.height) * 0.6, ring.color, Math.sin(Math.PI * p) * ring.alpha, ring.width);
     });
     requestAnimationFrame(frame);
   }
 
   function drawStill() {
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const s = style();
     [160, 330, 520, 740].forEach((r, i) => drawRing(r, s.color, s.alpha * (1 - i * 0.2), s.width));
   }
@@ -112,13 +116,14 @@ export function createFx(canvas) {
   let streaks = [];
   let falling = [];
 
-  const newStreak = () => ({ x: Math.random() * (W + 300), y: -Math.random() * H, len: 40 + Math.random() * 60, v: 900 + Math.random() * 500 });
+  const newStreak = () => ({ x: Math.random() * (canvas.width + 300), y: -Math.random() * canvas.height, len: 40 + Math.random() * 60, v: 900 + Math.random() * 500 });
 
   let last = performance.now();
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    ctx.clearRect(0, 0, W, H);
+    const H = canvas.height;
+    ctx.clearRect(0, 0, canvas.width, H);
     if (raining) {
       ctx.strokeStyle = 'rgba(205, 220, 245, .32)';
       ctx.lineWidth = 1.6;
