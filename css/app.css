@@ -232,6 +232,11 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .opening.reveal { background-color: transparent; }
 .opening.reveal .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); }
 .opening.done { opacity: 0; pointer-events: none; }
+/* 시작 지킴이: 앱이 뜨지 않을 때 로고 아래에 이유와 다시 불러오기 */
+.boot-fail { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%); width: 1100px; text-align: center; }
+.boot-title { font-size: 34px; font-weight: 700; }
+.boot-why { font-size: 20px; color: var(--label-2); margin-top: 12px; word-break: break-all; line-height: 1.5; }
+.boot-retry { margin-top: 28px; min-height: var(--tap); padding: 0 56px; border-radius: 999px; background: var(--tint); color: #00260e; font-size: 28px; font-weight: 800; }
 
 /* 인트로 동안 위·아래 UI는 숨겼다가 식물이 다 모이면 올라온다 */
 .top, .widgets { transition: opacity 900ms var(--ease-ios), transform 1100ms var(--ease-ios); }

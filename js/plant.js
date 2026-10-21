@@ -39,14 +39,17 @@ export function createPlant(host) {
   let lastMotion = '';
   const images = new Map();
 
+  // 그림을 불러온다. 한 번 실패하면 캐시를 피해 한 번 더 시도하고, 그래도 안 되면 다음에 다시 시도할 수 있게 비워 둔다
+  const fetchImage = (url) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`그림을 불러오지 못함: ${url}`));
+    img.src = url;
+  });
   const load = (src) => {
     if (!images.has(src)) {
-      images.set(src, new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-      }));
+      const attempt = fetchImage(src).catch(() => fetchImage(`${src}?retry=${Date.now()}`));
+      images.set(src, attempt.catch((err) => { images.delete(src); throw err; }));
     }
     return images.get(src);
   };

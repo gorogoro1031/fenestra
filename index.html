@@ -13,6 +13,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/app.css">
+<script>
+  // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
+  (function () {
+    var problems = [];
+    addEventListener('error', function (e) {
+      var t = e.target;
+      problems.push(t && t !== window && (t.src || t.href) ? '불러오기 실패: ' + (t.src || t.href) : (e.message || '알 수 없는 오류'));
+    }, true);
+    addEventListener('unhandledrejection', function (e) {
+      problems.push(String((e.reason && e.reason.message) || e.reason));
+    });
+    setTimeout(function () {
+      if (window.__fenestraReady) return;
+      var box = document.getElementById('boot-fail');
+      if (!box) return;
+      document.getElementById('boot-why').textContent = (problems.join(' / ') || '응답이 없어요').slice(0, 400);
+      box.hidden = false;
+    }, 10000);
+  })();
+</script>
 </head>
 <body>
 <!-- 아이콘 모음 -->
@@ -197,6 +217,11 @@
       <div class="opening-mark">
         <p class="opening-word">Fenestra</p>
         <p class="opening-tag">달릴수록 자라는 몬스테라</p>
+      </div>
+      <div class="boot-fail" id="boot-fail" hidden>
+        <p class="boot-title">화면을 불러오지 못했어요</p>
+        <p class="boot-why" id="boot-why"></p>
+        <button class="boot-retry" type="button" onclick="location.reload()">다시 불러오기</button>
       </div>
     </div>
   </div>

@@ -13,6 +13,8 @@ import { renderAlbum } from './album-card.js';
 // 인트로: 로고만 보이는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
 const LOGO_MS = 2000;
 const OPENING_FADE_MS = 1000;
+// 식물 그림이 늦어도 인트로는 이 시간 뒤엔 넘어간다 (그림은 오는 대로 나타난다)
+const PLANT_WAIT_MS = 4000;
 const CHARGE_TICK_MS = 60000;
 const DRIVING_SPEED_KMH = 5;
 const DRIVING_HOLD_MS = 15000;
@@ -86,7 +88,7 @@ function applyScene() {
   stageEl.dataset.scene = scene;
   stageEl.dataset.hand = prefs.hand;
   stageEl.dataset.weather = prefs.weather;
-  const ready = plant.setStage(state.active, stageOf(state));
+  const ready = plant.setStage(state.active, stageOf(state)).catch(() => toast('식물 그림을 불러오지 못했어요 · 연결을 확인해 주세요'));
   sky.draw({ hours: currentHours(), raining: prefs.weather === 'rain' });
   fx.setRain(prefs.weather === 'rain');
   renderChip(prefs.weather);
@@ -317,7 +319,7 @@ const shouldShowTutorial = () => query.has('tutorial') || (!prefs.tutorialSeen &
 /* ---------- 인트로: 로고 → 막이 걷히며 화분에서 식물이 자라 오름 → UI가 올라온다. 누르면 로고 단계를 건너뛴다 ---------- */
 function startIntro(plantReady) {
   const opening = $('loading');
-  if (query.has('noloading')) { opening.remove(); return Promise.resolve(); }
+  if (query.has('noloading')) { opening.remove(); window.__fenestraReady = true; return Promise.resolve(); }
   stageEl.classList.add('intro');
   plant.hide();
   return new Promise((resolve) => {
@@ -325,7 +327,9 @@ function startIntro(plantReady) {
     const reveal = async () => {
       if (revealed) return;
       revealed = true;
-      await plantReady;
+      // 앱이 돌기 시작했다는 표시 (index.html의 시작 지킴이가 본다)
+      window.__fenestraReady = true;
+      await Promise.race([plantReady.catch(() => {}), new Promise((done) => setTimeout(done, PLANT_WAIT_MS))]);
       const assembleMs = plant.assemble();
       opening.classList.add('reveal');
       setTimeout(() => stageEl.classList.remove('intro'), Math.max(OPENING_FADE_MS, assembleMs - 600));
