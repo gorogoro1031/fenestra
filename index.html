@@ -114,6 +114,7 @@
           <div><p class="r-title">실제 주행으로 물 모으기</p><p class="r-sub">위치 권한 필요 · 이 화면을 열어 둔 동안만</p></div>
           <button class="switch" type="button" role="switch" aria-checked="false" id="pref-gps" aria-label="실제 주행으로 물 모으기"></button>
         </div>
+        <button class="row link" type="button" id="open-tour">처음 안내 다시 보기</button>
       </div>
       <p class="section-label">화면</p>
       <div class="group">
@@ -142,6 +143,23 @@
         <button class="row link" type="button" id="demo-charge">10분 충전한 것으로 하기</button>
         <button class="row link" type="button" id="demo-drive">운전 중 화면 보기</button>
         <button class="row link destructive" type="button" id="demo-reset">처음부터 다시</button>
+      </div>
+    </dialog>
+
+    <!-- 처음 안내: 카드 4장 (내용은 tutorial.js) -->
+    <dialog class="tour" id="tour" aria-labelledby="tour-title">
+      <div class="tour-content">
+        <div class="tour-art" aria-hidden="true"><svg><use href="#i-leaf"/></svg></div>
+        <h2 id="tour-title"></h2>
+        <p class="tour-body" id="tour-body"></p>
+      </div>
+      <div class="tour-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="tour-actions">
+        <button class="text-btn muted" type="button" id="tour-skip">건너뛰기</button>
+        <div class="tour-nav">
+          <button class="tour-btn secondary" type="button" id="tour-prev">이전</button>
+          <button class="tour-btn primary" type="button" id="tour-next">다음</button>
+        </div>
       </div>
     </dialog>
 

@@ -5,6 +5,7 @@ import { createDotPlant } from './plant.js';
 import { renderStatus, renderTimeline, renderChip, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
+import { createTutorial } from './tutorial.js';
 
 // 인트로: 로고만 보이는 시간, 그 뒤 점이 모이는 동안 막이 걷힌다
 const LOGO_MS = 2000;
@@ -263,6 +264,17 @@ $('demo-reset').addEventListener('click', () => {
   closeSheets();
 });
 
+/* ---------- 처음 안내: 처음 한 번만. ?tutorial 이면 항상, 확인용 주소(?preview·?noloading)에선 건너뛴다 ---------- */
+const tutorial = createTutorial($('tour'), {
+  onOpen: () => scrim.classList.add('show'),
+  onClose: () => {
+    scrim.classList.remove('show');
+    if (!prefs.tutorialSeen) updatePrefs({ tutorialSeen: true });
+  },
+});
+$('open-tour').addEventListener('click', () => { closeSheets(); tutorial.open(); });
+const shouldShowTutorial = () => query.has('tutorial') || (!prefs.tutorialSeen && PREVIEW_STAGE === null && !query.has('noloading'));
+
 /* ---------- 인트로: 로고 → 막이 걷히며 점이 모여 식물 → UI가 올라온다. 누르면 로고 단계를 건너뛴다 ---------- */
 function startIntro(plantReady) {
   const opening = $('loading');
@@ -298,7 +310,7 @@ addEventListener('pointerdown', () => {
 setInterval(() => { state = rollDay(state, todayKey()); applyScene(); render(); }, 60000);
 
 stageEl.classList.add('booting');
-startIntro(applyScene());
+startIntro(applyScene()).then(() => { if (shouldShowTutorial()) tutorial.open(); });
 render();
 requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('booting')));
 if (prefs.useGps) setGps(true);

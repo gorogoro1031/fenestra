@@ -152,6 +152,43 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .t-need { font-size: 20px; color: var(--label-2); margin-top: 4px; }
 .timeline li.done .t-need { color: var(--tint); }
 
+/* ---------- 처음 안내 ---------- */
+.tour {
+  --tone: var(--tint);
+  position: absolute; z-index: 20; inset: 0; margin: auto; width: 920px; height: max-content; max-height: calc(100% - 80px);
+  padding: 64px 64px 40px; border: 0; border-radius: var(--r-lg); background: var(--grouped); color: var(--label);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6); text-align: center; overflow: hidden; touch-action: pan-y;
+}
+.tour[data-tone="water"] { --tone: var(--water); }
+.tour[data-tone="sun"] { --tone: var(--sun); }
+.tour[data-tone="label"] { --tone: #fff; }
+.tour[open] { animation: sheet-in 620ms var(--ease-ios); }
+/* 카드 위쪽에 고른 색이 은은하게 번진다 */
+.tour::before {
+  content: ""; position: absolute; inset: 0 0 auto; height: 420px; pointer-events: none;
+  background: radial-gradient(60% 80% at 50% 0%, color-mix(in srgb, var(--tone) 22%, transparent), transparent 75%);
+  transition: background 600ms ease;
+}
+.tour-content { position: relative; }
+.tour-art {
+  width: 168px; height: 168px; margin: 0 auto 40px; border-radius: 50%; display: grid; place-items: center; font-size: 76px;
+  color: var(--tone); background: color-mix(in srgb, var(--tone) 16%, var(--grouped-2));
+  box-shadow: 0 0 0 14px color-mix(in srgb, var(--tone) 6%, transparent), 0 0 0 30px color-mix(in srgb, var(--tone) 3%, transparent);
+  transition: color 400ms, background-color 400ms;
+}
+.tour h2 { font-size: 52px; font-weight: 700; letter-spacing: -.025em; }
+.tour-body { font-size: 28px; line-height: 1.55; color: var(--label-2); margin: 22px auto 0; max-width: 700px; min-height: 4.65em; word-break: keep-all; }
+.tour-dots { display: flex; justify-content: center; gap: 12px; margin: 44px 0 36px; }
+.tour-dots span { width: 12px; height: 12px; border-radius: 6px; background: var(--fill); transition: width 400ms var(--ease-ios), background-color 300ms; }
+.tour-dots span.on { width: 36px; background: var(--tone); }
+.tour-actions { display: flex; justify-content: space-between; align-items: center; }
+.tour-nav { display: flex; gap: 14px; }
+.text-btn.muted { color: var(--label-2); font-weight: 500; }
+.tour-btn { min-height: var(--tap); min-width: 200px; padding: 0 40px; border-radius: 999px; font-size: 30px; font-weight: 700; transition: transform var(--duration-fast) var(--ease-ios); }
+.tour-btn:active { transform: scale(.96); }
+.tour-btn.primary { background: var(--tint); color: #000; }
+.tour-btn.secondary { background: var(--fill); }
+
 /* ---------- 오프닝 ---------- */
 .opening { position: absolute; inset: 0; z-index: 30; background: #000; display: grid; place-items: center; transition: background-color 1400ms ease, opacity 900ms var(--ease-ios); }
 .opening-mark { text-align: center; transition: opacity 1100ms var(--ease-ios), transform 1400ms var(--ease-ios), filter 1100ms ease; }
