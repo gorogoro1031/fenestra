@@ -4,7 +4,8 @@ const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TAU = Math.PI * 2;
 
 const SRC_RATIO = 1400 / 1600;
-const SPACING = 7;
+// 점 간격. 굵은 점이 또렷하게 보이도록 넉넉히
+const SPACING = 11;
 const MIN_ALPHA = 0.5;
 // 단계별 잎 꼭대기 위치(그림 높이 비율, 0=위)와 화분 높이
 const PLANT_TOP = [0.77, 0.61, 0.39, 0.3, 0.35];
@@ -12,8 +13,10 @@ const POT_HEIGHT = 0.2;
 
 // 민트 한 가지 색. 점 크기만으로 명암을 낸다
 const DOT_COLOR = '#d6efcd';
+// 명암을 몇 단계로만 나눠 판화처럼 정돈된 하프톤으로
+const TONE_STEPS = 4;
 // 가장자리가 부드럽게 풀리는 정도: 알파를 몇 칸 흐리게 할지, 바깥 흩어짐 확률
-const EDGE_BLUR_CELLS = 3;
+const EDGE_BLUR_CELLS = 2;
 const SCATTER_CHANCE = 0.55;
 
 const REVEAL_MS = 1500;
@@ -112,12 +115,12 @@ function sampleDots(img, { cx, base, h }, seed) {
       let r = 0;
       if (a >= MIN_ALPHA) {
         const lum = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) / 255;
-        const tone = clamp01((lum - 0.12) / 0.8) ** 0.9;
-        r = SPACING * 0.62 * (0.1 + 0.9 * tone) * (0.25 + 0.75 * clamp01(edge * 1.25) ** 1.3);
-        // 화분은 조금 작은 점으로 눌러 잎이 먼저 보이게
-        if (hn < POT_HEIGHT) r *= 0.72;
+        const tone = Math.round(clamp01((lum - 0.12) / 0.8) * TONE_STEPS) / TONE_STEPS;
+        r = SPACING * 0.5 * (0.18 + 0.82 * tone) * (0.3 + 0.7 * clamp01(edge * 1.3) ** 1.2);
+        // 화분은 명암 없이 작은 점을 고르게 찍어 잎보다 한 발 물러나 보이게
+        if (hn < POT_HEIGHT) r = SPACING * 0.2 * (0.4 + 0.6 * clamp01(edge * 1.3));
       } else if (edge > 0.04 && rand() < edge * SCATTER_CHANCE * drift) {
-        r = SPACING * (0.08 + rand() * 0.2);
+        r = SPACING * (0.06 + rand() * 0.14);
       }
       if (r < 0.35) continue;
       dots.push({
