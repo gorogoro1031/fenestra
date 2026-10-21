@@ -1,14 +1,15 @@
 import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageFor, STAGE_NAMES } from './state.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
-import { createDotPlant } from './plant.js';
+import { createPlant } from './plant.js';
+import { createSky, orbPosition } from './sky.js';
 import { renderStatus, renderTimeline, renderChip, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
 
-// 인트로: 로고만 보이는 시간, 그 뒤 점이 모이는 동안 막이 걷힌다
+// 인트로: 로고만 보이는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
 const LOGO_MS = 2000;
 const OPENING_FADE_MS = 1000;
 const CHARGE_TICK_MS = 60000;
@@ -18,9 +19,10 @@ const DEMO_DRIVE_MS = 8000;
 
 const $ = (id) => document.getElementById(id);
 const stageEl = $('stage');
-// 확인용 주소 옵션: ?scene=day|night 로 장면 고정, ?noloading 으로 로딩 건너뛰기 (저장하지 않음)
+// 확인용 주소 옵션: ?scene=day|night 로 정오·자정 고정, ?hour=0~24 로 시각 고정, ?noloading 으로 로딩 건너뛰기 (저장하지 않음)
 const query = new URLSearchParams(location.search);
 const SCENE_OVERRIDE = ['day', 'night'].includes(query.get('scene')) ? query.get('scene') : null;
+const HOUR_OVERRIDE = query.has('hour') && Number.isFinite(Number(query.get('hour'))) ? Number(query.get('hour')) : null;
 const todayKey = () => new Date().toLocaleDateString('sv-SE');
 
 // ?preview=0~4 : 해당 단계로 꾸민 임시 상태로 보기 (저장하지 않음)
@@ -34,10 +36,11 @@ let chargeTimer = 0;
 let drivingUntil = 0;
 let stopGps = () => {};
 
-const plant = createDotPlant($('plant-canvas'));
+const plant = createPlant($('plant-layer'));
+const sky = createSky($('sky'), $('orb'));
 const arcs = createArcs($('arcs'));
 const fx = createFx($('fx'));
-let anchor = { x: 960, y: 300, potTop: 1000, cx: 960 };
+let anchor = { cx: 960, y: 600, potTop: 800 };
 let layout = plantLayout(1920, 1200);
 
 /* ---------- 화면 맞춤: 1920×1200 기준으로 축소·확대하되, 남는 쪽은 무대를 넓혀 여백 없이 채운다 ---------- */
@@ -49,32 +52,36 @@ function fit() {
   stageEl.style.setProperty('--fit', String(scale));
   stageEl.style.width = `${W}px`;
   stageEl.style.height = `${H}px`;
-  ['arcs', 'fx', 'plant-canvas'].forEach((id) => { $(id).width = W; $(id).height = H; });
+  ['arcs', 'fx'].forEach((id) => { $(id).width = W; $(id).height = H; });
   layout = plantLayout(W, H);
   plant.setLayout(layout);
+  const ring = plant.ring();
+  sky.setLayout(ring, { W, H, horizon: layout.base });
+  arcs.set({ x: ring.x, y: ring.y });
+  anchor = plant.anchor();
 }
 addEventListener('resize', () => { fit(); applyScene(); });
 fit();
 
-/* ---------- 장면 ---------- */
-function currentScene() {
-  if (SCENE_OVERRIDE) return SCENE_OVERRIDE;
-  if (prefs.scene !== 'auto') return prefs.scene;
-  const h = new Date().getHours();
-  return h >= 18 || h < 6 ? 'night' : 'day';
+/* ---------- 장면: 시각에 따라 해·달 자리와 낮·밤이 정해진다. 설정에서 낮·밤을 고르면 정오·자정으로 고정 ---------- */
+const FIXED_HOURS = { day: 12, night: 0 };
+function currentHours() {
+  if (HOUR_OVERRIDE !== null) return HOUR_OVERRIDE;
+  if (SCENE_OVERRIDE) return FIXED_HOURS[SCENE_OVERRIDE];
+  if (prefs.scene !== 'auto') return FIXED_HOURS[prefs.scene];
+  const now = new Date();
+  return now.getHours() + now.getMinutes() / 60;
 }
+const currentScene = () => (orbPosition(currentHours()).isDay ? 'day' : 'night');
 
-/** @returns {Promise<void>} 식물 점이 새 단계로 준비되면 끝난다 */
+/** @returns {Promise<void>} 식물 그림이 새 단계로 준비되면 끝난다 */
 function applyScene() {
   const scene = currentScene();
   const stage = stageFor(state.growth);
   stageEl.dataset.scene = scene;
   stageEl.dataset.weather = prefs.weather;
-  const ready = plant.setStage(stage).then(() => {
-    anchor = plant.anchor();
-    arcs.set({ x: anchor.x, y: anchor.y });
-  });
-  arcs.set({ scene });
+  const ready = plant.setStage(stage);
+  sky.draw({ hours: currentHours(), raining: prefs.weather === 'rain' });
   fx.setRain(prefs.weather === 'rain');
   renderChip(prefs.weather);
   syncAmbient();
@@ -277,11 +284,12 @@ const tutorial = createTutorial($('tour'), {
 $('open-tour').addEventListener('click', () => { closeSheets(); tutorial.open(); });
 const shouldShowTutorial = () => query.has('tutorial') || (!prefs.tutorialSeen && PREVIEW_STAGE === null && !query.has('noloading'));
 
-/* ---------- 인트로: 로고 → 막이 걷히며 점이 모여 식물 → UI가 올라온다. 누르면 로고 단계를 건너뛴다 ---------- */
+/* ---------- 인트로: 로고 → 막이 걷히며 화분에서 식물이 자라 오름 → UI가 올라온다. 누르면 로고 단계를 건너뛴다 ---------- */
 function startIntro(plantReady) {
   const opening = $('loading');
   if (query.has('noloading')) { opening.remove(); return Promise.resolve(); }
   stageEl.classList.add('intro');
+  plant.hide();
   return new Promise((resolve) => {
     let revealed = false;
     const reveal = async () => {

@@ -16,7 +16,8 @@ python3 -m http.server 5173
 
 | 옵션 | 뜻 |
 |---|---|
-| `?scene=day` / `?scene=night` | 장면 고정 |
+| `?scene=day` / `?scene=night` | 정오·자정으로 고정 |
+| `?hour=0~24` | 그 시각의 해·달 자리로 고정 (예: `?hour=6.5`) |
 | `?noloading` | 로딩 화면 건너뛰기 |
 | `?preview=0~4` | 해당 성장 단계로 꾸민 임시 상태 |
 

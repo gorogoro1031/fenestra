@@ -1,32 +1,28 @@
-// 장면 모션: 파장, 비, 물 주기 물방울, 화분 자리 계산 (식물 그리기는 plant.js)
+// 장면 모션: 충전 파장, 비, 물 주기 물방울, 화분 자리 계산 (식물은 plant.js, 해·달은 sky.js)
 // 캔버스 크기는 화면 비율에 따라 바뀌므로 그릴 때마다 canvas.width/height를 쓴다
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// 화분 위로 퍼지는 파장. 평소엔 옅고 느리게, 충전 중이면 노랗고 빠르게
-const WAVE = {
-  idle: { every: 1900, life: 11000, alpha: 0.32, width: 2.6 },
-  charging: { every: 1100, life: 7000, alpha: 0.55, width: 3.2 },
-};
-const WAVE_COLOR = { day: '255, 236, 200', night: '190, 210, 255', charging: '255, 214, 10' };
+// 충전하는 동안만 식물 뒤에서 노란 파장이 퍼진다 (평소엔 해·달 고리가 그 자리를 맡는다)
+const WAVE = { every: 1100, life: 7000, alpha: 0.5, width: 3.2, color: '255, 214, 10' };
+// 식물 그림 배율: 1920×1200 기준, 무대가 세로로 길어지면 조금 크게
+const PLANT_SCALE = 0.674;
+const DOCK_SPACE = 236;
 
 /**
  * 무대 크기에 맞춘 화분 자리. 무대는 항상 1920×1200 이상이고 남는 쪽으로 넓어진다
- * @returns {{cx:number, base:number, h:number}} 가운데 x, 화분 바닥 y, 식물 그림 높이
+ * @returns {{cx:number, base:number, scale:number}} 가운데 x, 화분 바닥 y, 그림 배율
  */
 export function plantLayout(W, H) {
-  return { cx: W / 2, base: H - 236, h: Math.min(1180, 960 + (H - 1200) * 0.6) };
+  return { cx: W / 2, base: H - DOCK_SPACE, scale: PLANT_SCALE * Math.min(1.25, 1 + Math.max(0, H - 1200) / 2000) };
 }
 
-/** 파장: 중심에서 원이 계속 퍼지고 사라진다. 원마다 생길 때의 색·속도를 기억한다 */
+/** 파장: 충전 중에 중심에서 원이 계속 퍼지고 사라진다 */
 export function createArcs(canvas) {
   const ctx = canvas.getContext('2d');
   let origin = { x: canvas.width / 2, y: canvas.height / 3 };
   let rings = [];
   let charging = false;
-  let scene = 'night';
   let lastSpawn = -Infinity;
-
-  const style = () => (charging ? { ...WAVE.charging, color: WAVE_COLOR.charging } : { ...WAVE.idle, color: WAVE_COLOR[scene] });
 
   function drawRing(r, color, alpha, width) {
     ctx.strokeStyle = `rgba(${color}, ${alpha})`;
@@ -38,30 +34,27 @@ export function createArcs(canvas) {
 
   function frame(now) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const s = style();
-    if (now - lastSpawn > s.every) { rings = [...rings, { born: now, ...s }]; lastSpawn = now; }
-    rings = rings.filter((ring) => now - ring.born < ring.life);
+    if (charging && now - lastSpawn > WAVE.every) { rings = [...rings, { born: now }]; lastSpawn = now; }
+    rings = rings.filter((ring) => now - ring.born < WAVE.life);
     rings.forEach((ring) => {
-      const p = (now - ring.born) / ring.life;
+      const p = (now - ring.born) / WAVE.life;
       // 바깥으로 갈수록 느려지는 퍼짐
       const eased = 1 - (1 - p) ** 2;
-      drawRing(50 + eased * Math.hypot(canvas.width, canvas.height) * 0.6, ring.color, Math.sin(Math.PI * p) * ring.alpha, ring.width);
+      drawRing(50 + eased * Math.hypot(canvas.width, canvas.height) * 0.6, WAVE.color, Math.sin(Math.PI * p) * WAVE.alpha, WAVE.width);
     });
     requestAnimationFrame(frame);
   }
 
   function drawStill() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const s = style();
-    [160, 330, 520, 740].forEach((r, i) => drawRing(r, s.color, s.alpha * (1 - i * 0.2), s.width));
+    if (charging) [160, 330, 520, 740].forEach((r, i) => drawRing(r, WAVE.color, WAVE.alpha * (1 - i * 0.2), WAVE.width));
   }
 
   if (REDUCED) drawStill(); else requestAnimationFrame(frame);
 
   return {
-    set({ x, y, active, scene: nextScene }) {
+    set({ x, y, active }) {
       if (x !== undefined) origin = { x, y };
-      if (nextScene) scene = nextScene;
       if (active !== undefined) charging = active;
       if (REDUCED) drawStill();
     },

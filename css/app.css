@@ -26,28 +26,22 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* ---------- 장면 ---------- */
 .scene, .layer { position: absolute; inset: 0; }
 .layer { width: 100%; height: 100%; pointer-events: none; }
-.daylight {
-  position: absolute; inset: 0 0 auto; height: 70%; opacity: 0; transition: opacity var(--duration-scene) ease;
-  background: radial-gradient(120% 90% at 50% -10%, rgba(255, 214, 120, .26) 0%, rgba(255, 196, 90, .1) 38%, transparent 72%);
-}
-.stage[data-scene="day"] .daylight { opacity: 1; }
+/* 해·달 고리와 그 빛 (위치·색은 sky.js가 시각에 맞춰 정함) */
+.sky { transition: background 2s ease; }
+.orb { position: absolute; left: 0; top: 0; border-radius: 50%; border: 9px solid #ecf03c; transition: transform 2s var(--ease-ios), border-color 2s ease, opacity 1s ease; }
 
-/* 밤: 위에서 달빛이 천천히 내려오는 듯한 푸른 빛 */
-.moonlight { position: absolute; inset: 0; opacity: 0; transition: opacity var(--duration-scene) ease; pointer-events: none; overflow: hidden; }
-.stage[data-scene="night"] .moonlight { opacity: 1; }
-.moon-veil {
-  position: absolute; left: -10%; right: -10%; top: -30%; height: 110%;
-  background: radial-gradient(60% 65% at 50% 0%, rgba(175, 200, 255, .34) 0%, rgba(140, 170, 240, .12) 40%, transparent 74%);
-  animation: moon-descend 14s ease-in-out infinite;
-}
-.moon-beams {
-  position: absolute; left: 20%; right: 20%; top: -10%; height: 85%;
-  background: repeating-linear-gradient(100deg, transparent 0 140px, rgba(190, 210, 255, .07) 140px 260px, transparent 260px 420px); filter: blur(28px);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 85%); mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
-  animation: beams-drift 22s ease-in-out infinite alternate;
-}
-@keyframes moon-descend { 0%, 100% { transform: translateY(-5%); opacity: .7; } 50% { transform: translateY(5%); opacity: 1; } }
-@keyframes beams-drift { from { transform: translateX(-4%) skewX(-3deg); opacity: .6; } to { transform: translateX(4%) skewX(3deg); opacity: 1; } }
+/* 식물 그림: 화분 바닥 기준. 흔들림은 .plant(JS), 인트로·단계 전환은 .plant-grow(CSS) */
+.plant { position: absolute; will-change: transform; }
+.plant-grow { position: absolute; inset: 0; }
+.plant-grow.hidden { opacity: 0; transform: scale(.4); }
+.plant-grow.growing { animation: plant-grow 1700ms var(--ease-ios) both; }
+@keyframes plant-grow { from { opacity: 0; transform: scale(.4); } 30% { opacity: 1; } }
+.plant-img { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 900ms ease, transform 1100ms var(--ease-ios), filter 1200ms ease; }
+.plant-grow .plant-img { transform-origin: 44.4% 99.5%; }
+.plant-img.entering { opacity: 0; transform: scale(.82); }
+.plant-img.leaving { opacity: 0; }
+.plant-img.glow { animation: plant-glow 1400ms ease; }
+@keyframes plant-glow { 30% { filter: brightness(1.25) saturate(1.15); } }
 
 /* ---------- 상단 ---------- */
 .top { position: absolute; left: 56px; right: 56px; top: 44px; display: flex; justify-content: space-between; align-items: flex-start; }
@@ -227,8 +221,8 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .stage.intro .dock { opacity: 0; transform: translateY(40px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .opening-word, .opening-tag, .moon-veil, .moon-beams { animation: none; }
-  .toast, .daylight { transition: none; }
+  .opening-word, .opening-tag { animation: none; }
+  .toast, .orb, .sky, .plant-img { transition: none; }
 }
 
 /* 데모 단계 선택은 칸이 5개라 버튼을 좁게 */
