@@ -3,15 +3,25 @@ import { RULES, STAGE_NAMES, LAST_STAGE, stageFor, progressToNext } from './stat
 
 const $ = (id) => document.getElementById(id);
 
+// 점 줄 게이지의 점 개수. 물방울은 최대치(12)와 같게 해 하나 = 한 개
+const DOTS = { progress: 12, light: 10 };
+
+/** 점 total개 중 앞에서부터 filled개(내림)를 켠다. 점 개수가 바뀔 때만 새로 만든다 */
+function renderDots(el, filled, total) {
+  if (el.children.length !== total) el.replaceChildren(...Array.from({ length: total }, () => document.createElement('i')));
+  const on = Math.floor(filled + 1e-9);
+  [...el.children].forEach((dot, i) => dot.classList.toggle('on', i < on));
+}
+
 export function renderStatus(state, { charging, driving }) {
   const stage = stageFor(state.growth);
   $('stage-name').textContent = STAGE_NAMES[stage];
   $('stage-num').textContent = String(stage);
-  $('progress-fill').style.transform = `scaleX(${progressToNext(state.growth)})`;
+  renderDots($('progress-dots'), progressToNext(state.growth) * DOTS.progress, DOTS.progress);
   $('drops-num').textContent = String(state.drops);
-  $('drops-fill').style.transform = `scaleX(${state.drops / RULES.MAX_DROPS})`;
+  renderDots($('drops-dots'), state.drops, RULES.MAX_DROPS);
   $('light-num').textContent = String(Math.round(state.light));
-  $('light-fill').style.transform = `scaleX(${state.light / RULES.MAX_LIGHT})`;
+  renderDots($('light-dots'), (state.light / RULES.MAX_LIGHT) * DOTS.light, DOTS.light);
   $('today-km').textContent = state.todayKm.toFixed(1);
 
   const waterBtn = $('water-btn');

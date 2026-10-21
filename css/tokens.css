@@ -16,6 +16,10 @@
   --water: #0a84ff;     /* systemBlue */
   --sun: #ffd60a;       /* systemYellow */
   --destructive: #ff453a;
+  /* 폴카닷 포인트 */
+  --polka-light: rgba(255, 255, 255, .28);
+  --polka-sun: rgba(236, 240, 60, .55);
+  --polka-faint: rgba(255, 255, 255, .05);
 
   --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-logo: "Fraunces", Georgia, serif;
