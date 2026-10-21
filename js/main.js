@@ -6,6 +6,7 @@ import { renderStatus, renderTimeline, renderChip, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
+import { renderAlbum } from './album-card.js';
 
 // 인트로: 로고만 보이는 시간, 그 뒤 점이 모이는 동안 막이 걷힌다
 const LOGO_MS = 2000;
@@ -204,6 +205,7 @@ function closeSheets() {
 }
 $('open-log').addEventListener('click', () => openSheet($('log-sheet')));
 $('open-settings').addEventListener('click', () => openSheet($('settings-sheet')));
+$('album-card').addEventListener('click', () => openSheet($('album-sheet')));
 document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeSheets));
 scrim.addEventListener('click', closeSheets);
 
@@ -307,9 +309,10 @@ addEventListener('pointerdown', () => {
   syncAmbient();
 }, { once: true });
 
-setInterval(() => { state = rollDay(state, todayKey()); applyScene(); render(); }, 60000);
+setInterval(() => { state = rollDay(state, todayKey()); applyScene(); render(); renderAlbum(todayKey()); }, 60000);
 
 stageEl.classList.add('booting');
+renderAlbum(todayKey());
 startIntro(applyScene()).then(() => { if (shouldShowTutorial()) tutorial.open(); });
 render();
 requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('booting')));

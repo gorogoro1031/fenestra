@@ -23,6 +23,7 @@
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4M18.7 18.7l-1.4-1.4M6.7 6.7 5.3 5.3"/></symbol>
   <symbol id="i-road" viewBox="0 0 24 24"><path d="M8 3 5 21M16 3l3 18M12 4v2.5M12 10.5v3M12 17.5V20"/></symbol>
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5 5 13.5h6l-1 8 8-11h-6l1-8Z"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></symbol>
   <symbol id="i-car" viewBox="0 0 24 24"><path d="M4 15.5 5.8 9.6A2 2 0 0 1 7.7 8.2h8.6a2 2 0 0 1 1.9 1.4L20 15.5v3h-2.5M4 15.5v3h2.5M4 15.5h16"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="16.5" cy="18.5" r="1.5"/></symbol>
 </svg>
 
@@ -42,6 +43,14 @@
       <div class="title-block">
         <p class="wordmark">Fenestra</p>
         <p class="caption" id="chip">오후 8:00 · 맑음</p>
+        <button class="album-card glass" type="button" id="album-card" aria-haspopup="dialog">
+          <img class="album-art" id="album-art" alt="" width="96" height="96">
+          <span class="album-text">
+            <span class="a-label">오늘의 앨범</span>
+            <span class="a-title" id="album-title"></span>
+            <span class="a-artist" id="album-artist"></span>
+          </span>
+        </button>
       </div>
       <nav class="top-actions" aria-label="메뉴">
         <button class="icon-btn glass" type="button" id="open-log" aria-label="성장 기록"><svg><use href="#i-leaf"/></svg></button>
@@ -96,6 +105,23 @@
       </div>
       <p class="section-label">단계</p>
       <ol class="group timeline" id="timeline"></ol>
+    </dialog>
+
+    <!-- 오늘의 앨범 -->
+    <dialog class="sheet album-sheet" id="album-sheet" aria-labelledby="album-sheet-title">
+      <div class="sheet-head">
+        <p class="a-label" id="album-date">오늘의 앨범</p>
+        <button class="text-btn" type="button" data-close>완료</button>
+      </div>
+      <div class="album-body">
+        <img class="album-cover" id="album-cover" alt="" width="320" height="320">
+        <div>
+          <h2 id="album-sheet-title"></h2>
+          <p class="album-meta" id="album-meta"></p>
+          <p class="album-note" id="album-note"></p>
+        </div>
+      </div>
+      <p class="album-how"><svg><use href="#i-music"/></svg><span>차의 Apple Music 앱에서 검색해 들어 보세요 · <b id="album-search"></b></span></p>
     </dialog>
 
     <!-- 설정 -->
