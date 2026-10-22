@@ -170,9 +170,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .act:active { transform: scale(.96); }
 .act:disabled { cursor: default; transform: none; }
 .act-ic { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; font-size: 38px; flex-shrink: 0; position: relative; }
-.act-tx { position: relative; display: flex; flex-direction: column; }
+.act-tx { position: relative; display: flex; flex-direction: column; min-width: 0; }
 .act-tx b { font-size: 30px; font-weight: 800; }
-.act-tx span { font-size: 17px; font-weight: 600; opacity: .72; }
+.act-tx span { font-size: 17px; font-weight: 600; opacity: .72; overflow: hidden; text-overflow: ellipsis; }
 /* 물 주기: 오른쪽으로 갈수록 물방울 무늬가 진해진다 */
 .act.water { background: var(--tint); color: #00260e; }
 .act.water::before {

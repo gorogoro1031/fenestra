@@ -85,21 +85,20 @@ export function renderStatus(state, { photo, driving, isNight }) {
   waterBtn.classList.toggle('rest', waterBtn.disabled && !waiting);
   waterBtn.style.setProperty('--p', String(1 - kmToNextDrop(state) / RULES.KM_PER_DROP));
   $('water-sub').textContent = waterSubtitle(state, check, { driving, isNight });
-  const [title, sub] = photoText(photo, state.light >= RULES.MAX_LIGHT);
+  // 켜졌는지는 카드 색으로 보이니 제목은 늘 '광합성', 아래 줄만 바뀐다
   $('photo-btn').classList.toggle('on', photo.rate > 0);
-  $('photo-title').textContent = title;
-  $('photo-sub').textContent = sub;
+  $('photo-sub').textContent = photoSub(photo, state.light >= RULES.MAX_LIGHT);
   $('driving-banner').hidden = !driving;
 }
 
-/** 광합성 카드의 제목과 한 줄 설명 */
-function photoText({ rate, reason, label }, full) {
-  if (reason === 'loading') return ['날씨 확인 중', '잠시만요'];
-  if (reason === 'unknown') return ['광합성 멈춤', '날씨를 몰라요 · 눌러서 다시'];
-  if (reason === 'night') return ['광합성 멈춤', '밤엔 쉬어요'];
-  if (reason === 'weather') return ['광합성 멈춤', `${label} · 해를 기다려요`];
-  if (full) return ['햇빛 가득', `${label} · 물 줄 때 써요`];
-  return ['광합성 중', `${label} · 1분에 햇빛 ${rate}`];
+/** 광합성 카드 아래 줄. 카드 폭에 맞게 짧게 */
+function photoSub({ rate, reason, label }, full) {
+  if (reason === 'loading') return '날씨 확인 중';
+  if (reason === 'unknown') return '날씨 모름';
+  if (reason === 'night') return '밤엔 쉬어요';
+  if (reason === 'weather') return `${label} · 쉬어요`;
+  if (full) return '햇빛 가득';
+  return `${label} · 1분에 ${rate}`;
 }
 
 function waterSubtitle(state, check, { driving, isNight }) {
