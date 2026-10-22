@@ -1,8 +1,11 @@
 // 게임 규칙과 상태 변화. 화면·브라우저에 의존하지 않는 순수 함수만 둔다
 import { PLANTS, PLANT_IDS, FIRST_PLANT } from './plants.js';
 
+// 이슬: 달린 거리로 모아 물을 줄 때 쓴다 (코드에선 drops)
 export const RULES = Object.freeze({
   KM_PER_DROP: 10,
+  // 처음 켰을 때 선물: 첫날 바로 새싹을 볼 수 있게
+  START_DROPS: 2,
   MAX_DROPS: 12,
   // 충전 10분이면 햇빛 한 번(20) 쓸 만큼
   LIGHT_PER_MINUTE: 2,
@@ -25,7 +28,7 @@ const newPlant = () => ({ growth: 0, waterToday: 0, grown: false });
 
 export function createState(today = '') {
   return {
-    drops: 0, kmRemainder: 0, light: 0, totalKm: 0, todayKm: 0, today, waterCount: 0,
+    drops: RULES.START_DROPS, kmRemainder: 0, light: 0, totalKm: 0, todayKm: 0, today, waterCount: 0,
     coins: 0, coinRemainder: 0,
     active: FIRST_PLANT,
     plants: { [FIRST_PLANT]: newPlant() },
@@ -61,7 +64,13 @@ export function rollDay(state, today) {
   return { ...state, today, todayKm: 0, plants: mapPlants(state, (p) => ({ ...p, waterToday: 0 })) };
 }
 
-/** 달린 거리만큼 물방울과 꽃씨를 모은다. 자투리는 다음에 이어서 센다 */
+/** 다음 이슬까지 남은 거리(km). 가득 찼으면 0 */
+export function kmToNextDrop(state) {
+  if (state.drops >= RULES.MAX_DROPS) return 0;
+  return RULES.KM_PER_DROP - state.kmRemainder;
+}
+
+/** 달린 거리만큼 이슬과 꽃씨를 모은다. 자투리는 다음에 이어서 센다 */
 export function addDistance(state, km) {
   if (!(km > 0)) return state;
   const pool = state.kmRemainder + km;
@@ -113,7 +122,7 @@ export function bonusNow(state, ctx = {}) {
 }
 
 /**
- * 물방울 하나로 물을 준다. 조건이 맞으면 두 배로 자란다. 다 자라면 꽃씨 덤
+ * 이슬 하나로 물을 준다. 조건이 맞으면 두 배로 자란다. 다 자라면 꽃씨 덤
  * @returns {{state: object, grew: number, stageUp: boolean, bonus: boolean, usedLight: boolean, grownNow: boolean}}
  */
 export function water(state, ctx = {}) {

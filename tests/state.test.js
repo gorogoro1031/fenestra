@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  RULES, createState, stageFor, progressToNext, addDistance, addChargeMinutes, water, waterCheck, rollDay, sanitize,
+  RULES, createState, kmToNextDrop, stageFor, progressToNext, addDistance, addChargeMinutes, water, waterCheck, rollDay, sanitize,
   buyPlant, selectPlant, growthOf, stageOf, LAST_STAGE,
 } from '../js/state.js';
 import { PLANTS } from '../js/plants.js';
@@ -9,8 +9,13 @@ import { PLANTS } from '../js/plants.js';
 const withGrowth = (s, growth, patch = {}) => ({ ...s, plants: { ...s.plants, [s.active]: { ...s.plants[s.active], growth, ...patch } } });
 const cactusState = (patch = {}) => ({ ...createState(), active: 'cactus', plants: { monstera: { growth: 0, waterToday: 0, grown: false }, cactus: { growth: 0, waterToday: 0, grown: false } }, ...patch });
 
-test('10km마다 물방울이 하나, 자투리는 이어서 센다', () => {
-  const s1 = addDistance(createState(), 6);
+test('처음엔 이슬 2개를 선물로 받는다', () => {
+  assert.equal(createState().drops, RULES.START_DROPS);
+  assert.equal(RULES.START_DROPS, 2);
+});
+
+test('10km마다 이슬이 하나, 자투리는 이어서 센다', () => {
+  const s1 = addDistance({ ...createState(), drops: 0 }, 6);
   assert.equal(s1.drops, 0);
   const s2 = addDistance(s1, 6);
   assert.equal(s2.drops, 1);
@@ -24,7 +29,13 @@ test('1km마다 꽃씨가 하나씩, 자투리도 이어서 센다', () => {
   assert.ok(Math.abs(s.coinRemainder - 0.2) < 1e-9);
 });
 
-test('물방울은 최대치를 넘지 않는다', () => {
+test('다음 이슬까지 남은 거리', () => {
+  assert.equal(kmToNextDrop(createState()), RULES.KM_PER_DROP);
+  assert.ok(Math.abs(kmToNextDrop(addDistance(createState(), 2.7)) - 7.3) < 1e-9);
+  assert.equal(kmToNextDrop({ ...createState(), drops: RULES.MAX_DROPS }), 0);
+});
+
+test('이슬은 최대치를 넘지 않는다', () => {
   const s = addDistance(createState(), 1000);
   assert.equal(s.drops, RULES.MAX_DROPS);
   assert.equal(s.kmRemainder, 0);
@@ -35,7 +46,7 @@ test('음수나 숫자가 아닌 거리는 무시하고 원래 상태를 바꾸�
   assert.equal(addDistance(s, -3), s);
   assert.equal(addDistance(s, Number.NaN), s);
   addDistance(s, 50);
-  assert.equal(s.drops, 0);
+  assert.equal(s.drops, RULES.START_DROPS);
 });
 
 test('충전 10분이면 햇빛 한 번 쓸 만큼 차고 최대치에서 멈춘다', () => {
@@ -43,9 +54,10 @@ test('충전 10분이면 햇빛 한 번 쓸 만큼 차고 최대치에서 멈춘
   assert.equal(addChargeMinutes(createState(), 999).light, RULES.MAX_LIGHT);
 });
 
-test('물방울이 없으면 물을 줄 수 없다', () => {
-  assert.deepEqual(waterCheck(createState()), { ok: false, reason: 'no-drops' });
-  assert.equal(water(createState()).grew, 0);
+test('이슬이 없으면 물을 줄 수 없다', () => {
+  const dry = { ...createState(), drops: 0 };
+  assert.deepEqual(waterCheck(dry), { ok: false, reason: 'no-drops' });
+  assert.equal(water(dry).grew, 0);
 });
 
 test('몬스테라: 햇빛이 있으면 두 배로 자라고 햇빛을 쓴다', () => {
