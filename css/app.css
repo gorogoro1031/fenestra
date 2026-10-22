@@ -102,6 +102,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .steps { position: absolute; left: 28px; right: 28px; bottom: 30px; display: flex; gap: 8px; }
 .steps i { flex: 1; height: 16px; border-radius: 8px; background: color-mix(in srgb, var(--c) 20%, transparent); transition: background-color 400ms ease; }
 .steps i.on { background: var(--c); }
+/* 다 자라면 칸 대신 라틴어 이름의 뜻 */
+.grow-meaning { position: absolute; left: 28px; bottom: 26px; font-size: 18px; font-weight: 700; color: var(--c); }
+.gh-meaning { font-size: 17px; font-weight: 600; color: var(--tint); margin-top: -4px; }
 .wd-title { font-size: 40px; font-weight: 800; margin-top: 12px; letter-spacing: -.02em; }
 
 /* 점 격자 게이지: 찬 만큼 점이 켜진다 */

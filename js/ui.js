@@ -1,6 +1,6 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
 import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, stageFor, kmToNextDrop } from './state.js';
-import { PLANTS, PLANT_IDS, plantImage, stageName } from './plants.js';
+import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf } from './plants.js';
 import { GUESTS, GUEST_IDS, guestImage } from './guests.js';
 
 const $ = (id) => document.getElementById(id);
@@ -59,6 +59,10 @@ export function renderStatus(state, { charging, driving, isNight }) {
   const steps = Math.min(MAX_STEPS, span);
   const filled = stage === LAST_STAGE ? steps : Math.floor(((growthOf(state) - th[stage]) / span) * steps);
   renderPips($('grow-steps'), filled, steps);
+  const grown = stage === LAST_STAGE;
+  $('grow-steps').hidden = grown;
+  $('grow-meaning').hidden = !grown;
+  $('grow-meaning').textContent = grown ? `라틴어로 ‘${adultOf(state.active).meaning}’` : '';
   $('drops-num').textContent = String(state.drops);
   renderDots($('drops-dots'), state.drops, RULES.MAX_DROPS);
   $('light-num').textContent = String(Math.round(state.light));
@@ -108,9 +112,10 @@ export function renderGreenhouse(state, onPick) {
     const img = document.createElement('img');
     img.src = plantImage(id, owned ? Math.max(1, stageFor(owned.growth, info.thresholds)) : LAST_STAGE);
     img.alt = '';
+    // 다 키운 식물은 라틴어 이름으로, 아래에 원래 이름과 뜻
     const name = document.createElement('p');
     name.className = 'gh-name';
-    name.textContent = info.name;
+    name.textContent = owned?.grown ? adultOf(id).name : info.name;
     const hint = document.createElement('p');
     hint.className = 'gh-hint';
     hint.textContent = info.hint;
@@ -130,7 +135,14 @@ export function renderGreenhouse(state, onPick) {
       btn.disabled = state.coins < info.price;
       btn.addEventListener('click', () => onPick('buy', id));
     }
-    li.append(img, name, hint, btn);
+    const parts = [img, name];
+    if (owned?.grown) {
+      const meaning = document.createElement('p');
+      meaning.className = 'gh-meaning';
+      meaning.textContent = `${info.name} · 라틴어로 ‘${adultOf(id).meaning}’`;
+      parts.push(meaning);
+    }
+    li.append(...parts, hint, btn);
     return li;
   });
   $('gh-grid').replaceChildren(...cards);

@@ -1,5 +1,5 @@
 import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
-import { PLANTS, stageName } from './plants.js';
+import { PLANTS, stageName, adultOf } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
@@ -195,7 +195,9 @@ $('water-btn').addEventListener('click', () => {
     const stage = stageOf(state);
     setTimeout(() => {
       applyScene();
-      if (result.grownNow) toast(`${withJosa(PLANTS[state.active].name, '이', '가')} 다 자랐어요 · 꽃씨 +${RULES.GROWN_REWARD}`);
+      // 다 자라면 라틴어 이름을 얻는다: '몬스테라가 페네스트라가 됐어요'
+      const adult = adultOf(state.active);
+      if (result.grownNow) toast(`${withJosa(PLANTS[state.active].name, '이', '가')} ${withJosa(adult.name, '이', '가')} 됐어요 · 라틴어로 ‘${adult.meaning}’ · 꽃씨 +${RULES.GROWN_REWARD}`);
       else toast(stage === before + 1 ? `한 뼘 자랐어요 · ${stageName(state.active, stage)}` : '한 뼘 자랐어요');
       if (prefs.sound) chime();
     }, 600);
