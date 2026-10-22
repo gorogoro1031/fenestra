@@ -4,7 +4,7 @@ import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
 import { createSky, orbPosition } from './sky.js';
-import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, toast } from './ui.js';
+import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, renderGuide, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
@@ -296,6 +296,12 @@ $('weather-now').addEventListener('click', () => {
   weatherWatch.refresh();
 });
 
+// 식물 위젯을 누르면 도감
+$('grow-card').addEventListener('click', () => {
+  renderGuide(state);
+  openSheet($('plant-sheet'));
+});
+
 /* ---------- 주행 ---------- */
 function markDriving(kmh) {
   if (kmh <= DRIVING_SPEED_KMH) return;
@@ -430,6 +436,7 @@ $('pref-lang').addEventListener('click', (e) => {
   showAlbum();
   syncSettings();
   if ($('greenhouse-sheet').open) renderGreenhouseSheet();
+  if ($('plant-sheet').open) renderGuide(state);
   // 지역 이름을 새 언어로 다시 받는다
   weatherWatch?.refresh();
 });

@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221410">
-<link rel="stylesheet" href="css/app.css?v=2610221410">
+<link rel="stylesheet" href="css/tokens.css?v=2610221411">
+<link rel="stylesheet" href="css/app.css?v=2610221411">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -105,7 +105,8 @@
         </span>
       </button>
       <!-- 성장: 단계 이름, 몇 단계인지 작은 점, 지금 식물 그림, 다음 단계까지 차오르는 칸 -->
-      <div class="wd grow" style="--c: var(--tint)">
+      <!-- 누르면 식물 도감 -->
+      <button class="wd grow" type="button" id="grow-card" aria-haspopup="dialog" style="--c: var(--tint)">
         <p class="wd-key"><span id="plant-name">몬스테라</span></p>
         <p class="wd-title" id="stage-name">씨앗</p>
         <div class="stage-pips" id="stage-pips" aria-hidden="true"></div>
@@ -113,7 +114,7 @@
         <div class="steps" id="grow-steps" aria-hidden="true"></div>
         <p class="grow-meaning" id="grow-meaning" hidden></p>
         <p class="sr-only" id="stage-sub"></p>
-      </div>
+      </button>
       <div class="wd" style="--c: var(--water)">
         <p class="wd-key"><span data-i18n="dew">이슬</span></p>
         <span class="wd-badge" id="gift-badge" hidden data-i18n="firstGift">첫 선물</span>
@@ -152,6 +153,26 @@
         <div class="stat"><p class="s-label" data-i18n="waterings">물 준 횟수</p><p class="s-value"><span id="stat-water">0</span><span data-i18n="waterUnit">번</span></p></div>
         <div class="stat"><p class="s-label" data-i18n="plantsGrown">다 키운 식물</p><p class="s-value"><span id="stat-grown">0</span><span data-i18n="grownUnit">종</span></p></div>
       </div>
+    </dialog>
+
+    <!-- 식물 도감: 식물 위젯을 누르면. 소개, 원산지·알맞은 온도·두 배 조건, 다섯 단계 (안 온 단계는 실루엣) -->
+    <dialog class="sheet plant-sheet" id="plant-sheet" aria-labelledby="ps-name">
+      <div class="ps-head">
+        <div class="ps-hero"><img id="ps-img" alt="" width="290" height="290"></div>
+        <div class="ps-body">
+          <div class="sheet-head"><h2 id="ps-name"></h2><button class="text-btn" type="button" data-close data-i18n="done">완료</button></div>
+          <p class="ps-latin" id="ps-latin"></p>
+          <p class="ps-about" id="ps-about"></p>
+          <div class="ps-facts">
+            <div class="ps-fact"><p data-i18n="origin">원산지</p><b id="ps-origin"></b></div>
+            <div class="ps-fact"><p data-i18n="bestTemp">알맞은 온도</p><b id="ps-temp"></b></div>
+            <div class="ps-fact"><p data-i18n="doubleWhen">두 배로 자라는 때</p><b id="ps-when"></b></div>
+            <div class="ps-fact"><p data-i18n="soFar">지금까지</p><b id="ps-record"></b></div>
+          </div>
+        </div>
+      </div>
+      <p class="ps-label" data-i18n="growthStages">자라는 단계</p>
+      <ol class="ps-stages" id="ps-stages"></ol>
     </dialog>
 
     <!-- 주행 요약: 1km 넘게 달리고 2분 동안 멈추면 이번 주행을 정리해 보여 준다 -->
@@ -295,8 +316,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221410","./js/albums-en.js":"./js/albums-en.js?v=2610221410","./js/albums.js":"./js/albums.js?v=2610221410","./js/drive.js":"./js/drive.js?v=2610221410","./js/guest-visit.js":"./js/guest-visit.js?v=2610221410","./js/guests.js":"./js/guests.js?v=2610221410","./js/i18n.js":"./js/i18n.js?v=2610221410","./js/main.js":"./js/main.js?v=2610221410","./js/motions.js":"./js/motions.js?v=2610221410","./js/plant.js":"./js/plant.js?v=2610221410","./js/plants.js":"./js/plants.js?v=2610221410","./js/qr.js":"./js/qr.js?v=2610221410","./js/scene.js":"./js/scene.js?v=2610221410","./js/sky.js":"./js/sky.js?v=2610221410","./js/sound.js":"./js/sound.js?v=2610221410","./js/state.js":"./js/state.js?v=2610221410","./js/storage.js":"./js/storage.js?v=2610221410","./js/text.js":"./js/text.js?v=2610221410","./js/trip.js":"./js/trip.js?v=2610221410","./js/tutorial.js":"./js/tutorial.js?v=2610221410","./js/ui.js":"./js/ui.js?v=2610221410","./js/weather.js":"./js/weather.js?v=2610221410"}}</script>
-<script type="module" src="js/main.js?v=2610221410"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221411","./js/albums-en.js":"./js/albums-en.js?v=2610221411","./js/albums.js":"./js/albums.js?v=2610221411","./js/drive.js":"./js/drive.js?v=2610221411","./js/guest-visit.js":"./js/guest-visit.js?v=2610221411","./js/guests.js":"./js/guests.js?v=2610221411","./js/i18n.js":"./js/i18n.js?v=2610221411","./js/main.js":"./js/main.js?v=2610221411","./js/motions.js":"./js/motions.js?v=2610221411","./js/plant.js":"./js/plant.js?v=2610221411","./js/plants.js":"./js/plants.js?v=2610221411","./js/qr.js":"./js/qr.js?v=2610221411","./js/scene.js":"./js/scene.js?v=2610221411","./js/sky.js":"./js/sky.js?v=2610221411","./js/sound.js":"./js/sound.js?v=2610221411","./js/state.js":"./js/state.js?v=2610221411","./js/storage.js":"./js/storage.js?v=2610221411","./js/text.js":"./js/text.js?v=2610221411","./js/trip.js":"./js/trip.js?v=2610221411","./js/tutorial.js":"./js/tutorial.js?v=2610221411","./js/ui.js":"./js/ui.js?v=2610221411","./js/weather.js":"./js/weather.js?v=2610221411"}}</script>
+<script type="module" src="js/main.js?v=2610221411"></script>
 <!-- version:end -->
 </body>
 </html>
