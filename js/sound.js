@@ -299,6 +299,38 @@ export function chime() {
   [659.25, 880, 1174.66].forEach((f, i) => setTimeout(() => bell(ac, out, f, 0.07), i * 140));
 }
 
+// 오프닝 인사: 낮·밤 화음이 천천히 부풀었다 잦아들고, 맑은 음 두 개가 얹힌다
+const SWELL = { gain: 0.05, attack: 1.6, hold: 1.2, release: 2.8 };
+const SWELL_BELLS = [{ at: 0.35, note: 2 }, { at: 1.1, note: 4 }];
+
+/** 인사 때 한 번 울리는 은은한 앰비언트 (약 5.5초) */
+export function greetSwell(scene = 'day') {
+  const ac = audio();
+  if (!ac) return;
+  const out = getBus(ac).input;
+  const t = ac.currentTime;
+  const end = t + SWELL.attack + SWELL.hold + SWELL.release;
+  const env = ac.createGain();
+  env.gain.setValueAtTime(0.0001, t);
+  env.gain.exponentialRampToValueAtTime(SWELL.gain, t + SWELL.attack);
+  env.gain.setValueAtTime(SWELL.gain, t + SWELL.attack + SWELL.hold);
+  env.gain.exponentialRampToValueAtTime(0.0001, end);
+  env.connect(out);
+  (CHORDS[scene] || CHORDS.day).forEach((freq, i) => {
+    [-5, 5].forEach((cents, k) => {
+      const osc = ac.createOscillator();
+      osc.type = k === 0 ? 'sine' : 'triangle';
+      osc.frequency.value = freq;
+      osc.detune.value = cents + i;
+      osc.connect(env);
+      osc.start(t);
+      osc.stop(end + 0.1);
+    });
+  });
+  const notes = BELL_NOTES[scene] || BELL_NOTES.day;
+  SWELL_BELLS.forEach(({ at, note }) => setTimeout(() => bell(ac, out, notes[note], BELL_GAIN), at * 1000));
+}
+
 /** 사용자가 처음 화면을 누를 때 불러 소리를 쓸 수 있게 한다 (브라우저 자동 재생 제한) */
 export function unlock() {
   audio();

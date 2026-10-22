@@ -5,7 +5,7 @@ import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
 import { createSky, orbPosition } from './sky.js';
 import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, renderGuide, renderGreeting, toast } from './ui.js';
-import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
+import { setAmbient, drip, chime, unlock, rustle, leafTouch, greetSwell } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
@@ -16,7 +16,7 @@ import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
 import { greetingPeriod, cleanName } from './text.js';
 
-// 인트로: 로고만 보이는 시간, 인사가 떠 있는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
+// 인트로: 로고 모션 시간(끝나면 '탭하여 계속하기'), 탭한 뒤 인사가 떠 있는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
 const LOGO_MS = 2600;
 // 인사 단계: 로고가 사라지는 시간(css --greet-delay 0.65초) + 인사가 떠 있는 시간
 const GREET_MS = 2500;
@@ -536,7 +536,7 @@ const tutorial = createTutorial($('tour'), {
 $('open-tour').addEventListener('click', () => { closeSheets(); tutorial.open(); });
 const shouldShowTutorial = () => query.has('tutorial') || (!prefs.tutorialSeen && PREVIEW_STAGE === null && !query.has('noloading'));
 
-/* ---------- 인트로: 로고 → 인사가 올라왔다 사라짐 → 막이 걷히며 화분에서 식물이 자라 오름 → UI가 올라온다. 누르면 바로 건너뛴다 ---------- */
+/* ---------- 인트로: 로고 → 탭하여 계속하기 → (탭) 인사와 은은한 소리 → 막이 걷히며 화분에서 식물이 자라 오름 → UI가 올라온다 ---------- */
 function startIntro(plantReady) {
   const opening = $('loading');
   if (query.has('noloading')) { opening.remove(); window.__fenestraReady = true; return Promise.resolve(); }
@@ -560,12 +560,24 @@ function startIntro(plantReady) {
       }, Math.max(OPENING_FADE_MS, assembleMs));
     };
     renderGreeting($('opening-greet'), greetingNow());
-    setTimeout(() => {
-      if (revealed) return;
+    // 탭하면(로고 모션 중이어도) 인사로 넘어간다. 탭이 있어야 소리를 낼 수 있다
+    let greeted = false;
+    const greet = () => {
+      if (greeted) return;
+      greeted = true;
+      window.__fenestraReady = true;
+      opening.classList.remove('ready');
       opening.classList.add('greeting');
+      unlock();
+      if (prefs.sound) greetSwell(currentScene());
       setTimeout(reveal, GREET_MS);
+    };
+    setTimeout(() => {
+      // 앱이 떴다는 표시 (시작 지킴이). 이제 탭을 기다린다
+      window.__fenestraReady = true;
+      if (!greeted) opening.classList.add('ready');
     }, LOGO_MS);
-    opening.addEventListener('click', reveal, { once: true });
+    opening.addEventListener('click', greet);
   });
 }
 

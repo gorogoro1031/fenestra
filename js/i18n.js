@@ -332,6 +332,7 @@ const STATIC_EN = {
   skip: 'Skip',
   back: 'Back',
   next: 'Next',
+  tapToContinue: 'Tap to continue',
   bootTitle: "Couldn't load the app",
   reload: 'Reload',
 };

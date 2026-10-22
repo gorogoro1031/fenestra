@@ -413,6 +413,11 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 @keyframes tag-in { from { opacity: 0; transform: translateY(8px); } }
 /* 막이 걷히면 로고는 위로 흐려지며 사라지고, 뒤에서 식물이 모인다 */
 /* 로고 다음 인사: 아래에서 올라왔다가, 막이 걷힐 때 위로 사라진다 */
+/* 탭하여 계속하기: 로고 모션이 끝나면 아래쪽에 숨 쉬듯 */
+.opening { cursor: pointer; }
+.opening-tap { position: absolute; left: 0; right: 0; bottom: 14%; text-align: center; font-size: 30px; font-weight: 400; letter-spacing: .02em; color: var(--label-2); opacity: 0; transition: opacity 600ms ease; pointer-events: none; }
+.opening.ready .opening-tap { opacity: 1; animation: tap-breathe 2.4s ease-in-out 600ms infinite; }
+@keyframes tap-breathe { 50% { opacity: .45; } }
 /* 인사는 로고와 같은 크기감으로 크게, 얇게 (이름만 굵게). 긴 이름이면 두 줄로 고르게 */
 .opening-greet { position: absolute; left: 0; right: 0; top: 50%; margin: 0 auto; max-width: 1700px; text-align: center; font-size: 160px; font-weight: 300; line-height: 1.1; letter-spacing: -.02em; text-wrap: balance; color: #fff; opacity: 0; transform: translateY(calc(-50% + 40px)); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); pointer-events: none; }
 .opening-greet b { font-weight: 700; }
@@ -438,6 +443,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 @media (prefers-reduced-motion: reduce) {
   .opening-word .ch, .opening-word .logo-leaf svg, .opening-tag { animation: none; }
   .opening-greet { transition: none; }
+  .opening.ready .opening-tap { animation: none; }
   .toast, .orb, .sky, .plant-img { transition: none; }
   .guest, .guest img, .guest.leaving { animation: none; }
 }
