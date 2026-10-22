@@ -1,8 +1,8 @@
-// 장면 모션: 광합성 파장, 비, 물 주기 물방울, 화분 자리 계산 (식물은 plant.js, 해·달은 sky.js)
+// 장면 모션: 두 배 물 주기 파장, 비, 물 주기 물방울, 화분 자리 계산 (식물은 plant.js, 해·달은 sky.js)
 // 캔버스 크기는 화면 비율에 따라 바뀌므로 그릴 때마다 canvas.width/height를 쓴다
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// 광합성으로 햇빛이 모일 때 식물 뒤에서 노란 파장이 잠깐 퍼진다 (평소엔 해·달 고리가 그 자리를 맡는다)
+// 두 배로 물을 줄 때 식물 뒤에서 노란 파장이 잠깐 퍼진다 (평소엔 해·달 고리가 그 자리를 맡는다)
 const PULSE_MS = 3000;
 const WAVE = { every: 1100, life: 7000, alpha: 0.5, width: 3.2, color: '255, 214, 10' };
 // 식물 그림 배율: 1920×1200 기준, 무대가 세로로 길어지면 조금 크게

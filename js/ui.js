@@ -1,15 +1,16 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
-import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, stageFor, kmToNextDrop } from './state.js';
-import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf, plantName, plantHint } from './plants.js';
+import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, bonusInfo, stageFor, kmToNextDrop } from './state.js';
+import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf, plantName, plantHint, guideOf, conditionFor } from './plants.js';
 import { GUESTS, GUEST_IDS, guestImage, guestName } from './guests.js';
 import { t, locale } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
-// 햇빛 게이지 점 개수 (이슬은 최대치 12개와 같게 해 점 하나 = 한 개)
-// 다음 단계까지 칸은 남은 점수만큼 나누되 너무 잘게 쪼개지 않게
-const LIGHT_DOTS = 10;
+// 다음 단계까지 칸은 남은 점수만큼 나누되 너무 잘게 쪼개지 않게 (이슬 점은 최대치 12개와 같게, 점 하나 = 한 개)
 const MAX_STEPS = 10;
+// 컨디션 기온 막대의 양 끝(°C)
+const BAR_MIN = 0;
+const BAR_MAX = 40;
 
 /** 같은 모양 칸 n개 중 앞에서 on개를 켠다 */
 function renderPips(el, on, n) {
@@ -40,16 +41,20 @@ function pointsToNext(state) {
   return thresholdsOf(state)[stage + 1] - growthOf(state);
 }
 
+const roundTemp = (temp) => Math.round(temp);
+const barPercent = (temp) => ((Math.min(BAR_MAX, Math.max(BAR_MIN, temp)) - BAR_MIN) / (BAR_MAX - BAR_MIN)) * 100;
+
 /**
- * @typedef {{rate:number, reason:'ok'|'night'|'weather'|'loading'|'unknown', label:string}} PhotoInfo
- *  rate: 지금 1분에 모이는 햇빛, reason: 모이거나 쉬는 이유, label: 날씨 이름
+ * @typedef {{driving:boolean, isNight:boolean, sunny:boolean, temp:number|null}} StatusContext
+ *  sunny: 실제 날씨가 맑거나 구름 조금인 낮, temp: 지금 기온(모르면 null)
  */
 
 /**
  * @param {object} state
- * @param {{photo:PhotoInfo, driving:boolean, isNight:boolean}} ctx
+ * @param {StatusContext} ctx
  */
-export function renderStatus(state, { photo, driving, isNight }) {
+export function renderStatus(state, ctx) {
+  const { driving } = ctx;
   const stage = stageOf(state);
   $('plant-name').textContent = plantName(state.active);
   $('stage-name').textContent = stageName(state.active, stage);
@@ -71,14 +76,13 @@ export function renderStatus(state, { photo, driving, isNight }) {
   $('grow-meaning').textContent = grown ? t('latin', { meaning: adultOf(state.active).meaning }) : '';
   $('drops-num').textContent = String(state.drops);
   renderDots($('drops-dots'), state.drops, RULES.MAX_DROPS);
-  $('light-num').textContent = String(Math.round(state.light));
-  renderDots($('light-dots'), (state.light / RULES.MAX_LIGHT) * LIGHT_DOTS, LIGHT_DOTS);
   $('today-km').textContent = state.todayKm.toFixed(1);
   $('coin-num').textContent = String(state.coins);
   $('gift-badge').hidden = !(state.waterCount === 0 && state.totalKm === 0 && state.drops > 0);
   const hasNewGuest = state.newGuests.length > 0;
   $('guest-dot').hidden = !hasNewGuest;
   $('open-greenhouse').setAttribute('aria-label', t(hasNewGuest ? 'greenhouse.labelNew' : 'greenhouse.label'));
+  renderCondition(state, ctx);
 
   const check = waterCheck(state);
   const waterBtn = $('water-btn');
@@ -88,37 +92,61 @@ export function renderStatus(state, { photo, driving, isNight }) {
   waterBtn.classList.toggle('wait', waiting);
   waterBtn.classList.toggle('rest', waterBtn.disabled && !waiting);
   waterBtn.style.setProperty('--p', String(1 - kmToNextDrop(state) / RULES.KM_PER_DROP));
-  $('water-sub').textContent = waterSubtitle(state, check, { driving, isNight });
-  // 켜졌는지는 카드 색으로 보이니 제목은 늘 '광합성', 아래 줄만 바뀐다
-  $('photo-btn').classList.toggle('on', photo.rate > 0);
-  $('photo-sub').textContent = photoSub(photo, state.light >= RULES.MAX_LIGHT);
+  $('water-sub').textContent = waterSubtitle(state, check, ctx);
+  $('water-x2').hidden = waterBtn.disabled || !bonusNow(state, ctx);
   $('driving-banner').hidden = !driving;
 }
 
-/** 광합성 카드 아래 줄. 카드 폭에 맞게 짧게 */
-function photoSub({ rate, reason, label }, full) {
-  if (reason === 'loading') return t('photo.loading');
-  if (reason === 'unknown') return t('photo.unknown');
-  if (reason === 'night') return t('photo.night');
-  if (reason === 'weather') return t('photo.weather', { label });
-  if (full) return t('photo.full');
-  return t('photo.rate', { label, rate });
+/** 컨디션 위젯: 지금 기온이 식물에게 맞는지(막대), 지금 물 주면 두 배인지(알약) */
+function renderCondition(state, { temp, isNight, sunny }) {
+  const condition = conditionFor(state.active, temp);
+  const [low, high] = guideOf(state.active).temp;
+  $('cond').dataset.state = condition;
+  $('cond-state').textContent = t(`cond.${condition}`);
+  const range = $('cond-range');
+  range.style.left = `${barPercent(low)}%`;
+  range.style.width = `${barPercent(high) - barPercent(low)}%`;
+  const known = condition !== 'unknown';
+  $('cond-now').hidden = !known;
+  if (known) $('cond-now').style.left = `${barPercent(temp)}%`;
+  $('cond-temp').textContent = known ? t('cond.now', { temp: roundTemp(temp) }) : '';
+  $('cond-best').textContent = t('cond.best', { low, high });
+  const bonus = bonusInfo(state, { isNight, sunny });
+  const pill = $('cond-bonus');
+  const grown = stageOf(state) === LAST_STAGE;
+  pill.classList.toggle('on', bonus.active && !grown);
+  pill.textContent = grown ? t('water.grown') : bonusText(bonus);
 }
 
-function waterSubtitle(state, check, { driving, isNight }) {
-  if (driving) return t('water.driving');
+/** 두 배 알약 글자: 지금이면 '지금 물 주면 ×2', 아니면 언제 되는지 */
+function bonusText({ rule, active, left }) {
+  if (rule === 'dry') return active ? t('bonus.dry.on', { n: left }) : t('bonus.dry.off');
+  if (active) return t('bonus.on');
+  return rule === 'road' ? t('bonus.road.off', { km: left }) : t(`bonus.${rule}.off`);
+}
+
+/** 로고 아래 지금 날씨: 큰 기온, 날씨 이름, 지역 */
+export function renderWeatherNow({ temp, label, place }) {
+  $('wn-temp').textContent = Number.isFinite(temp) ? `${roundTemp(temp)}°` : '–°';
+  $('wn-sky').textContent = label;
+  $('wn-place').textContent = place || '';
+  $('wn-place').hidden = !place;
+}
+
+function waterSubtitle(state, check, ctx) {
+  if (ctx.driving) return t('water.driving');
   if (check.reason === 'grown') return t('water.grown');
   // 소수점은 한 자리, .0이면 떼서 짧게 (7.3km · 10km)
   if (check.reason === 'no-drops') return t('water.noDrops', { km: Number(kmToNextDrop(state).toFixed(1)) });
   if (check.reason === 'dry-limit') return t('water.dryLimit');
   if (stageOf(state) === 0 && state.waterCount === 0) return t('water.firstSprout', { n: pointsToNext(state) });
-  if (!bonusNow(state, { isNight })) return t('water.one');
+  if (!bonusNow(state, ctx)) return t('water.one');
   return t(`water.bonus.${PLANTS[state.active].rule}`);
 }
 
 /**
  * 주행 요약 카드
- * @param {{km:number, drops:number, coins:number, light:number}} trip
+ * @param {{km:number, drops:number, coins:number}} trip
  */
 export function renderTrip(trip, state, now = new Date()) {
   const time = now.toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
@@ -126,7 +154,6 @@ export function renderTrip(trip, state, now = new Date()) {
   $('trip-km').firstChild.textContent = trip.km.toFixed(1);
   $('trip-drops').textContent = `+${trip.drops}`;
   $('trip-coins').textContent = `+${trip.coins}`;
-  $('trip-light').textContent = `+${Math.round(trip.light)}`;
   const stage = stageOf(state);
   const plant = plantName(state.active);
   const next = stage === LAST_STAGE ? t('trip.grown', { plant }) : t('trip.next', { plant, stage: stageName(state.active, stage + 1), n: pointsToNext(state) });
@@ -218,10 +245,9 @@ function renderGuestbook(state) {
   $('gb-count').textContent = `${Object.keys(state.guestbook).length} / ${GUEST_IDS.length}`;
 }
 
-/** 상단 시각 옆 날씨 이름 */
-export function renderChip(label, now = new Date()) {
-  const time = now.toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
-  $('chip').textContent = `${time} · ${label}`;
+/** 상단 로고 옆 시각 */
+export function renderChip(now = new Date()) {
+  $('chip').textContent = now.toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
 }
 
 let toastTimer = 0;

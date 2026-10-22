@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221232">
-<link rel="stylesheet" href="css/app.css?v=2610221232">
+<link rel="stylesheet" href="css/tokens.css?v=2610221410">
+<link rel="stylesheet" href="css/app.css?v=2610221410">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -59,7 +59,7 @@
 <div class="viewport">
   <div class="stage" id="stage" data-scene="night" data-weather="clear" data-theme="dark" data-plant="monstera">
 
-    <!-- 장면: 검은 바탕 → 빛 번짐 → 시간 따라 뜨고 지는 해·달 고리 → 광합성 파장 → 식물 그림 → 비·물 주기 물방울 -->
+    <!-- 장면: 검은 바탕 → 빛 번짐 → 시간 따라 뜨고 지는 해·달 고리 → 두 배 물 주기 파장 → 식물 그림 → 비·물 주기 물방울 -->
     <div class="scene" aria-hidden="true">
       <div class="layer sky" id="sky"></div>
       <div class="orb" id="orb"></div>
@@ -72,8 +72,15 @@
 
     <header class="top">
       <div class="brand">
-        <p class="wordmark" aria-label="Fenestra">fenestra<span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
-        <p class="caption"><span id="chip">오후 8:00 · 맑음</span> · <span data-i18n="today">오늘</span> <span id="today-km">0.0</span>km <span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
+        <div class="brand-row">
+          <p class="wordmark" aria-label="Fenestra">fenestra<span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
+          <p class="caption"><span id="chip">오후 8:00</span> · <span data-i18n="today">오늘</span> <span id="today-km">0.0</span>km <span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
+        </div>
+        <!-- 지금 날씨: 큰 기온, 날씨 이름, 지역. 날씨를 모를 때 누르면 다시 확인 -->
+        <button class="weather-now" type="button" id="weather-now">
+          <span class="wn-temp" id="wn-temp">–°</span>
+          <span class="wn-text" role="status"><b id="wn-sky">날씨 확인 중</b><span id="wn-place"></span></span>
+        </button>
       </div>
       <nav class="tools" aria-label="메뉴" data-i18n-label="menu">
         <span class="coin-pill" aria-label="꽃씨" data-i18n-label="pips"><i class="coin-dot" aria-hidden="true"></i><span data-i18n="pips">꽃씨</span> <b id="coin-num">0</b></span>
@@ -111,22 +118,22 @@
         <p class="wd-key"><span data-i18n="dew">이슬</span></p>
         <span class="wd-badge" id="gift-badge" hidden data-i18n="firstGift">첫 선물</span>
         <p class="wd-count"><span id="drops-num">0</span><small> / 12</small></p>
+        <p class="wd-rule" data-i18n="dewRule">10km 달리면 1개</p>
         <div class="dots cols-6" id="drops-dots" aria-hidden="true"></div>
       </div>
-      <div class="wd" style="--c: var(--sun)">
-        <p class="wd-key"><span data-i18n="sunlight">햇빛</span></p>
-        <p class="wd-count"><span id="light-num">0</span><small> / 100</small></p>
-        <div class="dots cols-5" id="light-dots" aria-hidden="true"></div>
+      <!-- 컨디션: 지금 기온이 식물에게 맞는지(보여 주기만), 지금 물 주면 두 배인지 -->
+      <div class="wd cond" id="cond" data-state="unknown" style="--c: var(--tint)">
+        <p class="wd-key"><span data-i18n="condition">컨디션</span></p>
+        <p class="cond-state" id="cond-state">온도를 몰라요</p>
+        <div class="cond-bar" aria-hidden="true"><i class="range" id="cond-range"></i><b class="now" id="cond-now" hidden></b></div>
+        <p class="cond-scale"><b id="cond-temp"></b><span id="cond-best"></span></p>
+        <p class="cond-bonus" id="cond-bonus"></p>
       </div>
-      <!-- 이슬이 없으면 회색 카드로 바뀌고, 아이콘 둘레 고리가 다음 이슬까지 차오른다 -->
+      <!-- 아래 두 칸을 다 쓰는 물 주기. 이슬이 없으면 회색 카드로 바뀌고, 아이콘 둘레 고리가 다음 이슬까지 차오른다. 지금 두 배면 ×2 -->
       <button class="act water" type="button" id="water-btn">
         <span class="act-ic" aria-hidden="true"><svg><use href="#i-drop"/></svg></span>
         <span class="act-tx"><b data-i18n="water">물 주기</b><span id="water-sub">이슬 1개</span></span>
-      </button>
-      <!-- 광합성: 실제 날씨가 맑은 낮이면 저절로 햇빛이 모인다. 누르면 설명, 날씨를 모르면 다시 확인 -->
-      <button class="act sun" type="button" id="photo-btn">
-        <span class="act-ic" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>
-        <span class="act-tx" role="status"><b data-i18n="basking">광합성</b><span id="photo-sub">날씨 확인 중</span></span>
+        <span class="x2" id="water-x2" hidden>×2</span>
       </button>
     </section>
 
@@ -154,7 +161,6 @@
       <div class="trip-stats">
         <div class="trip-stat" style="--c: var(--water)"><p data-i18n="dew">이슬</p><b id="trip-drops">+0</b></div>
         <div class="trip-stat" style="--c: var(--sun)"><p data-i18n="pips">꽃씨</p><b id="trip-coins">+0</b></div>
-        <div class="trip-stat" style="--c: var(--sun)"><p data-i18n="sunlight">햇빛</p><b id="trip-light">+0</b></div>
       </div>
       <p class="trip-line" id="trip-line"></p>
       <div class="trip-btns">
@@ -251,7 +257,6 @@
         <button class="row link" type="button" id="demo-km" data-i18n="demoKm">30km 달린 것으로 하기</button>
         <button class="row link" type="button" id="demo-coins" data-i18n="demoCoins">꽃씨 +100</button>
         <button class="row link" type="button" id="demo-guest" data-i18n="demoGuest">손님 부르기</button>
-        <button class="row link" type="button" id="demo-photo" data-i18n="demoPhoto">맑은 낮 10분 광합성한 것으로 하기</button>
         <button class="row link" type="button" id="demo-drive" data-i18n="demoDrive">운전 중 화면 보기</button>
         <button class="row link" type="button" id="demo-trip" data-i18n="demoTrip">주행 요약 보기</button>
         <button class="row link destructive" type="button" id="demo-reset" data-i18n="demoReset">처음부터 다시</button>
@@ -290,8 +295,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221232","./js/albums-en.js":"./js/albums-en.js?v=2610221232","./js/albums.js":"./js/albums.js?v=2610221232","./js/drive.js":"./js/drive.js?v=2610221232","./js/guest-visit.js":"./js/guest-visit.js?v=2610221232","./js/guests.js":"./js/guests.js?v=2610221232","./js/i18n.js":"./js/i18n.js?v=2610221232","./js/main.js":"./js/main.js?v=2610221232","./js/motions.js":"./js/motions.js?v=2610221232","./js/plant.js":"./js/plant.js?v=2610221232","./js/plants.js":"./js/plants.js?v=2610221232","./js/qr.js":"./js/qr.js?v=2610221232","./js/scene.js":"./js/scene.js?v=2610221232","./js/sky.js":"./js/sky.js?v=2610221232","./js/sound.js":"./js/sound.js?v=2610221232","./js/state.js":"./js/state.js?v=2610221232","./js/storage.js":"./js/storage.js?v=2610221232","./js/text.js":"./js/text.js?v=2610221232","./js/trip.js":"./js/trip.js?v=2610221232","./js/tutorial.js":"./js/tutorial.js?v=2610221232","./js/ui.js":"./js/ui.js?v=2610221232","./js/weather.js":"./js/weather.js?v=2610221232"}}</script>
-<script type="module" src="js/main.js?v=2610221232"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221410","./js/albums-en.js":"./js/albums-en.js?v=2610221410","./js/albums.js":"./js/albums.js?v=2610221410","./js/drive.js":"./js/drive.js?v=2610221410","./js/guest-visit.js":"./js/guest-visit.js?v=2610221410","./js/guests.js":"./js/guests.js?v=2610221410","./js/i18n.js":"./js/i18n.js?v=2610221410","./js/main.js":"./js/main.js?v=2610221410","./js/motions.js":"./js/motions.js?v=2610221410","./js/plant.js":"./js/plant.js?v=2610221410","./js/plants.js":"./js/plants.js?v=2610221410","./js/qr.js":"./js/qr.js?v=2610221410","./js/scene.js":"./js/scene.js?v=2610221410","./js/sky.js":"./js/sky.js?v=2610221410","./js/sound.js":"./js/sound.js?v=2610221410","./js/state.js":"./js/state.js?v=2610221410","./js/storage.js":"./js/storage.js?v=2610221410","./js/text.js":"./js/text.js?v=2610221410","./js/trip.js":"./js/trip.js?v=2610221410","./js/tutorial.js":"./js/tutorial.js?v=2610221410","./js/ui.js":"./js/ui.js?v=2610221410","./js/weather.js":"./js/weather.js?v=2610221410"}}</script>
+<script type="module" src="js/main.js?v=2610221410"></script>
 <!-- version:end -->
 </body>
 </html>

@@ -1,17 +1,17 @@
-import { RULES, createState, sanitize, rollDay, addDistance, photosynthesize, markGuestsSeen, lightPerMinute, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
 import { PLANTS, stageName, adultOf, plantName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
 import { createSky, orbPosition } from './sky.js';
-import { renderStatus, renderGreenhouse, renderChip, renderTrip, toast } from './ui.js';
+import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
 import { pickGuest, shouldSpawn, guestName } from './guests.js';
 import { createGuestVisit } from './guest-visit.js';
-import { t, setLang, applyStatic } from './i18n.js';
+import { t, setLang, applyStatic, getLang } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
 
@@ -20,8 +20,6 @@ const LOGO_MS = 2800;
 const OPENING_FADE_MS = 1000;
 // 식물 그림이 늦어도 인트로는 이 시간 뒤엔 넘어간다 (그림은 오는 대로 나타난다)
 const PLANT_WAIT_MS = 4000;
-// 광합성은 1분마다 날씨를 보고 햇빛을 채운다
-const PHOTO_TICK_MS = 60000;
 const DRIVING_SPEED_KMH = 5;
 const DRIVING_HOLD_MS = 15000;
 const DEMO_DRIVE_MS = 8000;
@@ -29,10 +27,11 @@ const DEMO_DRIVE_MS = 8000;
 const $ = (id) => document.getElementById(id);
 const stageEl = $('stage');
 // 확인용 주소 옵션: ?scene=day|night 로 정오·자정 고정, ?hour=0~24 로 시각 고정, ?weather=clear|partly|cloudy|fog|rain|snow 로 날씨 고정(위치를 묻지 않음),
-// ?noloading 으로 로딩 건너뛰기 (저장하지 않음)
+// ?temp=22 로 기온 고정, ?noloading 으로 로딩 건너뛰기 (저장하지 않음)
 const query = new URLSearchParams(location.search);
 const SCENE_OVERRIDE = ['day', 'night'].includes(query.get('scene')) ? query.get('scene') : null;
 const WEATHER_OVERRIDE = SKY_KINDS.includes(query.get('weather')) ? query.get('weather') : null;
+const TEMP_OVERRIDE = query.has('temp') && Number.isFinite(Number(query.get('temp'))) ? Number(query.get('temp')) : null;
 const HOUR_OVERRIDE = query.has('hour') && Number.isFinite(Number(query.get('hour'))) ? Number(query.get('hour')) : null;
 const todayKey = () => new Date().toLocaleDateString('sv-SE');
 
@@ -42,7 +41,7 @@ const PREVIEW_PLANT = PLANTS[query.get('plant')] ? query.get('plant') : 'monster
 const previewState = (stage) => {
   const plant = { growth: PLANTS[PREVIEW_PLANT].thresholds[stage], waterToday: 0, grown: false };
   const plants = { monstera: { growth: 9, waterToday: 0, grown: false }, [PREVIEW_PLANT]: plant };
-  return { ...createState(todayKey()), active: PREVIEW_PLANT, plants, drops: 6, light: 60, todayKm: 8.2, totalKm: 164.5, waterCount: 31, coins: 140 };
+  return { ...createState(todayKey()), active: PREVIEW_PLANT, plants, drops: 6, todayKm: 8.2, totalKm: 164.5, waterCount: 31, coins: 140 };
 };
 
 let state = PREVIEW_STAGE !== null ? previewState(PREVIEW_STAGE) : rollDay(sanitize(loadState(), todayKey()), todayKey());
@@ -95,11 +94,12 @@ const currentScene = () => (orbPosition(currentHours()).isDay ? 'day' : 'night')
 
 /* ---------- 날씨: 기본은 실제 날씨(대략의 위치 → Open-Meteo). 주소·설정으로 고정하면 위치를 묻지 않는다 ---------- */
 const fixedSky = () => WEATHER_OVERRIDE || (prefs.sky !== 'auto' ? prefs.sky : null);
-/** @returns {{status:'loading'|'ok'|'error', kind:string|null, error:string, at:number}} */
+/** @returns {import('./weather.js').LiveWeather} 고정 날씨면 기온·지역은 모른다 */
 function weatherNow() {
   const fixed = fixedSky();
-  if (fixed) return { status: 'ok', kind: fixed, error: '', at: 0 };
-  return weatherWatch ? weatherWatch.current() : { status: 'loading', kind: null, error: '', at: 0 };
+  if (fixed) return { status: 'ok', kind: fixed, temp: TEMP_OVERRIDE, place: null, error: '', at: 0 };
+  const live = weatherWatch ? weatherWatch.current() : { status: 'loading', kind: null, temp: null, place: null, error: '', at: 0 };
+  return TEMP_OVERRIDE === null ? live : { ...live, temp: TEMP_OVERRIDE };
 }
 // 비·눈이면 화면이 젖는다 (빗줄기·어두운 하늘·달팽이·빗소리)
 const isWet = () => Boolean(skyInfo(weatherNow().kind)?.wet);
@@ -109,18 +109,17 @@ function weatherLabel({ short = false } = {}) {
   if (w.status === 'ok') return skyInfo(w.kind, { short }).label;
   return t(w.status === 'loading' ? 'weather.loading' : 'weather.unknown');
 }
-/** 광합성 카드에 보일 것: 1분에 모이는 햇빛과 이유 */
-function photoInfo() {
-  const w = weatherNow();
-  const isDay = currentScene() === 'day';
-  const rate = lightPerMinute({ kind: w.kind, isDay });
-  const reason = w.status === 'loading' ? 'loading' : w.status === 'error' ? 'unknown' : !isDay ? 'night' : rate > 0 ? 'ok' : 'weather';
-  return { rate, reason, label: weatherLabel({ short: true }) };
+// 몬스테라가 두 배로 자라는 '맑은 낮': 해가 떠 있고 맑음이나 구름 조금
+const SUNNY_KINDS = ['clear', 'partly'];
+/** 두 배 조건·컨디션에 넘기는 지금 상황 */
+function careContext() {
+  const isNight = currentScene() === 'night';
+  return { isNight, sunny: !isNight && SUNNY_KINDS.includes(weatherNow().kind), temp: weatherNow().temp };
 }
 /** 위치 권한을 묻고 날씨를 받기 시작한다. 처음 안내가 끝난 뒤에 부른다 */
 function startWeather() {
   if (weatherWatch || fixedSky()) return;
-  weatherWatch = watchWeather(() => { applyScene(); render(); syncSettings(); });
+  weatherWatch = watchWeather(() => { applyScene(); render(); syncSettings(); }, getLang);
 }
 
 /** @returns {Promise<void>} 식물 그림이 새 단계로 준비되면 끝난다 */
@@ -134,7 +133,8 @@ function applyScene() {
   const ready = plant.setStage(state.active, stageOf(state)).catch(() => toast(t('toast.plantImgFail')));
   sky.draw({ hours: currentHours(), raining: isWet() });
   fx.setRain(isWet());
-  renderChip(weatherLabel());
+  renderChip();
+  renderWeatherNow({ temp: weatherNow().temp, label: weatherLabel(), place: fixedSky() ? t('wn.fixed') : weatherNow().place });
   syncAmbient();
   return ready;
 }
@@ -155,7 +155,7 @@ function syncAmbient() {
 
 function render() {
   if (isDriving()) guests.leave();
-  renderStatus(state, { photo: photoInfo(), driving: isDriving(), isNight: currentScene() === 'night' });
+  renderStatus(state, { ...careContext(), driving: isDriving() });
 }
 
 function commit(next) {
@@ -265,9 +265,11 @@ function onGust(strength) {
 $('water-btn').addEventListener('click', () => {
   if (isDriving()) return;
   const before = stageOf(state);
-  const result = water(state, { isNight: currentScene() === 'night' });
+  const result = water(state, careContext());
   if (!result.grew) return;
   fx.water(anchor);
+  // 두 배로 자라면 식물 뒤로 노란 파장
+  if (result.bonus) arcs.pulse();
   if (prefs.sound) drip();
   plant.glow();
   commit(result.state);
@@ -286,24 +288,12 @@ $('water-btn').addEventListener('click', () => {
   }
 });
 
-/* ---------- 광합성: 화면이 열려 있는 동안 1분마다, 맑은 낮이면 햇빛이 모이고 식물 뒤로 파장이 퍼진다 ---------- */
-setInterval(() => {
-  const next = photosynthesize(state, 1, { kind: weatherNow().kind, isDay: currentScene() === 'day' });
-  if (next === state) return;
-  if (trip) trip = addToTrip(trip, state, next, { now: Date.now() });
-  commit(next);
-  arcs.pulse();
-}, PHOTO_TICK_MS);
-
-// 카드를 누르면 규칙을 알려 주고, 날씨를 모르면 다시 확인한다
-$('photo-btn').addEventListener('click', () => {
+// 로고 아래 날씨를 누르면, 날씨를 모를 때 다시 확인한다
+$('weather-now').addEventListener('click', () => {
   const w = weatherNow();
-  if (w.status === 'error' && weatherWatch) {
-    toast(t('toast.recheck', { error: t(w.error) }));
-    weatherWatch.refresh();
-    return;
-  }
-  toast(t('toast.photoRule', { clear: RULES.LIGHT_PER_MINUTE.clear, partly: RULES.LIGHT_PER_MINUTE.partly }));
+  if (w.status !== 'error' || !weatherWatch) return;
+  toast(t('toast.recheck', { error: t(w.error) }));
+  weatherWatch.refresh();
 });
 
 /* ---------- 주행 ---------- */
@@ -440,6 +430,8 @@ $('pref-lang').addEventListener('click', (e) => {
   showAlbum();
   syncSettings();
   if ($('greenhouse-sheet').open) renderGreenhouseSheet();
+  // 지역 이름을 새 언어로 다시 받는다
+  weatherWatch?.refresh();
 });
 $('pref-theme').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;
@@ -484,18 +476,13 @@ $('demo-guest').addEventListener('click', () => {
   const { x, y } = plant.ring();
   guests.arrive(pickGuest(guestContext()), x, y + 80);
 });
-$('demo-photo').addEventListener('click', () => {
-  commit(photosynthesize(state, 10, { kind: 'clear', isDay: true }));
-  arcs.pulse();
-  toast(t('toast.light', { n: 10 * RULES.LIGHT_PER_MINUTE.clear }));
-});
 $('demo-drive').addEventListener('click', () => {
   closeSheets();
   drivingUntil = Date.now() + DEMO_DRIVE_MS;
   render();
   setTimeout(render, DEMO_DRIVE_MS + 100);
 });
-$('demo-trip').addEventListener('click', () => showTrip({ km: 32.4, drops: 3, coins: 32, light: 18 }));
+$('demo-trip').addEventListener('click', () => showTrip({ km: 32.4, drops: 3, coins: 32 }));
 $('demo-reset').addEventListener('click', () => {
   clearAll();
   commit(createState(todayKey()));

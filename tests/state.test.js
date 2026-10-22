@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  RULES, createState, kmToNextDrop, stageFor, progressToNext, addDistance, photosynthesize, lightPerMinute, water, waterCheck, rollDay, sanitize,
+  RULES, createState, kmToNextDrop, stageFor, progressToNext, addDistance, bonusInfo, water, waterCheck, rollDay, sanitize,
   buyPlant, selectPlant, growthOf, stageOf, LAST_STAGE,
 } from '../js/state.js';
 import { PLANTS } from '../js/plants.js';
@@ -49,42 +49,35 @@ test('음수나 숫자가 아닌 거리는 무시하고 원래 상태를 바꾸�
   assert.equal(s.drops, RULES.START_DROPS);
 });
 
-test('맑은 낮 광합성 10분이면 햇빛 한 번 쓸 만큼 차고 최대치에서 멈춘다', () => {
-  const sunny = { kind: 'clear', isDay: true };
-  assert.equal(photosynthesize(createState(), 10, sunny).light, RULES.LIGHT_COST);
-  assert.equal(photosynthesize(createState(), 999, sunny).light, RULES.MAX_LIGHT);
-});
-
-test('구름 조금이면 절반, 흐림·비·눈·밤·날씨 모름이면 햇빛이 안 모인다', () => {
-  const s = createState();
-  assert.equal(photosynthesize(s, 10, { kind: 'partly', isDay: true }).light, 10);
-  ['cloudy', 'fog', 'rain', 'snow', null].forEach((kind) => assert.equal(photosynthesize(s, 10, { kind, isDay: true }), s));
-  assert.equal(photosynthesize(s, 10, { kind: 'clear', isDay: false }), s);
-  assert.equal(lightPerMinute({ kind: 'clear', isDay: true }), 2);
-});
-
 test('이슬이 없으면 물을 줄 수 없다', () => {
   const dry = { ...createState(), drops: 0 };
   assert.deepEqual(waterCheck(dry), { ok: false, reason: 'no-drops' });
   assert.equal(water(dry).grew, 0);
 });
 
-test('몬스테라: 햇빛이 있으면 두 배로 자라고 햇빛을 쓴다', () => {
-  const r = water({ ...createState(), drops: 2, light: 30 });
+test('몬스테라: 맑은 낮에 주면 두 배, 흐리거나 날씨를 모르면 한 배', () => {
+  const r = water({ ...createState(), drops: 2 }, { sunny: true });
   assert.equal(r.grew, 2);
-  assert.equal(r.usedLight, true);
-  assert.equal(r.state.light, 10);
   assert.equal(r.state.drops, 1);
+  assert.equal(water({ ...createState(), drops: 1 }, { sunny: false }).grew, 1);
   assert.equal(water({ ...createState(), drops: 1 }).grew, 1);
 });
 
+test('두 배 안내: 지금 두 배인지와, 아니면 무엇이 남았는지', () => {
+  assert.deepEqual(bonusInfo(createState(), { sunny: true }), { rule: 'sun', active: true });
+  assert.deepEqual(bonusInfo(createState(), { sunny: false }), { rule: 'sun', active: false });
+  const rubber = { ...createState(), active: 'rubber', plants: { rubber: { growth: 0, waterToday: 0, grown: false } }, todayKm: 12.4 };
+  assert.deepEqual(bonusInfo(rubber), { rule: 'road', active: false, left: 17.6 });
+  assert.deepEqual(bonusInfo({ ...rubber, todayKm: 30 }), { rule: 'road', active: true, left: 0 });
+  assert.deepEqual(bonusInfo(cactusState()), { rule: 'dry', active: true, left: 2 });
+  assert.deepEqual(bonusInfo(cactusState({ plants: { cactus: { growth: 0, waterToday: 2, grown: false } } })), { rule: 'dry', active: false, left: 0 });
+});
+
 test('선인장: 한 번에 두 배지만 하루 두 번까지, 날이 바뀌면 다시', () => {
-  let s = cactusState({ drops: 5, light: 50 });
+  let s = cactusState({ drops: 5 });
   s = water(s).state;
   const second = water(s);
   assert.equal(second.grew, 2);
-  assert.equal(second.usedLight, false);
-  assert.equal(second.state.light, 50);
   assert.deepEqual(waterCheck(second.state), { ok: false, reason: 'dry-limit' });
   assert.equal(waterCheck(rollDay(second.state, 'next-day')).ok, true);
 });
@@ -151,9 +144,10 @@ test('날짜가 바뀌면 오늘 거리만 초기화', () => {
 
 test('저장소 값이 깨져 있어도 안전하게, 예전 한 종짜리 저장값은 몬스테라로 옮긴다', () => {
   assert.deepEqual(sanitize(null, 'd'), createState('d'));
-  const s = sanitize({ drops: 999, light: -5, growth: 'x', today: 3 }, 'd');
+  const s = sanitize({ drops: 999, light: 40, growth: 'x', today: 3 }, 'd');
   assert.equal(s.drops, RULES.MAX_DROPS);
-  assert.equal(s.light, 0);
+  // 예전 햇빛 값은 버린다
+  assert.equal('light' in s, false);
   assert.equal(growthOf(s), 0);
   assert.equal(s.today, 'd');
   const old = sanitize({ growth: 12, drops: 3 }, 'd');

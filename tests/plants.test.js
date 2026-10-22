@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { PLANTS, PLANT_IDS, stageName, adultOf } from '../js/plants.js';
+import { PLANTS, PLANT_IDS, stageName, adultOf, guideOf, conditionFor } from '../js/plants.js';
+import { setLang } from '../js/i18n.js';
 import { LAST_STAGE } from '../js/state.js';
 
 test('식물마다 단계 이름이 다섯 개, 첫 단계는 모두 씨앗', () => {
@@ -27,4 +28,28 @@ test('다 자라면 라틴어 이름을 얻고, 마지막 단계 이름이 곧 �
 test('모르는 식물·단계는 몬스테라 이름으로', () => {
   assert.equal(stageName('nope', 1), stageName('monstera', 1));
   assert.equal(stageName('monstera', 99), stageName('monstera', LAST_STAGE));
+});
+
+test('도감: 식물마다 알맞은 온도·소개·다섯 단계 설명이 두 언어로 있다', () => {
+  ['ko', 'en'].forEach((lang) => {
+    setLang(lang);
+    PLANT_IDS.forEach((id) => {
+      const g = guideOf(id);
+      assert.equal(g.stages.length, LAST_STAGE + 1, `${lang} ${id}`);
+      assert.ok(g.about && g.origin, `${lang} ${id}`);
+      assert.ok(g.temp[0] < g.temp[1]);
+    });
+  });
+  setLang('ko');
+});
+
+test('기온 컨디션: 알맞은 범위, 5° 안쪽은 조금, 그 밖은 너무, 모르면 unknown', () => {
+  assert.equal(conditionFor('monstera', 22), 'good');
+  assert.equal(conditionFor('monstera', 18), 'good');
+  assert.equal(conditionFor('monstera', 14), 'cool');
+  assert.equal(conditionFor('monstera', 8), 'cold');
+  assert.equal(conditionFor('monstera', 31), 'warm');
+  assert.equal(conditionFor('monstera', 34), 'hot');
+  assert.equal(conditionFor('rubber', 26), 'warm');
+  assert.equal(conditionFor('monstera', null), 'unknown');
 });

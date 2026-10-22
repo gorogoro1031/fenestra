@@ -65,9 +65,16 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 @keyframes plant-glow { 30% { filter: brightness(1.25) saturate(1.15); } }
 
 /* ---------- 상단: 로고·시각 한쪽, 꽃씨·버튼 위치·온실·설정 반대쪽 (조수석 모드면 좌우가 바뀐다) ---------- */
-.top { position: absolute; left: 56px; right: 56px; top: 48px; display: flex; justify-content: space-between; align-items: center; }
+.top { position: absolute; left: 56px; right: 56px; top: 48px; display: flex; justify-content: space-between; align-items: flex-start; }
 .stage[data-hand="passenger"] .top, .stage[data-hand="passenger"] .tools { flex-direction: row-reverse; }
-.brand { display: flex; align-items: baseline; gap: 22px; }
+.brand { display: flex; flex-direction: column; gap: 14px; }
+.brand-row { display: flex; align-items: baseline; gap: 22px; }
+/* 지금 날씨: 로고 아래 큰 기온, 옆에 날씨 이름과 지역 */
+.weather-now { display: flex; align-items: center; gap: 18px; align-self: flex-start; text-align: left; }
+.wn-temp { font-size: 76px; font-weight: 300; line-height: 1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.wn-text { display: flex; flex-direction: column; gap: 4px; }
+.wn-text b { font-size: 26px; font-weight: 700; }
+.wn-text span { font-size: 20px; font-weight: 600; color: var(--label-2); }
 .wordmark { position: relative; font: 400 54px/1 var(--font-logo); letter-spacing: .01em; margin-right: .3em; white-space: nowrap; }
 /* 글자 로고: a 끝에 기울어진 잎 하나 */
 .logo-leaf { position: absolute; width: .34em; height: .48em; right: -.33em; top: -.14em; transform: rotate(28deg); transform-origin: 50% 100%; }
@@ -112,6 +119,20 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .wd-key span::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
 .wd-count { font-size: 34px; font-weight: 800; margin-top: 8px; font-variant-numeric: tabular-nums; }
 .wd-count small { font-size: 18px; font-weight: 600; color: var(--label-3); }
+.wd-rule { font-size: 17px; font-weight: 600; color: var(--label-3); margin-top: 2px; }
+
+/* 컨디션: 기온 막대(0~40°)에 알맞은 구간과 지금 기온, 아래 알약은 두 배인지 */
+.cond-state { font-size: 36px; font-weight: 800; margin-top: 10px; letter-spacing: -.02em; white-space: nowrap; }
+.cond[data-state="cool"] .cond-state, .cond[data-state="cold"] .cond-state { color: #8fc7ff; }
+.cond[data-state="warm"] .cond-state, .cond[data-state="hot"] .cond-state { color: #ff9f6b; }
+.cond[data-state="unknown"] .cond-state { color: var(--label-2); font-size: 28px; }
+.cond-bar { position: relative; height: 12px; border-radius: 6px; background: rgba(118, 118, 128, .3); margin-top: 22px; }
+.cond-bar .range { position: absolute; top: 0; bottom: 0; border-radius: 6px; background: color-mix(in srgb, var(--c) 55%, transparent); }
+.cond-bar .now { position: absolute; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; background: #fff; border: 5px solid var(--panel); }
+.cond-scale { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 16px; font-weight: 600; color: var(--label-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cond-scale b { color: var(--label-2); font-weight: 700; }
+.cond-bonus { position: absolute; left: 28px; right: 28px; bottom: 24px; height: 52px; border-radius: 999px; display: flex; align-items: center; padding: 0 20px; font-size: 19px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(118, 118, 128, .22); color: var(--label-2); }
+.cond-bonus.on { background: var(--sun); color: #1f2000; }
 .wd-badge { position: absolute; top: 22px; right: 22px; padding: 6px 14px; border-radius: 999px; background: var(--c); color: #001a33; font-size: 16px; font-weight: 800; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -186,7 +207,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .act-tx b { font-size: 30px; font-weight: 800; }
 .act-tx span { font-size: 17px; font-weight: 600; opacity: .72; overflow: hidden; text-overflow: ellipsis; }
 /* 물 주기: 오른쪽으로 갈수록 물방울 무늬가 진해진다 */
-.act.water { background: var(--tint); color: #00260e; }
+.act.water { grid-column: 1 / -1; background: var(--tint); color: #00260e; }
+.act.water .x2 { margin-left: auto; padding: 8px 20px; border-radius: 999px; background: rgba(0, 0, 0, .16); font-size: 24px; font-weight: 800; position: relative; }
+.act.water.wait .x2, .act.water.rest .x2 { display: none; }
 .act.water::before {
   content: ""; position: absolute; inset: 0;
   background: radial-gradient(circle, var(--polka-light) 5px, transparent 6px) 0 0 / 30px 30px, radial-gradient(circle, var(--polka-light) 5px, transparent 6px) 15px 15px / 30px 30px;
@@ -205,13 +228,6 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .act.water.rest { background: var(--panel); color: var(--label-2); }
 .act.water.rest::before { display: none; }
 .act.water.rest .act-ic { background: var(--grouped-2); }
-.act.sun { background: var(--panel); }
-.act.sun .act-ic { background: var(--sun); color: #1f2000; }
-/* 광합성 중이면 노란 카드, 쉬는 중이면 기본 카드 */
-.act.sun.on { background: var(--sun); color: #1f2000; }
-.act.sun.on .act-ic { background: rgba(0, 0, 0, .12); animation: breathe 2.4s ease-in-out infinite; }
-.act.sun:not(.on) .act-ic { background: var(--grouped-2); color: var(--label-2); }
-@keyframes breathe { 50% { box-shadow: 0 0 0 12px rgba(0, 0, 0, .08); } }
 
 /* ---------- 시트 (iOS 폼 시트) ---------- */
 .scrim { position: absolute; inset: 0; z-index: 15; background: rgba(0, 0, 0, .5); opacity: 0; pointer-events: none; transition: opacity 320ms var(--ease-ios); }
@@ -322,7 +338,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .trip-when { font-size: 20px; font-weight: 700; color: var(--label-2); }
 .trip-km { font: 400 120px/1 var(--font-logo); margin-top: 10px; }
 .trip-km small { font: 700 40px var(--font); margin-left: 8px; color: var(--label-2); }
-.trip-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 26px; }
+.trip-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 26px; }
 .trip-stat { border-radius: var(--r-md); padding: 18px 20px; background: color-mix(in srgb, var(--c) 12%, var(--panel)); }
 .trip-stat p { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: var(--label-2); }
 .trip-stat p::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
@@ -365,7 +381,6 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 @media (prefers-reduced-motion: reduce) {
   .opening-word .ch, .opening-word .logo-leaf svg, .opening-tag { animation: none; }
   .toast, .orb, .sky, .plant-img { transition: none; }
-  .act.sun.on .act-ic { animation: none; }
   .guest, .guest img, .guest.leaving { animation: none; }
 }
 

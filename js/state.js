@@ -8,10 +8,6 @@ export const RULES = Object.freeze({
   // 처음 켰을 때 선물: 첫날 바로 새싹을 볼 수 있게
   START_DROPS: 2,
   MAX_DROPS: 12,
-  // 광합성: 맑은 낮엔 1분에 2(10분이면 햇빛 한 번 쓸 만큼), 구름 조금이면 1, 흐리거나 젖은 날·밤엔 0
-  LIGHT_PER_MINUTE: Object.freeze({ clear: 2, partly: 1 }),
-  MAX_LIGHT: 100,
-  LIGHT_COST: 20,
   GROWTH_PER_WATER: 1,
   GROWTH_BONUS: 2,
   // 꽃씨: 1km마다 1개, 식물 하나를 다 키우면 덤
@@ -29,7 +25,7 @@ const newPlant = () => ({ growth: 0, waterToday: 0, grown: false });
 
 export function createState(today = '') {
   return {
-    drops: RULES.START_DROPS, kmRemainder: 0, light: 0, totalKm: 0, todayKm: 0, today, waterCount: 0,
+    drops: RULES.START_DROPS, kmRemainder: 0, totalKm: 0, todayKm: 0, today, waterCount: 0,
     coins: 0, coinRemainder: 0,
     // 손님 도감(만난 횟수), 오늘 손님에게 받은 꽃씨, 처음 만나고 아직 온실에서 안 본 손님
     guestbook: {}, guestCoinsToday: 0, newGuests: [],
@@ -113,19 +109,6 @@ export function addDistance(state, km) {
 }
 
 /**
- * 지금 1분에 모이는 햇빛. 해가 떠 있고 날씨를 알 때만
- * @param {{kind:string|null, isDay:boolean}} sky
- */
-export const lightPerMinute = ({ kind, isDay }) => (isDay && RULES.LIGHT_PER_MINUTE[kind]) || 0;
-
-/** 광합성한 시간만큼 햇빛을 채운다 */
-export function photosynthesize(state, minutes, sky) {
-  const gain = minutes * lightPerMinute(sky);
-  if (!(gain > 0)) return state;
-  return { ...state, light: Math.min(RULES.MAX_LIGHT, state.light + gain) };
-}
-
-/**
  * 지금 물을 줄 수 있는지와, 못 준다면 이유
  * @returns {{ok:boolean, reason:''|'no-drops'|'grown'|'dry-limit'}}
  */
@@ -138,12 +121,14 @@ export function waterCheck(state) {
 export const canWater = (state) => waterCheck(state).ok;
 
 /**
- * 이번에 물을 주면 보너스(두 배)를 받는지
- * @param {{isNight?:boolean}} ctx 화면 쪽에서 알려 주는 지금 상황
+ * @typedef {{isNight?:boolean, sunny?:boolean}} BonusContext 화면 쪽에서 알려 주는 지금 상황
+ *  sunny: 실제 날씨가 맑거나 구름 조금인 낮
  */
+
+/** 이번에 물을 주면 보너스(두 배)를 받는지 @param {BonusContext} ctx */
 export function bonusNow(state, ctx = {}) {
   switch (PLANTS[state.active].rule) {
-    case 'sun': return state.light >= RULES.LIGHT_COST;
+    case 'sun': return Boolean(ctx.sunny);
     case 'dry': return true;
     case 'night': return Boolean(ctx.isNight);
     case 'road': return state.todayKm >= RULES.ROAD_KM;
@@ -152,13 +137,31 @@ export function bonusNow(state, ctx = {}) {
 }
 
 /**
+ * 두 배 안내용: 지금 두 배인지와, 고무나무는 남은 거리, 선인장은 오늘 남은 물 횟수
+ * @param {BonusContext} ctx
+ * @returns {{rule:string, active:boolean, left?:number}}
+ */
+export function bonusInfo(state, ctx = {}) {
+  const rule = PLANTS[state.active].rule;
+  if (rule === 'road') {
+    const left = Math.max(0, Number((RULES.ROAD_KM - state.todayKm).toFixed(1)));
+    return { rule, active: left === 0, left };
+  }
+  if (rule === 'dry') {
+    const left = Math.max(0, RULES.DRY_LIMIT - activePlant(state).waterToday);
+    return { rule, active: left > 0, left };
+  }
+  return { rule, active: bonusNow(state, ctx) };
+}
+
+/**
  * 이슬 하나로 물을 준다. 조건이 맞으면 두 배로 자란다. 다 자라면 꽃씨 덤
- * @returns {{state: object, grew: number, stageUp: boolean, bonus: boolean, usedLight: boolean, grownNow: boolean}}
+ * @param {BonusContext} ctx
+ * @returns {{state: object, grew: number, stageUp: boolean, bonus: boolean, grownNow: boolean}}
  */
 export function water(state, ctx = {}) {
-  if (!canWater(state)) return { state, grew: 0, stageUp: false, bonus: false, usedLight: false, grownNow: false };
+  if (!canWater(state)) return { state, grew: 0, stageUp: false, bonus: false, grownNow: false };
   const bonus = bonusNow(state, ctx);
-  const usedLight = bonus && PLANTS[state.active].rule === 'sun';
   const grew = bonus ? RULES.GROWTH_BONUS : RULES.GROWTH_PER_WATER;
   const before = stageOf(state);
   const plant = activePlant(state);
@@ -166,13 +169,12 @@ export function water(state, ctx = {}) {
   next = {
     ...next,
     drops: state.drops - 1,
-    light: usedLight ? state.light - RULES.LIGHT_COST : state.light,
     waterCount: state.waterCount + 1,
   };
   const after = stageOf(next);
   const grownNow = after === LAST_STAGE && !plant.grown;
   if (grownNow) next = { ...withActive(next, { grown: true }), coins: next.coins + RULES.GROWN_REWARD };
-  return { state: next, grew, stageUp: after > before, bonus, usedLight, grownNow };
+  return { state: next, grew, stageUp: after > before, bonus, grownNow };
 }
 
 /** 꽃씨로 새 식물을 산다. 사면 바로 그 식물을 키운다 */
@@ -204,7 +206,6 @@ export function sanitize(raw, today = '') {
   return {
     drops: Math.floor(num(raw.drops, 0, RULES.MAX_DROPS)),
     kmRemainder: num(raw.kmRemainder, 0, RULES.KM_PER_DROP),
-    light: num(raw.light, 0, RULES.MAX_LIGHT),
     totalKm: num(raw.totalKm, 0, 1e7),
     todayKm: num(raw.todayKm, 0, 1e5),
     today: typeof raw.today === 'string' ? raw.today : today,
