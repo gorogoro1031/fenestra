@@ -75,6 +75,9 @@ export function renderStatus(state, { photo, driving, isNight }) {
   $('today-km').textContent = state.todayKm.toFixed(1);
   $('coin-num').textContent = String(state.coins);
   $('gift-badge').hidden = !(state.waterCount === 0 && state.totalKm === 0 && state.drops > 0);
+  const hasNewGuest = state.newGuests.length > 0;
+  $('guest-dot').hidden = !hasNewGuest;
+  $('open-greenhouse').setAttribute('aria-label', hasNewGuest ? '온실 · 새 손님' : '온실');
 
   const check = waterCheck(state);
   const waterBtn = $('water-btn');
@@ -166,7 +169,7 @@ export function renderGreenhouse(state, onPick) {
   $('stat-grown').textContent = String(Object.values(state.plants).filter((p) => p.grown).length);
 }
 
-/** 손님 도감: 만난 손님은 몇 번 만났는지, 아직이면 실루엣과 물음표 */
+/** 손님 도감: 만난 손님은 몇 번 만났는지, 아직이면 실루엣과 물음표. 처음 만나고 아직 안 본 손님엔 NEW */
 function renderGuestbook(state) {
   const cells = GUEST_IDS.map((id) => {
     const times = state.guestbook[id] || 0;
@@ -182,6 +185,12 @@ function renderGuestbook(state) {
     count.className = 'gb-times';
     count.textContent = times ? `${times}번 만남` : `꽃씨 +${GUESTS[id].coins}`;
     li.append(img, name, count);
+    if (state.newGuests.includes(id)) {
+      const badge = document.createElement('span');
+      badge.className = 'gb-new';
+      badge.textContent = 'NEW';
+      li.append(badge);
+    }
     return li;
   });
   $('guestbook').replaceChildren(...cells);

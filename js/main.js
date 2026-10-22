@@ -1,4 +1,4 @@
-import { RULES, createState, sanitize, rollDay, addDistance, photosynthesize, lightPerMinute, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, photosynthesize, markGuestsSeen, lightPerMinute, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
 import { PLANTS, stageName, adultOf } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
@@ -225,11 +225,12 @@ const guestContext = () => ({ isNight: currentScene() === 'night', raining: isWe
 const guests = createGuestVisit($('guest-layer'), {
   onCatch: (id, x, y) => {
     const before = state.coins;
+    const firstTime = !state.guestbook[id];
     commit(catchGuest(state, id));
     const earned = state.coins - before;
     fx.burst(x, y);
     if (prefs.sound) chime();
-    const met = `${withJosa(GUESTS[id].name, '을', '를')} 만났어요`;
+    const met = firstTime ? `처음 만난 ${GUESTS[id].name} · 온실 도감에 적었어요` : `${withJosa(GUESTS[id].name, '을', '를')} 만났어요`;
     toast(earned > 0 ? `${met} · 꽃씨 +${earned}` : `${met} · 오늘 손님 꽃씨는 다 받았어요`);
   },
 });
@@ -330,7 +331,11 @@ function renderGreenhouseSheet() {
 }
 
 function openSheet(sheet) {
-  if (sheet.id === 'greenhouse-sheet') renderGreenhouseSheet();
+  if (sheet.id === 'greenhouse-sheet') {
+    // 이번에 연 도감에서는 NEW를 보여 주고, 빨간 점은 바로 지운다
+    renderGreenhouseSheet();
+    if (state.newGuests.length) commit(markGuestsSeen(state));
+  }
   syncSettings();
   sheet.show();
   scrim.classList.add('show');

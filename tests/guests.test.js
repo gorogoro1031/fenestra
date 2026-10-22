@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { GUESTS, GUEST_RULES, guestWeights, pickGuest, shouldSpawn } from '../js/guests.js';
-import { createState, catchGuest, rollDay, sanitize } from '../js/state.js';
+import { createState, catchGuest, markGuestsSeen, rollDay, sanitize } from '../js/state.js';
 
 const day = { isNight: false, raining: false, plant: 'monstera', stage: 2 };
 
@@ -58,4 +58,23 @@ test('도감은 저장값이 깨져도 아는 손님만 숫자로 남긴다', ()
   const s = sanitize({ guestbook: { bee: 3, hacker: 9, snail: 'x' }, guestCoinsToday: 999 }, 'd');
   assert.deepEqual(s.guestbook, { bee: 3 });
   assert.equal(s.guestCoinsToday, GUEST_RULES.DAILY_COINS);
+});
+
+test('처음 만난 손님만 새 손님으로 남고, 온실을 보면 비워진다', () => {
+  let s = catchGuest(createState('d'), 'bee');
+  assert.deepEqual(s.newGuests, ['bee']);
+  s = catchGuest(s, 'bee');
+  assert.deepEqual(s.newGuests, ['bee']);
+  s = catchGuest(s, 'snail');
+  assert.deepEqual(s.newGuests, ['bee', 'snail']);
+  s = markGuestsSeen(s);
+  assert.deepEqual(s.newGuests, []);
+  assert.deepEqual(catchGuest(s, 'bee').newGuests, []);
+  assert.equal(markGuestsSeen(s), s);
+});
+
+test('새 손님 목록도 저장값이 깨지면 만난 적 있는 아는 손님만 남긴다', () => {
+  const s = sanitize({ guestbook: { bee: 1 }, newGuests: ['bee', 'hacker', 'snail', 'bee'] }, 'd');
+  assert.deepEqual(s.newGuests, ['bee']);
+  assert.deepEqual(sanitize({}, 'd').newGuests, []);
 });

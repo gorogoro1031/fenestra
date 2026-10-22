@@ -83,6 +83,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .tools { display: flex; gap: 12px; align-items: center; }
 .icon-btn { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; font-size: 36px; background: var(--panel); transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast); }
 .icon-btn:active { transform: scale(.92); background: var(--grouped-2); }
+.icon-btn { position: relative; }
+/* 처음 만난 손님이 있으면 온실 버튼 오른쪽 위에 빨간 점 */
+.new-dot { position: absolute; right: 4px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background: var(--destructive); border: 4px solid var(--bg); }
 .coin-pill { display: inline-flex; align-items: center; gap: 10px; height: 92px; padding: 0 30px; border-radius: 999px; background: var(--panel); font-size: 23px; font-weight: 600; color: var(--label-2); }
 .coin-pill b { color: var(--label); font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .coin-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 5px rgba(236, 240, 60, .18); }
@@ -253,7 +256,8 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* 손님 도감: 만난 손님은 색으로, 아직이면 실루엣 */
 .gb-count { margin-left: 8px; color: var(--label-3); }
 .gb-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 24px; }
-.gb-cell { background: var(--grouped-2); border-radius: var(--r-md); padding: 14px 8px 12px; text-align: center; }
+.gb-cell { position: relative; background: var(--grouped-2); border-radius: var(--r-md); padding: 14px 8px 12px; text-align: center; }
+.gb-new { position: absolute; top: 10px; right: 10px; padding: 3px 10px; border-radius: 999px; background: var(--destructive); font-size: 13px; font-weight: 800; }
 .gb-cell img { width: 72px; height: 72px; object-fit: contain; }
 .gb-cell.unmet img { filter: brightness(0) invert(.35); opacity: .5; }
 .gb-name { font-size: 17px; font-weight: 700; margin-top: 6px; }

@@ -31,8 +31,8 @@ export function createState(today = '') {
   return {
     drops: RULES.START_DROPS, kmRemainder: 0, light: 0, totalKm: 0, todayKm: 0, today, waterCount: 0,
     coins: 0, coinRemainder: 0,
-    // 손님 도감(만난 횟수)과 오늘 손님에게 받은 꽃씨
-    guestbook: {}, guestCoinsToday: 0,
+    // 손님 도감(만난 횟수), 오늘 손님에게 받은 꽃씨, 처음 만나고 아직 온실에서 안 본 손님
+    guestbook: {}, guestCoinsToday: 0, newGuests: [],
     active: FIRST_PLANT,
     plants: { [FIRST_PLANT]: newPlant() },
   };
@@ -67,7 +67,7 @@ export function rollDay(state, today) {
   return { ...state, today, todayKm: 0, guestCoinsToday: 0, plants: mapPlants(state, (p) => ({ ...p, waterToday: 0 })) };
 }
 
-/** 손님을 만났다: 도감에 쌓고 꽃씨를 받는다 (하루 한도까지) */
+/** 손님을 만났다: 도감에 쌓고 꽃씨를 받는다 (하루 한도까지). 처음 만난 손님은 새 손님으로 남긴다 */
 export function catchGuest(state, id) {
   if (!GUESTS[id]) return state;
   const room = Math.max(0, GUEST_RULES.DAILY_COINS - state.guestCoinsToday);
@@ -77,7 +77,14 @@ export function catchGuest(state, id) {
     coins: state.coins + earned,
     guestCoinsToday: state.guestCoinsToday + earned,
     guestbook: { ...state.guestbook, [id]: (state.guestbook[id] || 0) + 1 },
+    newGuests: state.guestbook[id] ? state.newGuests : [...state.newGuests, id],
   };
+}
+
+/** 온실 도감을 봤다: 새 손님 표시를 지운다 */
+export function markGuestsSeen(state) {
+  if (state.newGuests.length === 0) return state;
+  return { ...state, newGuests: [] };
 }
 
 /** 다음 이슬까지 남은 거리(km). 가득 찼으면 0 */
@@ -206,6 +213,7 @@ export function sanitize(raw, today = '') {
     coinRemainder: num(raw.coinRemainder, 0, 1),
     guestbook: Object.fromEntries(GUEST_IDS.filter((id) => Number.isFinite(raw.guestbook?.[id]) && raw.guestbook[id] > 0).map((id) => [id, Math.floor(raw.guestbook[id])])),
     guestCoinsToday: Math.floor(num(raw.guestCoinsToday, 0, GUEST_RULES.DAILY_COINS)),
+    newGuests: GUEST_IDS.filter((id) => Array.isArray(raw.newGuests) && raw.newGuests.includes(id) && raw.guestbook?.[id] > 0),
     active: plants[raw.active] ? raw.active : FIRST_PLANT,
     plants,
   };
