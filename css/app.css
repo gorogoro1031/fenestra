@@ -71,21 +71,35 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* ---------- 위젯 격자: 같은 크기 정사각 위젯 2열, 아래 모서리에 붙는다 ---------- */
 .widgets { position: absolute; bottom: 48px; left: 56px; display: grid; grid-template-columns: var(--wd) var(--wd); gap: var(--wd-gap); }
 .stage[data-hand="passenger"] .widgets { left: auto; right: 56px; }
-.wd { height: var(--wd); border-radius: var(--r-wd); background: var(--panel); padding: 28px 30px; position: relative; overflow: hidden; text-align: left; }
+/* 위젯 바탕에 자기 색을 아주 살짝 섞어, 비어 있어도 위젯마다 성격이 보이게 */
+.wd { height: var(--wd); border-radius: var(--r-wd); background: color-mix(in srgb, var(--c, transparent) 9%, var(--panel)); padding: 26px 28px; position: relative; overflow: hidden; text-align: left; }
 .wd-key { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 700; color: var(--label-2); }
-.wd-key::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
-.wd-title { font-size: 40px; font-weight: 800; margin-top: 14px; letter-spacing: -.02em; }
-.wd-sub { font-size: 20px; font-weight: 600; color: var(--label-3); margin-top: 4px; }
-.wd-num { font-size: 64px; font-weight: 800; line-height: 1; margin-top: 12px; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-.wd-num small { font-size: 22px; font-weight: 600; color: var(--label-3); margin-left: 6px; letter-spacing: 0; }
+.wd-key span { display: flex; align-items: center; gap: 10px; }
+.wd-key span::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
+.wd-count { font-size: 34px; font-weight: 800; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.wd-count small { font-size: 18px; font-weight: 600; color: var(--label-3); }
+.wd-badge { position: absolute; top: 22px; right: 22px; padding: 6px 14px; border-radius: 999px; background: var(--c); color: #001a33; font-size: 16px; font-weight: 800; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 성장 위젯 */
+.stage-pips { display: flex; gap: 6px; margin-top: 10px; }
+.stage-pips i { width: 10px; height: 10px; border-radius: 50%; background: color-mix(in srgb, var(--c) 30%, transparent); }
+.stage-pips i.on { background: var(--c); }
+.grow-thumb { position: absolute; right: 14px; bottom: 66px; width: 120px; height: 130px; object-fit: contain; object-position: bottom; }
+.grow-thumb.seed { transform: scale(1.8); transform-origin: 50% 100%; }
+.steps { position: absolute; left: 28px; right: 28px; bottom: 30px; display: flex; gap: 8px; }
+.steps i { flex: 1; height: 16px; border-radius: 8px; background: color-mix(in srgb, var(--c) 20%, transparent); transition: background-color 400ms ease; }
+.steps i.on { background: var(--c); }
+.wd-title { font-size: 40px; font-weight: 800; margin-top: 12px; letter-spacing: -.02em; }
 
 /* 점 격자 게이지: 찬 만큼 점이 켜진다 */
-.dots { position: absolute; left: 30px; right: 30px; bottom: 28px; display: grid; gap: 10px; }
+.dots { position: absolute; left: 28px; right: 28px; bottom: 26px; display: grid; gap: 12px; }
 .dots.cols-4 { grid-template-columns: repeat(4, 1fr); }
 .dots.cols-5 { grid-template-columns: repeat(5, 1fr); }
 .dots.cols-6 { grid-template-columns: repeat(6, 1fr); }
-.dots i { aspect-ratio: 1; border-radius: 50%; background: var(--dot-off); transition: background-color 400ms ease, transform 500ms var(--ease-ios); }
-.dots i.on { background: var(--c); }
+/* 꺼진 점도 자기 색을 옅게: 무엇이 찰 자리인지 보이게 */
+.dots i { aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, var(--c) 18%, transparent); transition: background-color 400ms ease, transform 500ms var(--ease-ios), box-shadow 400ms ease; }
+.dots i.on { background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent); }
 .dots i.pop { animation: dot-pop 600ms var(--ease-ios); }
 @keyframes dot-pop { 40% { transform: scale(1.35); } }
 
@@ -111,11 +125,11 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* 버튼: 넓은 알약 두 개 */
 .act { height: var(--act-h); border-radius: var(--r-wd); display: flex; align-items: center; gap: 18px; padding: 0 28px; position: relative; overflow: hidden; text-align: left; white-space: nowrap; transition: transform var(--duration-fast) var(--ease-ios), opacity 240ms, background-color 240ms; }
 .act:active { transform: scale(.96); }
-.act:disabled { opacity: .35; cursor: default; transform: none; }
+.act:disabled { cursor: default; transform: none; }
 .act-ic { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; font-size: 38px; flex-shrink: 0; position: relative; }
 .act-tx { position: relative; display: flex; flex-direction: column; }
 .act-tx b { font-size: 30px; font-weight: 800; }
-.act-tx span { font-size: 18px; font-weight: 600; opacity: .72; }
+.act-tx span { font-size: 17px; font-weight: 600; opacity: .72; }
 /* 물 주기: 오른쪽으로 갈수록 물방울 무늬가 진해진다 */
 .act.water { background: var(--tint); color: #00260e; }
 .act.water::before {
@@ -124,10 +138,24 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
   -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 100%); mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
 }
 .act.water .act-ic { background: rgba(0, 0, 0, .14); }
+/* 이슬이 없을 때: 탁한 초록 대신 회색 카드, 아이콘 둘레 고리가 다음 이슬까지(--p) 차오른다 */
+.act.water.wait { background: var(--panel); color: var(--label); }
+.act.water.wait::before { display: none; }
+.act.water.wait .act-ic { background: conic-gradient(var(--water) calc(var(--p, 0) * 1turn), rgba(118, 118, 128, .3) 0); color: var(--water); }
+.act.water.wait .act-ic::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--panel); }
+.act.water.wait .act-ic svg { position: relative; }
+.act.water.wait b { color: var(--label-2); }
+.act.water.wait .act-tx span { color: var(--water); opacity: 1; }
+/* 운전 중·다 자람처럼 지금은 못 누를 때 */
+.act.water.rest { background: var(--panel); color: var(--label-2); }
+.act.water.rest::before { display: none; }
+.act.water.rest .act-ic { background: var(--grouped-2); }
 .act.sun { background: var(--panel); }
 .act.sun .act-ic { background: var(--sun); color: #1f2000; }
 .act.sun[aria-pressed="true"] { background: var(--sun); color: #1f2000; }
-.act.sun[aria-pressed="true"] .act-ic { background: rgba(0, 0, 0, .12); }
+.act.sun[aria-pressed="true"] .act-ic { background: rgba(0, 0, 0, .12); animation: breathe 2.4s ease-in-out infinite; }
+.act.sun:disabled { opacity: .4; }
+@keyframes breathe { 50% { box-shadow: 0 0 0 12px rgba(0, 0, 0, .08); } }
 
 /* ---------- 시트 (iOS 폼 시트) ---------- */
 .scrim { position: absolute; inset: 0; z-index: 15; background: rgba(0, 0, 0, .5); opacity: 0; pointer-events: none; transition: opacity 320ms var(--ease-ios); }
@@ -246,6 +274,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 @media (prefers-reduced-motion: reduce) {
   .opening-word, .opening-tag { animation: none; }
   .toast, .orb, .sky, .plant-img { transition: none; }
+  .act.sun[aria-pressed="true"] .act-ic { animation: none; }
 }
 
 /* 데모 단계 선택은 칸이 5개라 버튼을 좁게 */

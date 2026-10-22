@@ -1,11 +1,19 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
-import { RULES, STAGE_NAMES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, stageFor } from './state.js';
+import { RULES, STAGE_NAMES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, stageFor, kmToNextDrop } from './state.js';
 import { PLANTS, PLANT_IDS, plantImage } from './plants.js';
 
 const $ = (id) => document.getElementById(id);
 
-// 햇빛 게이지 점 개수 (물방울은 최대치 12개와 같게 해 점 하나 = 한 개)
+// 햇빛 게이지 점 개수 (이슬은 최대치 12개와 같게 해 점 하나 = 한 개)
+// 다음 단계까지 칸은 남은 점수만큼 나누되 너무 잘게 쪼개지 않게
 const LIGHT_DOTS = 10;
+const MAX_STEPS = 10;
+
+/** 같은 모양 칸 n개 중 앞에서 on개를 켠다 */
+function renderPips(el, on, n) {
+  if (el.children.length !== n) el.replaceChildren(...Array.from({ length: n }, () => document.createElement('i')));
+  [...el.children].forEach((pip, i) => pip.classList.toggle('on', i < on));
+}
 
 /** 점 total개 중 앞에서부터 filled개(내림)를 켠다. 새로 켜진 점은 톡 튄다 */
 function renderDots(el, filled, total) {
@@ -38,31 +46,51 @@ export function renderStatus(state, { charging, driving, isNight }) {
   const stage = stageOf(state);
   $('plant-name').textContent = PLANTS[state.active].name;
   $('stage-name').textContent = STAGE_NAMES[stage];
-  $('stage-sub').textContent = stage === LAST_STAGE ? '온실에서 새 식물을 들여요' : `다음 단계까지 ${pointsToNext(state)}점`;
-  renderDots($('progress-dots'), stage, LAST_STAGE);
+  $('stage-sub').textContent = stage === LAST_STAGE ? '다 자랐어요. 온실에서 새 식물을 들여요' : `다음 단계까지 ${pointsToNext(state)}점`;
+  renderPips($('stage-pips'), stage + 1, STAGE_NAMES.length);
+  const thumb = $('grow-thumb');
+  const src = plantImage(state.active, stage);
+  if (thumb.getAttribute('src') !== src) thumb.setAttribute('src', src);
+  thumb.classList.toggle('seed', stage === 0);
+  // 다음 단계까지 칸: 지금 단계 구간을 최대 10칸으로 나눠 채운 만큼 켠다
+  const th = thresholdsOf(state);
+  const span = stage === LAST_STAGE ? 1 : th[stage + 1] - th[stage];
+  const steps = Math.min(MAX_STEPS, span);
+  const filled = stage === LAST_STAGE ? steps : Math.floor(((growthOf(state) - th[stage]) / span) * steps);
+  renderPips($('grow-steps'), filled, steps);
   $('drops-num').textContent = String(state.drops);
   renderDots($('drops-dots'), state.drops, RULES.MAX_DROPS);
   $('light-num').textContent = String(Math.round(state.light));
   renderDots($('light-dots'), (state.light / RULES.MAX_LIGHT) * LIGHT_DOTS, LIGHT_DOTS);
   $('today-km').textContent = state.todayKm.toFixed(1);
   $('coin-num').textContent = String(state.coins);
+  $('gift-badge').hidden = !(state.waterCount === 0 && state.totalKm === 0 && state.drops > 0);
 
   const check = waterCheck(state);
-  $('water-btn').disabled = driving || !check.ok;
+  const waterBtn = $('water-btn');
+  waterBtn.disabled = driving || !check.ok;
+  // 이슬이 없으면 '기다리는 중'(고리가 다음 이슬까지 차오름), 운전 중·다 자람이면 '쉬는 중'
+  const waiting = !driving && check.reason === 'no-drops';
+  waterBtn.classList.toggle('wait', waiting);
+  waterBtn.classList.toggle('rest', waterBtn.disabled && !waiting);
+  waterBtn.style.setProperty('--p', String(1 - kmToNextDrop(state) / RULES.KM_PER_DROP));
   $('water-sub').textContent = waterSubtitle(state, check, { driving, isNight });
   const chargeBtn = $('charge-btn');
   chargeBtn.setAttribute('aria-pressed', String(charging));
   chargeBtn.disabled = driving;
-  $('charge-sub').textContent = charging ? '햇빛이 차오르는 중' : '햇빛 모으기';
+  $('charge-title').textContent = charging ? '충전 중' : '충전 시작';
+  $('charge-sub').textContent = charging ? '햇빛이 차는 중' : '햇빛 모으기';
   $('driving-banner').hidden = !driving;
 }
 
 function waterSubtitle(state, check, { driving, isNight }) {
   if (driving) return '차를 세우면 줄 수 있어요';
   if (check.reason === 'grown') return '다 자랐어요';
-  if (check.reason === 'no-drops') return `${RULES.KM_PER_DROP}km = 물방울 1개`;
+  // 소수점은 한 자리, .0이면 떼서 짧게 (7.3km · 10km)
+  if (check.reason === 'no-drops') return `다음 이슬까지 ${Number(kmToNextDrop(state).toFixed(1))}km`;
   if (check.reason === 'dry-limit') return '오늘은 충분해요';
-  if (!bonusNow(state, { isNight })) return '물방울 1개';
+  if (stageOf(state) === 0 && state.waterCount === 0) return `새싹까지 물 ${pointsToNext(state)}번`;
+  if (!bonusNow(state, { isNight })) return '이슬 1개';
   return { sun: '햇빛과 함께 ×2', dry: '한 번에 ×2', night: '밤이라 ×2', road: '많이 달린 날 ×2' }[PLANTS[state.active].rule];
 }
 

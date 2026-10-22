@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610220804">
-<link rel="stylesheet" href="css/app.css?v=2610220804">
+<link rel="stylesheet" href="css/tokens.css?v=2610220922">
+<link rel="stylesheet" href="css/app.css?v=2610220922">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -50,7 +50,7 @@
 <div class="viewport">
   <div class="stage" id="stage" data-scene="night" data-weather="clear">
 
-    <!-- 장면: 검은 바탕 → 빛 번짐 → 시간 따라 뜨고 지는 해·달 고리 → 충전 파장 → 식물 그림 → 비·물방울 -->
+    <!-- 장면: 검은 바탕 → 빛 번짐 → 시간 따라 뜨고 지는 해·달 고리 → 충전 파장 → 식물 그림 → 비·물 주기 물방울 -->
     <div class="scene" aria-hidden="true">
       <div class="layer sky" id="sky"></div>
       <div class="orb" id="orb"></div>
@@ -87,29 +87,34 @@
           <span class="a-artist" id="album-artist"></span>
         </span>
       </button>
-      <div class="wd" style="--c: var(--tint)">
-        <p class="wd-key" id="plant-name">몬스테라</p>
+      <!-- 성장: 단계 이름, 몇 단계인지 작은 점, 지금 식물 그림, 다음 단계까지 차오르는 칸 -->
+      <div class="wd grow" style="--c: var(--tint)">
+        <p class="wd-key"><span id="plant-name">몬스테라</span></p>
         <p class="wd-title" id="stage-name">씨앗</p>
-        <p class="wd-sub" id="stage-sub">단계 0 / 4</p>
-        <div class="dots cols-4" id="progress-dots" aria-hidden="true"></div>
+        <div class="stage-pips" id="stage-pips" aria-hidden="true"></div>
+        <img class="grow-thumb" id="grow-thumb" alt="" width="120" height="130">
+        <div class="steps" id="grow-steps" aria-hidden="true"></div>
+        <p class="sr-only" id="stage-sub"></p>
       </div>
       <div class="wd" style="--c: var(--water)">
-        <p class="wd-key">물방울</p>
-        <p class="wd-num"><span id="drops-num">0</span><small>/ 12</small></p>
+        <p class="wd-key"><span>이슬</span></p>
+        <span class="wd-badge" id="gift-badge" hidden>첫 선물</span>
+        <p class="wd-count"><span id="drops-num">0</span><small> / 12</small></p>
         <div class="dots cols-6" id="drops-dots" aria-hidden="true"></div>
       </div>
       <div class="wd" style="--c: var(--sun)">
-        <p class="wd-key">햇빛</p>
-        <p class="wd-num"><span id="light-num">0</span><small>/ 100</small></p>
+        <p class="wd-key"><span>햇빛</span></p>
+        <p class="wd-count"><span id="light-num">0</span><small> / 100</small></p>
         <div class="dots cols-5" id="light-dots" aria-hidden="true"></div>
       </div>
+      <!-- 이슬이 없으면 회색 카드로 바뀌고, 아이콘 둘레 고리가 다음 이슬까지 차오른다 -->
       <button class="act water" type="button" id="water-btn">
         <span class="act-ic" aria-hidden="true"><svg><use href="#i-drop"/></svg></span>
-        <span class="act-tx"><b>물 주기</b><span id="water-sub">물방울 1개</span></span>
+        <span class="act-tx"><b>물 주기</b><span id="water-sub">이슬 1개</span></span>
       </button>
       <button class="act sun" type="button" id="charge-btn" aria-pressed="false">
         <span class="act-ic" aria-hidden="true"><svg><use href="#i-bolt"/></svg></span>
-        <span class="act-tx"><b>충전 중</b><span id="charge-sub">햇빛 모으기</span></span>
+        <span class="act-tx"><b id="charge-title">충전 시작</b><span id="charge-sub">햇빛 모으기</span></span>
       </button>
     </section>
 
@@ -227,8 +232,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610220804","./js/albums.js":"./js/albums.js?v=2610220804","./js/drive.js":"./js/drive.js?v=2610220804","./js/main.js":"./js/main.js?v=2610220804","./js/motions.js":"./js/motions.js?v=2610220804","./js/plant.js":"./js/plant.js?v=2610220804","./js/plants.js":"./js/plants.js?v=2610220804","./js/scene.js":"./js/scene.js?v=2610220804","./js/sky.js":"./js/sky.js?v=2610220804","./js/sound.js":"./js/sound.js?v=2610220804","./js/state.js":"./js/state.js?v=2610220804","./js/storage.js":"./js/storage.js?v=2610220804","./js/tutorial.js":"./js/tutorial.js?v=2610220804","./js/ui.js":"./js/ui.js?v=2610220804"}}</script>
-<script type="module" src="js/main.js?v=2610220804"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610220922","./js/albums.js":"./js/albums.js?v=2610220922","./js/drive.js":"./js/drive.js?v=2610220922","./js/main.js":"./js/main.js?v=2610220922","./js/motions.js":"./js/motions.js?v=2610220922","./js/plant.js":"./js/plant.js?v=2610220922","./js/plants.js":"./js/plants.js?v=2610220922","./js/scene.js":"./js/scene.js?v=2610220922","./js/sky.js":"./js/sky.js?v=2610220922","./js/sound.js":"./js/sound.js?v=2610220922","./js/state.js":"./js/state.js?v=2610220922","./js/storage.js":"./js/storage.js?v=2610220922","./js/tutorial.js":"./js/tutorial.js?v=2610220922","./js/ui.js":"./js/ui.js?v=2610220922"}}</script>
+<script type="module" src="js/main.js?v=2610220922"></script>
 <!-- version:end -->
 </body>
 </html>

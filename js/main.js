@@ -288,7 +288,7 @@ $('demo-stage').addEventListener('click', (e) => {
   syncSettings();
   toast(STAGE_NAMES[stage]);
 });
-$('demo-km').addEventListener('click', () => { commit(addDistance(state, 30)); toast('30km 달렸어요 · 물방울 +3 · 꽃씨 +30'); });
+$('demo-km').addEventListener('click', () => { commit(addDistance(state, 30)); toast('30km 달렸어요 · 이슬 +3 · 꽃씨 +30'); });
 $('demo-coins').addEventListener('click', () => { commit({ ...state, coins: state.coins + 100 }); toast('꽃씨 +100'); });
 $('demo-charge').addEventListener('click', () => { commit(addChargeMinutes(state, 10)); toast(`햇빛 +${10 * RULES.LIGHT_PER_MINUTE}`); });
 $('demo-drive').addEventListener('click', () => {

@@ -40,7 +40,7 @@ index.html         화면 틀 (정원·기록·설정·로딩)
 css/tokens.css     색·글꼴 (iOS 다크 모드 시스템 색)
 css/app.css        배치와 모션
 js/state.js        게임 규칙 (순수 함수, 테스트 대상)
-js/scene.js        햇빛 물결·비·물방울 캔버스, 식물 배치·단계 전환
+js/scene.js        충전 파장·비·물 주기 물방울·잎 터치 동그라미 캔버스, 식물 배치
 js/ui.js           상태를 화면에 표시
 js/sound.js        코드로 만든 바람·빗소리·차임
 js/drive.js        위치로 거리·속도 재기
