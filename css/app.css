@@ -195,9 +195,10 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .act.water.rest .act-ic { background: var(--grouped-2); }
 .act.sun { background: var(--panel); }
 .act.sun .act-ic { background: var(--sun); color: #1f2000; }
-.act.sun[aria-pressed="true"] { background: var(--sun); color: #1f2000; }
-.act.sun[aria-pressed="true"] .act-ic { background: rgba(0, 0, 0, .12); animation: breathe 2.4s ease-in-out infinite; }
-.act.sun:disabled { opacity: .4; }
+/* 광합성 중이면 노란 카드, 쉬는 중이면 기본 카드 */
+.act.sun.on { background: var(--sun); color: #1f2000; }
+.act.sun.on .act-ic { background: rgba(0, 0, 0, .12); animation: breathe 2.4s ease-in-out infinite; }
+.act.sun:not(.on) .act-ic { background: var(--grouped-2); color: var(--label-2); }
 @keyframes breathe { 50% { box-shadow: 0 0 0 12px rgba(0, 0, 0, .08); } }
 
 /* ---------- 시트 (iOS 폼 시트) ---------- */
@@ -333,7 +334,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 @media (prefers-reduced-motion: reduce) {
   .opening-word .ch, .opening-word .logo-leaf svg, .opening-tag { animation: none; }
   .toast, .orb, .sky, .plant-img { transition: none; }
-  .act.sun[aria-pressed="true"] .act-ic { animation: none; }
+  .act.sun.on .act-ic { animation: none; }
   .guest, .guest img, .guest.leaving { animation: none; }
 }
 

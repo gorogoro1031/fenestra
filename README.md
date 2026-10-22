@@ -18,6 +18,7 @@ python3 -m http.server 5173
 |---|---|
 | `?scene=day` / `?scene=night` | 정오·자정으로 고정 |
 | `?hour=0~24` | 그 시각의 해·달 자리로 고정 (예: `?hour=6.5`) |
+| `?weather=clear` | 날씨 고정 (clear·partly·cloudy·fog·rain·snow). 위치를 묻지 않음 |
 | `?noloading` | 로딩 화면 건너뛰기 |
 | `?preview=0~4` | 해당 성장 단계로 꾸민 임시 상태 |
 | `?plant=cactus` | `?preview`와 함께, 볼 식물 종 (monstera·cactus·sansevieria·rubber) |
@@ -40,10 +41,11 @@ index.html         화면 틀 (정원·기록·설정·로딩)
 css/tokens.css     색·글꼴 (iOS 다크 모드 시스템 색)
 css/app.css        배치와 모션
 js/state.js        게임 규칙 (순수 함수, 테스트 대상)
-js/scene.js        충전 파장·비·물 주기 물방울·잎 터치 동그라미 캔버스, 식물 배치
+js/scene.js        광합성 파장·비·물 주기 물방울·잎 터치 동그라미 캔버스, 식물 배치
 js/ui.js           상태를 화면에 표시
 js/sound.js        코드로 만든 바람·빗소리·차임
 js/drive.js        위치로 거리·속도 재기
+js/weather.js      대략의 위치로 실제 날씨 받기 (Open-Meteo, 좌표는 약 1km 단위로만 보냄)
 js/storage.js      브라우저 저장소
 js/main.js         연결
 assets/            성장 단계 식물 이미지 (GPT Image 2.5 Sunburst 생성, webp)

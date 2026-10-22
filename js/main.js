@@ -1,4 +1,4 @@
-import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, photosynthesize, lightPerMinute, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
 import { PLANTS, stageName, adultOf } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
@@ -12,22 +12,26 @@ import { renderAlbum } from './album-card.js';
 import { GUESTS, pickGuest, shouldSpawn } from './guests.js';
 import { createGuestVisit } from './guest-visit.js';
 import { withJosa } from './text.js';
+import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 
 // 인트로: 로고만 보이는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
 const LOGO_MS = 2800;
 const OPENING_FADE_MS = 1000;
 // 식물 그림이 늦어도 인트로는 이 시간 뒤엔 넘어간다 (그림은 오는 대로 나타난다)
 const PLANT_WAIT_MS = 4000;
-const CHARGE_TICK_MS = 60000;
+// 광합성은 1분마다 날씨를 보고 햇빛을 채운다
+const PHOTO_TICK_MS = 60000;
 const DRIVING_SPEED_KMH = 5;
 const DRIVING_HOLD_MS = 15000;
 const DEMO_DRIVE_MS = 8000;
 
 const $ = (id) => document.getElementById(id);
 const stageEl = $('stage');
-// 확인용 주소 옵션: ?scene=day|night 로 정오·자정 고정, ?hour=0~24 로 시각 고정, ?noloading 으로 로딩 건너뛰기 (저장하지 않음)
+// 확인용 주소 옵션: ?scene=day|night 로 정오·자정 고정, ?hour=0~24 로 시각 고정, ?weather=clear|partly|cloudy|fog|rain|snow 로 날씨 고정(위치를 묻지 않음),
+// ?noloading 으로 로딩 건너뛰기 (저장하지 않음)
 const query = new URLSearchParams(location.search);
 const SCENE_OVERRIDE = ['day', 'night'].includes(query.get('scene')) ? query.get('scene') : null;
+const WEATHER_OVERRIDE = SKY_KINDS.includes(query.get('weather')) ? query.get('weather') : null;
 const HOUR_OVERRIDE = query.has('hour') && Number.isFinite(Number(query.get('hour'))) ? Number(query.get('hour')) : null;
 const todayKey = () => new Date().toLocaleDateString('sv-SE');
 
@@ -42,8 +46,7 @@ const previewState = (stage) => {
 
 let state = PREVIEW_STAGE !== null ? previewState(PREVIEW_STAGE) : rollDay(sanitize(loadState(), todayKey()), todayKey());
 let prefs = loadPrefs();
-let charging = false;
-let chargeTimer = 0;
+let weatherWatch = null;
 let drivingUntil = 0;
 let stopGps = () => {};
 
@@ -85,16 +88,45 @@ function currentHours() {
 }
 const currentScene = () => (orbPosition(currentHours()).isDay ? 'day' : 'night');
 
+/* ---------- 날씨: 기본은 실제 날씨(대략의 위치 → Open-Meteo). 주소·설정으로 고정하면 위치를 묻지 않는다 ---------- */
+const fixedSky = () => WEATHER_OVERRIDE || (prefs.sky !== 'auto' ? prefs.sky : null);
+/** @returns {{status:'loading'|'ok'|'error', kind:string|null, error:string, at:number}} */
+function weatherNow() {
+  const fixed = fixedSky();
+  if (fixed) return { status: 'ok', kind: fixed, error: '', at: 0 };
+  return weatherWatch ? weatherWatch.current() : { status: 'loading', kind: null, error: '', at: 0 };
+}
+// 비·눈이면 화면이 젖는다 (빗줄기·어두운 하늘·달팽이·빗소리)
+const isWet = () => Boolean(skyInfo(weatherNow().kind)?.wet);
+function weatherLabel() {
+  const w = weatherNow();
+  if (w.status === 'ok') return skyInfo(w.kind).label;
+  return w.status === 'loading' ? '날씨 확인 중' : '날씨 모름';
+}
+/** 광합성 카드에 보일 것: 1분에 모이는 햇빛과 이유 */
+function photoInfo() {
+  const w = weatherNow();
+  const isDay = currentScene() === 'day';
+  const rate = lightPerMinute({ kind: w.kind, isDay });
+  const reason = w.status === 'loading' ? 'loading' : w.status === 'error' ? 'unknown' : !isDay ? 'night' : rate > 0 ? 'ok' : 'weather';
+  return { rate, reason, label: weatherLabel() };
+}
+/** 위치 권한을 묻고 날씨를 받기 시작한다. 처음 안내가 끝난 뒤에 부른다 */
+function startWeather() {
+  if (weatherWatch || fixedSky()) return;
+  weatherWatch = watchWeather(() => { applyScene(); render(); syncSettings(); });
+}
+
 /** @returns {Promise<void>} 식물 그림이 새 단계로 준비되면 끝난다 */
 function applyScene() {
   const scene = currentScene();
   stageEl.dataset.scene = scene;
   stageEl.dataset.hand = prefs.hand;
-  stageEl.dataset.weather = prefs.weather;
+  stageEl.dataset.weather = isWet() ? 'rain' : 'clear';
   const ready = plant.setStage(state.active, stageOf(state)).catch(() => toast('식물 그림을 불러오지 못했어요 · 연결을 확인해 주세요'));
-  sky.draw({ hours: currentHours(), raining: prefs.weather === 'rain' });
-  fx.setRain(prefs.weather === 'rain');
-  renderChip(prefs.weather);
+  sky.draw({ hours: currentHours(), raining: isWet() });
+  fx.setRain(isWet());
+  renderChip(weatherLabel());
   syncAmbient();
   return ready;
 }
@@ -106,7 +138,7 @@ let audioReady = false;
 let moodKey = '';
 function syncAmbient() {
   if (!audioReady) return;
-  const mood = prefs.sound ? { scene: currentScene(), weather: prefs.weather } : null;
+  const mood = prefs.sound ? { scene: currentScene(), weather: isWet() ? 'rain' : 'clear' } : null;
   const key = mood ? `${mood.scene}-${mood.weather}` : 'off';
   if (key === moodKey) return;
   moodKey = key;
@@ -115,7 +147,7 @@ function syncAmbient() {
 
 function render() {
   if (isDriving()) guests.leave();
-  renderStatus(state, { charging, driving: isDriving(), isNight: currentScene() === 'night' });
+  renderStatus(state, { photo: photoInfo(), driving: isDriving(), isNight: currentScene() === 'night' });
 }
 
 function commit(next) {
@@ -187,7 +219,7 @@ function onLeafTouched(x, y, height) {
 const GUEST_LIFT = 30;
 const GUEST_DELAY_MS = 450;
 let lastGuestAt = 0;
-const guestContext = () => ({ isNight: currentScene() === 'night', raining: prefs.weather === 'rain', plant: state.active, stage: stageOf(state) });
+const guestContext = () => ({ isNight: currentScene() === 'night', raining: isWet(), plant: state.active, stage: stageOf(state) });
 const guests = createGuestVisit($('guest-layer'), {
   onCatch: (id, x, y) => {
     const before = state.coins;
@@ -239,20 +271,29 @@ $('water-btn').addEventListener('click', () => {
   }
 });
 
-function setCharging(on) {
-  charging = on;
-  clearInterval(chargeTimer);
-  if (on) chargeTimer = setInterval(() => commit(addChargeMinutes(state, 1)), CHARGE_TICK_MS);
-  arcs.set({ active: on });
-  render();
-}
-$('charge-btn').addEventListener('click', () => { if (!isDriving()) setCharging(!charging); });
+/* ---------- 광합성: 화면이 열려 있는 동안 1분마다, 맑은 낮이면 햇빛이 모이고 식물 뒤로 파장이 퍼진다 ---------- */
+setInterval(() => {
+  const next = photosynthesize(state, 1, { kind: weatherNow().kind, isDay: currentScene() === 'day' });
+  if (next === state) return;
+  commit(next);
+  arcs.pulse();
+}, PHOTO_TICK_MS);
+
+// 카드를 누르면 규칙을 알려 주고, 날씨를 모르면 다시 확인한다
+$('photo-btn').addEventListener('click', () => {
+  const w = weatherNow();
+  if (w.status === 'error' && weatherWatch) {
+    toast(`${w.error} · 다시 확인할게요`);
+    weatherWatch.refresh();
+    return;
+  }
+  toast(`맑은 낮엔 1분에 햇빛 ${RULES.LIGHT_PER_MINUTE.clear}, 구름 조금이면 ${RULES.LIGHT_PER_MINUTE.partly} · 흐리거나 비 오면 쉬어요`);
+});
 
 /* ---------- 주행 ---------- */
 function markDriving(kmh) {
   if (kmh <= DRIVING_SPEED_KMH) return;
   drivingUntil = Date.now() + DRIVING_HOLD_MS;
-  if (charging) setCharging(false);
   render();
   setTimeout(render, DRIVING_HOLD_MS + 100);
 }
@@ -307,9 +348,20 @@ function syncSettings() {
   $('pref-gps').setAttribute('aria-checked', String(prefs.useGps));
   // 데모 단계 버튼은 지금 키우는 식물의 단계 이름으로
   $('demo-stage').querySelectorAll('button').forEach((b) => { b.textContent = stageName(state.active, Number(b.dataset.value)); });
-  [['pref-scene', prefs.scene], ['pref-weather', prefs.weather], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
+  $('weather-status').textContent = weatherStatusText();
+  [['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
+}
+
+/** 설정의 날씨 줄: 실제 날씨를 받았는지, 언제 받았는지 */
+function weatherStatusText() {
+  if (fixedSky()) return `확인용으로 ${skyInfo(fixedSky()).label} 고정`;
+  const w = weatherNow();
+  if (w.status === 'loading') return '실제 날씨를 확인하는 중';
+  if (w.status === 'error') return w.error;
+  const mins = Math.round((Date.now() - w.at) / 60000);
+  return `실제 날씨 ${skyInfo(w.kind).label} · ${mins < 1 ? '방금' : `${mins}분 전`} 확인`;
 }
 
 function updatePrefs(patch) {
@@ -340,7 +392,11 @@ $('pref-hand').addEventListener('click', (e) => {
 });
 $('pref-weather').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;
-  if (value) { updatePrefs({ weather: value }); applyScene(); }
+  if (!value) return;
+  updatePrefs({ sky: value });
+  startWeather();
+  applyScene();
+  render();
 });
 
 // 데모: 성장 단계를 바로 바꿔 본다. 성장 점수를 그 단계 시작점으로 맞춘다
@@ -361,7 +417,11 @@ $('demo-guest').addEventListener('click', () => {
   const { x, y } = plant.ring();
   guests.arrive(pickGuest(guestContext()), x, y + 80);
 });
-$('demo-charge').addEventListener('click', () => { commit(addChargeMinutes(state, 10)); toast(`햇빛 +${10 * RULES.LIGHT_PER_MINUTE}`); });
+$('demo-photo').addEventListener('click', () => {
+  commit(photosynthesize(state, 10, { kind: 'clear', isDay: true }));
+  arcs.pulse();
+  toast(`햇빛 +${10 * RULES.LIGHT_PER_MINUTE.clear}`);
+});
 $('demo-drive').addEventListener('click', () => {
   closeSheets();
   drivingUntil = Date.now() + DEMO_DRIVE_MS;
@@ -370,7 +430,6 @@ $('demo-drive').addEventListener('click', () => {
 });
 $('demo-reset').addEventListener('click', () => {
   clearAll();
-  setCharging(false);
   commit(createState(todayKey()));
   applyScene();
   closeSheets();
@@ -390,6 +449,7 @@ const tutorial = createTutorial($('tour'), {
   onClose: () => {
     scrim.classList.remove('show');
     if (!prefs.tutorialSeen) updatePrefs({ tutorialSeen: true });
+    startWeather();
   },
 });
 $('open-tour').addEventListener('click', () => { closeSheets(); tutorial.open(); });
@@ -434,7 +494,8 @@ setInterval(() => { state = rollDay(state, todayKey()); applyScene(); render(); 
 
 stageEl.classList.add('booting');
 showAlbum();
-startIntro(applyScene()).then(() => { if (shouldShowTutorial()) tutorial.open(); });
+// 위치 권한은 인트로와 처음 안내가 끝난 뒤에 묻는다
+startIntro(applyScene()).then(() => { if (shouldShowTutorial()) tutorial.open(); else startWeather(); });
 render();
 syncSettings();
 requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('booting')));

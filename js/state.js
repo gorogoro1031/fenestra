@@ -8,8 +8,8 @@ export const RULES = Object.freeze({
   // 처음 켰을 때 선물: 첫날 바로 새싹을 볼 수 있게
   START_DROPS: 2,
   MAX_DROPS: 12,
-  // 충전 10분이면 햇빛 한 번(20) 쓸 만큼
-  LIGHT_PER_MINUTE: 2,
+  // 광합성: 맑은 낮엔 1분에 2(10분이면 햇빛 한 번 쓸 만큼), 구름 조금이면 1, 흐리거나 젖은 날·밤엔 0
+  LIGHT_PER_MINUTE: Object.freeze({ clear: 2, partly: 1 }),
   MAX_LIGHT: 100,
   LIGHT_COST: 20,
   GROWTH_PER_WATER: 1,
@@ -105,10 +105,17 @@ export function addDistance(state, km) {
   };
 }
 
-/** 충전한 시간만큼 햇빛을 채운다 */
-export function addChargeMinutes(state, minutes) {
-  if (!(minutes > 0)) return state;
-  return { ...state, light: Math.min(RULES.MAX_LIGHT, state.light + minutes * RULES.LIGHT_PER_MINUTE) };
+/**
+ * 지금 1분에 모이는 햇빛. 해가 떠 있고 날씨를 알 때만
+ * @param {{kind:string|null, isDay:boolean}} sky
+ */
+export const lightPerMinute = ({ kind, isDay }) => (isDay && RULES.LIGHT_PER_MINUTE[kind]) || 0;
+
+/** 광합성한 시간만큼 햇빛을 채운다 */
+export function photosynthesize(state, minutes, sky) {
+  const gain = minutes * lightPerMinute(sky);
+  if (!(gain > 0)) return state;
+  return { ...state, light: Math.min(RULES.MAX_LIGHT, state.light + gain) };
 }
 
 /**

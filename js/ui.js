@@ -40,10 +40,15 @@ function pointsToNext(state) {
 }
 
 /**
- * @param {object} state
- * @param {{charging:boolean, driving:boolean, isNight:boolean}} ctx
+ * @typedef {{rate:number, reason:'ok'|'night'|'weather'|'loading'|'unknown', label:string}} PhotoInfo
+ *  rate: 지금 1분에 모이는 햇빛, reason: 모이거나 쉬는 이유, label: 날씨 이름
  */
-export function renderStatus(state, { charging, driving, isNight }) {
+
+/**
+ * @param {object} state
+ * @param {{photo:PhotoInfo, driving:boolean, isNight:boolean}} ctx
+ */
+export function renderStatus(state, { photo, driving, isNight }) {
   const stage = stageOf(state);
   $('plant-name').textContent = PLANTS[state.active].name;
   $('stage-name').textContent = stageName(state.active, stage);
@@ -80,12 +85,21 @@ export function renderStatus(state, { charging, driving, isNight }) {
   waterBtn.classList.toggle('rest', waterBtn.disabled && !waiting);
   waterBtn.style.setProperty('--p', String(1 - kmToNextDrop(state) / RULES.KM_PER_DROP));
   $('water-sub').textContent = waterSubtitle(state, check, { driving, isNight });
-  const chargeBtn = $('charge-btn');
-  chargeBtn.setAttribute('aria-pressed', String(charging));
-  chargeBtn.disabled = driving;
-  $('charge-title').textContent = charging ? '충전 중' : '충전 시작';
-  $('charge-sub').textContent = charging ? '햇빛이 차는 중' : '햇빛 모으기';
+  const [title, sub] = photoText(photo, state.light >= RULES.MAX_LIGHT);
+  $('photo-btn').classList.toggle('on', photo.rate > 0);
+  $('photo-title').textContent = title;
+  $('photo-sub').textContent = sub;
   $('driving-banner').hidden = !driving;
+}
+
+/** 광합성 카드의 제목과 한 줄 설명 */
+function photoText({ rate, reason, label }, full) {
+  if (reason === 'loading') return ['날씨 확인 중', '잠시만요'];
+  if (reason === 'unknown') return ['광합성 멈춤', '날씨를 몰라요 · 눌러서 다시'];
+  if (reason === 'night') return ['광합성 멈춤', '밤엔 쉬어요'];
+  if (reason === 'weather') return ['광합성 멈춤', `${label} · 해를 기다려요`];
+  if (full) return ['햇빛 가득', `${label} · 물 줄 때 써요`];
+  return ['광합성 중', `${label} · 1분에 햇빛 ${rate}`];
 }
 
 function waterSubtitle(state, check, { driving, isNight }) {
@@ -175,9 +189,10 @@ function renderGuestbook(state) {
   $('gb-count').textContent = `${Object.keys(state.guestbook).length} / ${GUEST_IDS.length}`;
 }
 
-export function renderChip(weather, now = new Date()) {
+/** 상단 시각 옆 날씨 이름 */
+export function renderChip(label, now = new Date()) {
   const time = now.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
-  $('chip').textContent = `${time} · ${weather === 'rain' ? '비' : '맑음'}`;
+  $('chip').textContent = `${time} · ${label}`;
 }
 
 let toastTimer = 0;

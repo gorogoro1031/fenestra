@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221137">
-<link rel="stylesheet" href="css/app.css?v=2610221137">
+<link rel="stylesheet" href="css/tokens.css?v=2610221150">
+<link rel="stylesheet" href="css/app.css?v=2610221150">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -51,7 +51,7 @@
 <div class="viewport">
   <div class="stage" id="stage" data-scene="night" data-weather="clear">
 
-    <!-- 장면: 검은 바탕 → 빛 번짐 → 시간 따라 뜨고 지는 해·달 고리 → 충전 파장 → 식물 그림 → 비·물 주기 물방울 -->
+    <!-- 장면: 검은 바탕 → 빛 번짐 → 시간 따라 뜨고 지는 해·달 고리 → 광합성 파장 → 식물 그림 → 비·물 주기 물방울 -->
     <div class="scene" aria-hidden="true">
       <div class="layer sky" id="sky"></div>
       <div class="orb" id="orb"></div>
@@ -115,9 +115,10 @@
         <span class="act-ic" aria-hidden="true"><svg><use href="#i-drop"/></svg></span>
         <span class="act-tx"><b>물 주기</b><span id="water-sub">이슬 1개</span></span>
       </button>
-      <button class="act sun" type="button" id="charge-btn" aria-pressed="false">
-        <span class="act-ic" aria-hidden="true"><svg><use href="#i-bolt"/></svg></span>
-        <span class="act-tx"><b id="charge-title">충전 시작</b><span id="charge-sub">햇빛 모으기</span></span>
+      <!-- 광합성: 실제 날씨가 맑은 낮이면 저절로 햇빛이 모인다. 누르면 설명, 날씨를 모르면 다시 확인 -->
+      <button class="act sun" type="button" id="photo-btn">
+        <span class="act-ic" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>
+        <span class="act-tx" role="status"><b id="photo-title">날씨 확인 중</b><span id="photo-sub">잠시만요</span></span>
       </button>
     </section>
 
@@ -196,9 +197,9 @@
           </div>
         </div>
         <div class="row">
-          <div><p class="r-title">날씨</p><p class="r-sub">프로토타입이라 직접 골라요</p></div>
+          <div><p class="r-title">날씨</p><p class="r-sub"><span id="weather-status">실제 날씨를 확인하는 중</span> · 대략의 위치 필요 · 날씨 정보 Open-Meteo</p></div>
           <div class="segmented" id="pref-weather">
-            <button type="button" data-value="clear">맑음</button><button type="button" data-value="rain">비</button>
+            <button type="button" data-value="auto">실제</button><button type="button" data-value="clear">맑음</button><button type="button" data-value="cloudy">흐림</button><button type="button" data-value="rain">비</button>
           </div>
         </div>
       </div>
@@ -214,7 +215,7 @@
         <button class="row link" type="button" id="demo-km">30km 달린 것으로 하기</button>
         <button class="row link" type="button" id="demo-coins">꽃씨 +100</button>
         <button class="row link" type="button" id="demo-guest">손님 부르기</button>
-        <button class="row link" type="button" id="demo-charge">10분 충전한 것으로 하기</button>
+        <button class="row link" type="button" id="demo-photo">맑은 낮 10분 광합성한 것으로 하기</button>
         <button class="row link" type="button" id="demo-drive">운전 중 화면 보기</button>
         <button class="row link destructive" type="button" id="demo-reset">처음부터 다시</button>
       </div>
@@ -252,8 +253,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221137","./js/albums.js":"./js/albums.js?v=2610221137","./js/drive.js":"./js/drive.js?v=2610221137","./js/guest-visit.js":"./js/guest-visit.js?v=2610221137","./js/guests.js":"./js/guests.js?v=2610221137","./js/main.js":"./js/main.js?v=2610221137","./js/motions.js":"./js/motions.js?v=2610221137","./js/plant.js":"./js/plant.js?v=2610221137","./js/plants.js":"./js/plants.js?v=2610221137","./js/qr.js":"./js/qr.js?v=2610221137","./js/scene.js":"./js/scene.js?v=2610221137","./js/sky.js":"./js/sky.js?v=2610221137","./js/sound.js":"./js/sound.js?v=2610221137","./js/state.js":"./js/state.js?v=2610221137","./js/storage.js":"./js/storage.js?v=2610221137","./js/text.js":"./js/text.js?v=2610221137","./js/tutorial.js":"./js/tutorial.js?v=2610221137","./js/ui.js":"./js/ui.js?v=2610221137"}}</script>
-<script type="module" src="js/main.js?v=2610221137"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221150","./js/albums.js":"./js/albums.js?v=2610221150","./js/drive.js":"./js/drive.js?v=2610221150","./js/guest-visit.js":"./js/guest-visit.js?v=2610221150","./js/guests.js":"./js/guests.js?v=2610221150","./js/main.js":"./js/main.js?v=2610221150","./js/motions.js":"./js/motions.js?v=2610221150","./js/plant.js":"./js/plant.js?v=2610221150","./js/plants.js":"./js/plants.js?v=2610221150","./js/qr.js":"./js/qr.js?v=2610221150","./js/scene.js":"./js/scene.js?v=2610221150","./js/sky.js":"./js/sky.js?v=2610221150","./js/sound.js":"./js/sound.js?v=2610221150","./js/state.js":"./js/state.js?v=2610221150","./js/storage.js":"./js/storage.js?v=2610221150","./js/text.js":"./js/text.js?v=2610221150","./js/tutorial.js":"./js/tutorial.js?v=2610221150","./js/ui.js":"./js/ui.js?v=2610221150","./js/weather.js":"./js/weather.js?v=2610221150"}}</script>
+<script type="module" src="js/main.js?v=2610221150"></script>
 <!-- version:end -->
 </body>
 </html>

@@ -1,8 +1,9 @@
-// 장면 모션: 충전 파장, 비, 물 주기 물방울, 화분 자리 계산 (식물은 plant.js, 해·달은 sky.js)
+// 장면 모션: 광합성 파장, 비, 물 주기 물방울, 화분 자리 계산 (식물은 plant.js, 해·달은 sky.js)
 // 캔버스 크기는 화면 비율에 따라 바뀌므로 그릴 때마다 canvas.width/height를 쓴다
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// 충전하는 동안만 식물 뒤에서 노란 파장이 퍼진다 (평소엔 해·달 고리가 그 자리를 맡는다)
+// 광합성으로 햇빛이 모일 때 식물 뒤에서 노란 파장이 잠깐 퍼진다 (평소엔 해·달 고리가 그 자리를 맡는다)
+const PULSE_MS = 3000;
 const WAVE = { every: 1100, life: 7000, alpha: 0.5, width: 3.2, color: '255, 214, 10' };
 // 식물 그림 배율: 1920×1200 기준, 무대가 세로로 길어지면 조금 크게
 const PLANT_SCALE = 0.72;
@@ -24,12 +25,12 @@ export function plantLayout(W, H, hand = 'driver') {
   return { cx, base: H - POT_MARGIN, scale: PLANT_SCALE * Math.min(1.25, 1 + Math.max(0, H - 1200) / 2000) };
 }
 
-/** 파장: 충전 중에 중심에서 원이 계속 퍼지고 사라진다 */
+/** 파장: pulse()를 부르면 잠깐 동안 중심에서 원이 퍼지고 사라진다 */
 export function createArcs(canvas) {
   const ctx = canvas.getContext('2d');
   let origin = { x: canvas.width / 2, y: canvas.height / 3 };
   let rings = [];
-  let charging = false;
+  let pulseUntil = 0;
   let lastSpawn = -Infinity;
 
   function drawRing(r, color, alpha, width) {
@@ -42,7 +43,7 @@ export function createArcs(canvas) {
 
   function frame(now) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (charging && now - lastSpawn > WAVE.every) { rings = [...rings, { born: now }]; lastSpawn = now; }
+    if (now < pulseUntil && now - lastSpawn > WAVE.every) { rings = [...rings, { born: now }]; lastSpawn = now; }
     rings = rings.filter((ring) => now - ring.born < WAVE.life);
     rings.forEach((ring) => {
       const p = (now - ring.born) / WAVE.life;
@@ -53,19 +54,12 @@ export function createArcs(canvas) {
     requestAnimationFrame(frame);
   }
 
-  function drawStill() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (charging) [160, 330, 520, 740].forEach((r, i) => drawRing(r, WAVE.color, WAVE.alpha * (1 - i * 0.2), WAVE.width));
-  }
-
-  if (REDUCED) drawStill(); else requestAnimationFrame(frame);
+  // 동작 줄이기면 파장을 그리지 않는다
+  if (!REDUCED) requestAnimationFrame(frame);
 
   return {
-    set({ x, y, active }) {
-      if (x !== undefined) origin = { x, y };
-      if (active !== undefined) charging = active;
-      if (REDUCED) drawStill();
-    },
+    set({ x, y }) { origin = { x, y }; },
+    pulse() { pulseUntil = performance.now() + PULSE_MS; },
   };
 }
 

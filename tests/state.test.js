@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  RULES, createState, kmToNextDrop, stageFor, progressToNext, addDistance, addChargeMinutes, water, waterCheck, rollDay, sanitize,
+  RULES, createState, kmToNextDrop, stageFor, progressToNext, addDistance, photosynthesize, lightPerMinute, water, waterCheck, rollDay, sanitize,
   buyPlant, selectPlant, growthOf, stageOf, LAST_STAGE,
 } from '../js/state.js';
 import { PLANTS } from '../js/plants.js';
@@ -49,9 +49,18 @@ test('음수나 숫자가 아닌 거리는 무시하고 원래 상태를 바꾸�
   assert.equal(s.drops, RULES.START_DROPS);
 });
 
-test('충전 10분이면 햇빛 한 번 쓸 만큼 차고 최대치에서 멈춘다', () => {
-  assert.equal(addChargeMinutes(createState(), 10).light, RULES.LIGHT_COST);
-  assert.equal(addChargeMinutes(createState(), 999).light, RULES.MAX_LIGHT);
+test('맑은 낮 광합성 10분이면 햇빛 한 번 쓸 만큼 차고 최대치에서 멈춘다', () => {
+  const sunny = { kind: 'clear', isDay: true };
+  assert.equal(photosynthesize(createState(), 10, sunny).light, RULES.LIGHT_COST);
+  assert.equal(photosynthesize(createState(), 999, sunny).light, RULES.MAX_LIGHT);
+});
+
+test('구름 조금이면 절반, 흐림·비·눈·밤·날씨 모름이면 햇빛이 안 모인다', () => {
+  const s = createState();
+  assert.equal(photosynthesize(s, 10, { kind: 'partly', isDay: true }).light, 10);
+  ['cloudy', 'fog', 'rain', 'snow', null].forEach((kind) => assert.equal(photosynthesize(s, 10, { kind, isDay: true }), s));
+  assert.equal(photosynthesize(s, 10, { kind: 'clear', isDay: false }), s);
+  assert.equal(lightPerMinute({ kind: 'clear', isDay: true }), 2);
 });
 
 test('이슬이 없으면 물을 줄 수 없다', () => {
