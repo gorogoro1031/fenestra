@@ -149,20 +149,23 @@ export function createPlant(host) {
       void current.offsetWidth;
       current.classList.add('glow');
     },
-    /** 잎을 건드렸는지 확인하고, 맞으면 여러 반응 중 하나로 움직인다 (화분은 제외) */
+    /**
+     * 잎을 건드렸는지 확인하고, 맞으면 여러 반응 중 하나로 움직인다 (화분은 제외)
+     * @returns {{height:number}|null} 맞았으면 누른 높이(0=화분 가까이, 1=그림 맨 위)
+     */
     poke(x, y) {
-      if (!hitMap) return false;
+      if (!hitMap) return null;
       const { cx, base, scale } = layout;
       const ix = (x - (cx - PLANT_IMAGE.potX * scale)) / scale;
       const iy = (y - (base - PLANT_IMAGE.potBottom * scale)) / scale;
-      if (ix < 0 || iy < 0 || ix >= PLANT_IMAGE.w || iy >= PLANT_IMAGE.potTop) return false;
+      if (ix < 0 || iy < 0 || ix >= PLANT_IMAGE.w || iy >= PLANT_IMAGE.potTop) return null;
       const i = (Math.floor(iy * HIT_SCALE) * hitMap.w + Math.floor(ix * HIT_SCALE)) * 4 + 3;
       const hit = hitMap.data[i] > HIT_ALPHA;
       if (hit && !REDUCED) {
         lastMotion = pickMotion(lastMotion);
         motions = [...motions, { type: lastMotion, born: performance.now(), dir: x < cx ? -1 : 1 }];
       }
-      return hit;
+      return hit ? { height: 1 - iy / PLANT_IMAGE.potTop } : null;
     },
     /** 인트로 전엔 감춰 둔다 */
     hide() { grow.classList.add('hidden'); },

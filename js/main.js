@@ -130,12 +130,14 @@ stageEl.addEventListener('pointerdown', (e) => {
   const scale = rect.width / stageEl.offsetWidth;
   const x = (e.clientX - rect.left) / scale;
   const y = (e.clientY - rect.top) / scale;
-  if (plant.poke(x, y)) onLeafTouched(x, y);
+  const hit = plant.poke(x, y);
+  if (hit) onLeafTouched(x, y, hit.height);
 });
 
-function onLeafTouched(x, y) {
+/* 잎 악기: 높은 잎을 누를수록 높은 음 */
+function onLeafTouched(x, y, height) {
   fx.burst(x, y);
-  if (prefs.sound && audioReady) leafTouch(currentScene());
+  if (prefs.sound && audioReady) leafTouch(currentScene(), height);
 }
 
 function scheduleGust() {

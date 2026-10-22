@@ -197,14 +197,46 @@ export function rustle(strength = 0.6) {
   source.stop(t + dur + 0.1);
 }
 
-/** 잎을 건드렸을 때: 맑은 음 하나, 잎 스치는 소리, 전체 소리가 잠깐 환하게 열렸다 닫힌다 */
-export function leafTouch(scene = 'night') {
+// 잎 악기: 낮은 F장조, 밤은 D단조 5음 음계 (배경 화음과 어울려 아무렇게나 눌러도 멜로디가 된다)
+export const LEAF_SCALES = Object.freeze({
+  day: Object.freeze([349.23, 392.0, 440.0, 523.25, 587.33, 698.46, 783.99, 880.0, 1046.5]),
+  night: Object.freeze([293.66, 349.23, 392.0, 440.0, 523.25, 587.33, 698.46, 783.99, 880.0]),
+});
+const KALIMBA_GAIN = 0.07;
+
+/** 잎 높이(0=화분 가까이, 1=맨 위)에 맞는 음 */
+export function leafNote(height, scene = 'night') {
+  const scale = LEAF_SCALES[scene] || LEAF_SCALES.night;
+  const h = Number.isFinite(height) ? Math.min(1, Math.max(0, height)) : 0;
+  return scale[Math.round(h * (scale.length - 1))];
+}
+
+/** 칼림바처럼 톡 튀는 음: 맑은 바탕음 + 살짝 어긋난 높은 배음이 빨리 사라진다 */
+function kalimba(ac, out, freq) {
+  const t = ac.currentTime;
+  [[1, KALIMBA_GAIN, 1.6], [3.01, KALIMBA_GAIN * 0.25, 0.35]].forEach(([mult, peak, decay]) => {
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.frequency.value = freq * mult;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(peak, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+    osc.connect(gain).connect(out);
+    osc.start(t);
+    osc.stop(t + decay + 0.05);
+  });
+}
+
+/**
+ * 잎을 건드렸을 때: 누른 높이에 맞는 음 하나, 잎 스치는 소리, 전체 소리가 잠깐 환하게 열렸다 닫힌다
+ * @param {number} height 누른 자리 높이 0~1
+ */
+export function leafTouch(scene = 'night', height = 0.5) {
   const ac = audio();
   if (!ac || !ambient) return;
   const out = getBus(ac);
-  const notes = BELL_NOTES[scene];
-  bell(ac, out.input, notes[Math.floor(Math.random() * notes.length)] * 2, 0.05);
-  rustle(0.5);
+  kalimba(ac, panned(ac, out.input), leafNote(height, scene));
+  rustle(0.35);
   const t = ac.currentTime;
   out.tone.frequency.cancelScheduledValues(t);
   out.tone.frequency.setTargetAtTime(5200, t, 0.08);
