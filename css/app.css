@@ -416,9 +416,11 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* 인사는 로고와 같은 크기감으로 크게, 얇게 (이름만 굵게). 긴 이름이면 두 줄로 고르게 */
 .opening-greet { position: absolute; left: 0; right: 0; top: 50%; margin: 0 auto; max-width: 1700px; text-align: center; font-size: 128px; font-weight: 300; line-height: 1.1; letter-spacing: -.02em; text-wrap: balance; color: #fff; opacity: 0; transform: translateY(calc(-50% + 40px)); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); pointer-events: none; }
 .opening-greet b { font-weight: 700; }
-.opening.greeting .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); }
-.opening.greeting .opening-greet { opacity: 1; transform: translateY(-50%); }
-.opening.reveal .opening-greet { opacity: 0; transform: translateY(calc(-50% - 40px)); }
+.opening.greeting .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); transition-duration: 600ms; }
+/* 로고가 다 사라진 뒤(--greet-delay) 인사가 올라온다. 겹치지 않게 */
+.opening { --greet-delay: 650ms; }
+.opening.greeting .opening-greet { opacity: 1; transform: translateY(-50%); transition-delay: var(--greet-delay); }
+.opening.reveal .opening-greet { opacity: 0; transform: translateY(calc(-50% - 40px)); transition-delay: 0s; }
 .opening.reveal { background-color: transparent; }
 .opening.reveal .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); }
 .opening.done { opacity: 0; pointer-events: none; }
