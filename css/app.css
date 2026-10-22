@@ -403,10 +403,10 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .opening { position: absolute; inset: 0; z-index: 30; background: #000; display: grid; place-items: center; transition: background-color 1400ms ease, opacity 900ms var(--ease-ios); }
 .opening-mark { text-align: center; transition: opacity 1100ms var(--ease-ios), transform 1400ms var(--ease-ios), filter 1100ms ease; }
 /* 글자가 차례로 올라오고, a 끝에서 잎이 돋아 흔들린 뒤 문구가 떠오른다 */
-.opening-word { position: relative; display: inline-block; font: 400 168px/1 var(--font-logo); letter-spacing: .01em; white-space: nowrap; }
+.opening-word { position: relative; display: inline-block; font: 400 240px/1 var(--font-logo); letter-spacing: .01em; white-space: nowrap; }
 .opening-word .ch { display: inline-block; animation: logo-rise 700ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms); }
 .opening-word .logo-leaf svg { animation: leaf-grow 800ms var(--ease-spring) 900ms both, leaf-sway 3200ms ease-in-out 1700ms infinite; }
-.opening-tag { font-size: 36px; font-weight: 300; letter-spacing: -.02em; color: var(--label-2); margin-top: 18px; animation: tag-in 800ms var(--ease-out) 1500ms both; }
+.opening-tag { font-size: 48px; font-weight: 300; letter-spacing: -.02em; color: var(--label-2); margin-top: 26px; animation: tag-in 800ms var(--ease-out) 1500ms both; }
 @keyframes logo-rise { from { opacity: 0; transform: translateY(.45em); } }
 @keyframes leaf-grow { from { transform: scale(0); } }
 @keyframes leaf-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
@@ -414,7 +414,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* 막이 걷히면 로고는 위로 흐려지며 사라지고, 뒤에서 식물이 모인다 */
 /* 로고 다음 인사: 아래에서 올라왔다가, 막이 걷힐 때 위로 사라진다 */
 /* 인사는 로고와 같은 크기감으로 크게, 얇게 (이름만 굵게). 긴 이름이면 두 줄로 고르게 */
-.opening-greet { position: absolute; left: 0; right: 0; top: 50%; margin: 0 auto; max-width: 1700px; text-align: center; font-size: 128px; font-weight: 300; line-height: 1.1; letter-spacing: -.02em; text-wrap: balance; color: #fff; opacity: 0; transform: translateY(calc(-50% + 40px)); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); pointer-events: none; }
+.opening-greet { position: absolute; left: 0; right: 0; top: 50%; margin: 0 auto; max-width: 1700px; text-align: center; font-size: 160px; font-weight: 300; line-height: 1.1; letter-spacing: -.02em; text-wrap: balance; color: #fff; opacity: 0; transform: translateY(calc(-50% + 40px)); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); pointer-events: none; }
 .opening-greet b { font-weight: 700; }
 .opening.greeting .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); transition-duration: 600ms; }
 /* 로고가 다 사라진 뒤(--greet-delay) 인사가 올라온다. 겹치지 않게 */
