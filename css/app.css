@@ -127,23 +127,29 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .album-sheet .a-label { font-size: 22px; }
 .album-body { display: flex; gap: 40px; align-items: flex-start; }
 .album-cover { width: 320px; height: 320px; border-radius: 20px; background: var(--fill); object-fit: cover; flex-shrink: 0; box-shadow: 0 20px 50px rgba(0, 0, 0, .55); }
-.album-sheet h2 { font-size: 46px; line-height: 1.15; }
-.album-byline { font-size: 24px; color: var(--label-2); margin-top: 10px; }
-.album-note { font-size: 27px; line-height: 1.55; margin-top: 28px; word-break: keep-all; }
+/* 한국어는 어절 단위로, 제목은 줄 길이를 고르게 나눠 어색한 한 단어 줄바꿈을 막는다 */
+.album-text { flex: 1; min-width: 0; }
+.album-sheet h2 { font-size: 46px; line-height: 1.15; text-wrap: balance; }
+.album-byline { font-size: 23px; color: var(--label-2); margin-top: 10px; }
+.album-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.album-genre, .album-track { padding: 6px 14px; border-radius: 999px; font-size: 18px; font-weight: 700; white-space: nowrap; background: var(--grouped-2); color: var(--label-2); }
+.album-track { background: rgba(250, 45, 72, .16); color: #ff8fa0; }
+.album-note { font-size: 24px; line-height: 1.6; margin-top: 18px; word-break: keep-all; text-wrap: pretty; color: var(--label); }
 /* 폰으로 듣기: 흰 바탕 QR(잘 찍히게) + 앱 고르기 */
 .listen { display: flex; gap: 30px; align-items: center; margin-top: 32px; padding: 26px; border-radius: var(--r-md); background: var(--grouped-2); }
 .listen-qr { width: 236px; height: 236px; flex-shrink: 0; padding: 12px; border-radius: 22px; background: #fff; }
 .listen-qr svg { width: 100%; height: 100%; display: block; stroke: none; }
 .listen-qr path { fill: #000; }
-.listen-body { min-width: 0; }
+.listen-body { flex: 1; min-width: 0; }
 .listen-title { font-size: 28px; font-weight: 800; }
-.music-apps { display: inline-flex; flex-wrap: wrap; margin-top: 16px; }
-.music-apps button { min-height: 64px; min-width: 0; padding: 0 18px; font-size: 20px; display: inline-flex; align-items: center; gap: 8px; }
+/* 앱 고르기: 한 줄 3칸 */
+.music-apps { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 16px; }
+.music-apps button { min-height: 64px; min-width: 0; padding: 0 10px; font-size: 19px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
 .music-apps button::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--app); }
 .listen-sub { font-size: 20px; color: var(--label-2); margin-top: 12px; }
-.album-how { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 18px; color: var(--label-3); word-break: keep-all; }
-.album-how svg { font-size: 22px; color: #fa2d48; }
-.album-how b { color: var(--label); font-weight: 600; }
+.album-how { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 18px; line-height: 1.5; color: var(--label-3); word-break: keep-all; text-wrap: pretty; }
+.album-how svg { font-size: 22px; color: #fa2d48; flex-shrink: 0; margin-top: 2px; }
+.album-how b { display: block; color: var(--label); font-weight: 600; text-wrap: balance; }
 
 /* 버튼: 넓은 알약 두 개 */
 .act { height: var(--act-h); border-radius: var(--r-wd); display: flex; align-items: center; gap: 18px; padding: 0 28px; position: relative; overflow: hidden; text-align: left; white-space: nowrap; transition: transform var(--duration-fast) var(--ease-ios), opacity 240ms, background-color 240ms; }

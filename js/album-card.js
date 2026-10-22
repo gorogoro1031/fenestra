@@ -50,8 +50,11 @@ export function renderAlbum(dateKey, { app = 'apple', onPickApp = () => {} } = {
   const [, m, d] = dateKey.split('-').map(Number);
   $('album-date').textContent = `${m}월 ${d}일 · 오늘의 앨범`;
   $('album-sheet-title').textContent = album.title;
-  $('album-meta').textContent = album.track ? `${album.artist} · ${album.year} · 추천 곡 ${album.track}` : `${album.artist} · ${album.year}`;
-  $('album-note').textContent = album.note;
+  $('album-meta').textContent = `${album.artist} · ${album.country} · ${album.year}`;
+  $('album-genre').textContent = album.genre;
+  $('album-track').hidden = !album.track;
+  $('album-track').textContent = album.track ? `추천 곡 ${album.track}` : '';
+  $('album-note').textContent = album.about;
   $('album-search').textContent = `‘${album.title}’`;
   renderListen(album, app, onPickApp);
 }

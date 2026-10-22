@@ -35,7 +35,7 @@ export function loadPrefs() {
     weather: ['clear', 'rain'].includes(raw.weather) ? raw.weather : DEFAULT_PREFS.weather,
     tutorialSeen: raw.tutorialSeen === true,
     hand: raw.hand === 'passenger' ? 'passenger' : 'driver',
-    musicApp: ['apple', 'spotify', 'youtube', 'other'].includes(raw.musicApp) ? raw.musicApp : 'apple',
+    musicApp: ['apple', 'spotify', 'youtube'].includes(raw.musicApp) ? raw.musicApp : 'apple',
   };
 }
 
