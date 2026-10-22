@@ -1,5 +1,6 @@
 // 게임 규칙과 상태 변화. 화면·브라우저에 의존하지 않는 순수 함수만 둔다
 import { PLANTS, PLANT_IDS, FIRST_PLANT } from './plants.js';
+import { GUESTS, GUEST_IDS, GUEST_RULES } from './guests.js';
 
 // 이슬: 달린 거리로 모아 물을 줄 때 쓴다 (코드에선 drops)
 export const RULES = Object.freeze({
@@ -30,6 +31,8 @@ export function createState(today = '') {
   return {
     drops: RULES.START_DROPS, kmRemainder: 0, light: 0, totalKm: 0, todayKm: 0, today, waterCount: 0,
     coins: 0, coinRemainder: 0,
+    // 손님 도감(만난 횟수)과 오늘 손님에게 받은 꽃씨
+    guestbook: {}, guestCoinsToday: 0,
     active: FIRST_PLANT,
     plants: { [FIRST_PLANT]: newPlant() },
   };
@@ -58,10 +61,23 @@ export function progressToNext(growth, thresholds = PLANTS[FIRST_PLANT].threshol
 const mapPlants = (state, fn) => Object.fromEntries(Object.entries(state.plants).map(([id, p]) => [id, fn(p, id)]));
 const withActive = (state, patch) => ({ ...state, plants: { ...state.plants, [state.active]: { ...activePlant(state), ...patch } } });
 
-/** 날짜가 바뀌면 오늘 거리와 오늘 물 준 횟수를 0으로 */
+/** 날짜가 바뀌면 오늘 거리, 오늘 물 준 횟수, 오늘 손님 꽃씨를 0으로 */
 export function rollDay(state, today) {
   if (state.today === today) return state;
-  return { ...state, today, todayKm: 0, plants: mapPlants(state, (p) => ({ ...p, waterToday: 0 })) };
+  return { ...state, today, todayKm: 0, guestCoinsToday: 0, plants: mapPlants(state, (p) => ({ ...p, waterToday: 0 })) };
+}
+
+/** 손님을 만났다: 도감에 쌓고 꽃씨를 받는다 (하루 한도까지) */
+export function catchGuest(state, id) {
+  if (!GUESTS[id]) return state;
+  const room = Math.max(0, GUEST_RULES.DAILY_COINS - state.guestCoinsToday);
+  const earned = Math.min(room, GUESTS[id].coins);
+  return {
+    ...state,
+    coins: state.coins + earned,
+    guestCoinsToday: state.guestCoinsToday + earned,
+    guestbook: { ...state.guestbook, [id]: (state.guestbook[id] || 0) + 1 },
+  };
 }
 
 /** 다음 이슬까지 남은 거리(km). 가득 찼으면 0 */
@@ -181,6 +197,8 @@ export function sanitize(raw, today = '') {
     waterCount: Math.floor(num(raw.waterCount, 0, 1e7)),
     coins: Math.floor(num(raw.coins, 0, 1e7)),
     coinRemainder: num(raw.coinRemainder, 0, 1),
+    guestbook: Object.fromEntries(GUEST_IDS.filter((id) => Number.isFinite(raw.guestbook?.[id]) && raw.guestbook[id] > 0).map((id) => [id, Math.floor(raw.guestbook[id])])),
+    guestCoinsToday: Math.floor(num(raw.guestCoinsToday, 0, GUEST_RULES.DAILY_COINS)),
     active: plants[raw.active] ? raw.active : FIRST_PLANT,
     plants,
   };

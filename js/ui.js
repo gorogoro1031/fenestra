@@ -1,6 +1,7 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
 import { RULES, STAGE_NAMES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, stageFor, kmToNextDrop } from './state.js';
 import { PLANTS, PLANT_IDS, plantImage } from './plants.js';
+import { GUESTS, GUEST_IDS, guestImage } from './guests.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -133,10 +134,33 @@ export function renderGreenhouse(state, onPick) {
     return li;
   });
   $('gh-grid').replaceChildren(...cards);
+  renderGuestbook(state);
   $('gh-coin-num').textContent = String(state.coins);
   $('stat-km').textContent = state.totalKm.toFixed(1);
   $('stat-water').textContent = String(state.waterCount);
   $('stat-grown').textContent = String(Object.values(state.plants).filter((p) => p.grown).length);
+}
+
+/** 손님 도감: 만난 손님은 몇 번 만났는지, 아직이면 실루엣과 물음표 */
+function renderGuestbook(state) {
+  const cells = GUEST_IDS.map((id) => {
+    const times = state.guestbook[id] || 0;
+    const li = document.createElement('li');
+    li.className = times ? 'gb-cell' : 'gb-cell unmet';
+    const img = document.createElement('img');
+    img.src = guestImage(id);
+    img.alt = '';
+    const name = document.createElement('p');
+    name.className = 'gb-name';
+    name.textContent = times ? GUESTS[id].name : '???';
+    const count = document.createElement('p');
+    count.className = 'gb-times';
+    count.textContent = times ? `${times}번 만남` : `꽃씨 +${GUESTS[id].coins}`;
+    li.append(img, name, count);
+    return li;
+  });
+  $('guestbook').replaceChildren(...cells);
+  $('gb-count').textContent = `${Object.keys(state.guestbook).length} / ${GUEST_IDS.length}`;
 }
 
 export function renderChip(weather, now = new Date()) {

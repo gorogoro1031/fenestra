@@ -1,4 +1,4 @@
-import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageOf, buyPlant, selectPlant, STAGE_NAMES } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageOf, buyPlant, selectPlant, catchGuest, STAGE_NAMES } from './state.js';
 import { PLANTS } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
@@ -9,6 +9,9 @@ import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
+import { GUESTS, pickGuest, shouldSpawn } from './guests.js';
+import { createGuestVisit } from './guest-visit.js';
+import { withJosa } from './text.js';
 
 // 인트로: 로고만 보이는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
 const LOGO_MS = 2000;
@@ -111,6 +114,7 @@ function syncAmbient() {
 }
 
 function render() {
+  if (isDriving()) guests.leave();
   renderStatus(state, { charging, driving: isDriving(), isNight: currentScene() === 'night' });
 }
 
@@ -134,11 +138,34 @@ stageEl.addEventListener('pointerdown', (e) => {
   if (hit) onLeafTouched(x, y, hit.height);
 });
 
-/* 잎 악기: 높은 잎을 누를수록 높은 음 */
+/* 잎 악기: 높은 잎을 누를수록 높은 음. 흔든 잎에서 가끔 손님이 나온다 */
 function onLeafTouched(x, y, height) {
   fx.burst(x, y);
   if (prefs.sound && audioReady) leafTouch(currentScene(), height);
+  const now = Date.now();
+  if (shouldSpawn({ now, lastAt: lastGuestAt, present: guests.present, driving: isDriving() })) {
+    lastGuestAt = now;
+    setTimeout(() => guests.arrive(pickGuest(guestContext()), x, y - GUEST_LIFT), GUEST_DELAY_MS);
+  }
 }
+
+/* ---------- 온실 손님 ---------- */
+// 손님은 흔든 잎에서 살짝 위로, 잎이 흔들린 뒤 잠깐 있다가 나타난다
+const GUEST_LIFT = 30;
+const GUEST_DELAY_MS = 450;
+let lastGuestAt = 0;
+const guestContext = () => ({ isNight: currentScene() === 'night', raining: prefs.weather === 'rain', plant: state.active, stage: stageOf(state) });
+const guests = createGuestVisit($('guest-layer'), {
+  onCatch: (id, x, y) => {
+    const before = state.coins;
+    commit(catchGuest(state, id));
+    const earned = state.coins - before;
+    fx.burst(x, y);
+    if (prefs.sound) chime();
+    const met = `${withJosa(GUESTS[id].name, '을', '를')} 만났어요`;
+    toast(earned > 0 ? `${met} · 꽃씨 +${earned}` : `${met} · 오늘 손님 꽃씨는 다 받았어요`);
+  },
+});
 
 function scheduleGust() {
   const [min, max] = GUST_EVERY_MS;
@@ -168,7 +195,7 @@ $('water-btn').addEventListener('click', () => {
     const stage = stageOf(state);
     setTimeout(() => {
       applyScene();
-      if (result.grownNow) toast(`${PLANTS[state.active].name}가 다 자랐어요 · 꽃씨 +${RULES.GROWN_REWARD}`);
+      if (result.grownNow) toast(`${withJosa(PLANTS[state.active].name, '이', '가')} 다 자랐어요 · 꽃씨 +${RULES.GROWN_REWARD}`);
       else toast(stage === before + 1 ? `한 뼘 자랐어요 · ${STAGE_NAMES[stage]}` : '한 뼘 자랐어요');
       if (prefs.sound) chime();
     }, 600);
@@ -219,7 +246,7 @@ function renderGreenhouseSheet() {
     commit(next);
     applyScene();
     renderGreenhouseSheet();
-    toast(action === 'buy' ? `${PLANTS[id].name}를 들였어요` : `${PLANTS[id].name}를 키워요`);
+    toast(`${withJosa(PLANTS[id].name, '을', '를')} ${action === 'buy' ? '들였어요' : '키워요'}`);
     if (action === 'buy' && prefs.sound) chime();
   });
 }
@@ -292,6 +319,11 @@ $('demo-stage').addEventListener('click', (e) => {
 });
 $('demo-km').addEventListener('click', () => { commit(addDistance(state, 30)); toast('30km 달렸어요 · 이슬 +3 · 꽃씨 +30'); });
 $('demo-coins').addEventListener('click', () => { commit({ ...state, coins: state.coins + 100 }); toast('꽃씨 +100'); });
+$('demo-guest').addEventListener('click', () => {
+  closeSheets();
+  const { x, y } = plant.ring();
+  guests.arrive(pickGuest(guestContext()), x, y + 80);
+});
 $('demo-charge').addEventListener('click', () => { commit(addChargeMinutes(state, 10)); toast(`햇빛 +${10 * RULES.LIGHT_PER_MINUTE}`); });
 $('demo-drive').addEventListener('click', () => {
   closeSheets();

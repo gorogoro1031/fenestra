@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610220924">
-<link rel="stylesheet" href="css/app.css?v=2610220924">
+<link rel="stylesheet" href="css/tokens.css?v=2610220931">
+<link rel="stylesheet" href="css/app.css?v=2610220931">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -58,6 +58,8 @@
       <div class="layer plant-layer" id="plant-layer"></div>
       <canvas class="layer" id="fx" width="1920" height="1200"></canvas>
     </div>
+    <!-- 잎을 흔들면 가끔 나와 앉는 손님 (누르면 만난다) -->
+    <div class="layer guest-layer" id="guest-layer"></div>
 
     <header class="top">
       <div class="brand">
@@ -126,6 +128,8 @@
       </div>
       <p class="gh-coins"><i class="coin-dot" aria-hidden="true"></i>꽃씨 <b id="gh-coin-num">0</b>개 <span>· 1km 달리면 1개 · 다 키우면 +50</span></p>
       <ul class="gh-grid" id="gh-grid"></ul>
+      <p class="section-label">손님 도감 <span class="gb-count" id="gb-count"></span></p>
+      <ul class="gb-grid" id="guestbook"></ul>
       <div class="stats">
         <div class="stat"><p class="s-label">누적 거리</p><p class="s-value"><span id="stat-km">0</span> km</p></div>
         <div class="stat"><p class="s-label">물 준 횟수</p><p class="s-value"><span id="stat-water">0</span>번</p></div>
@@ -194,6 +198,7 @@
         <a class="row link" href="music-test.html">Apple Music 링크 확인 (차에서)</a>
         <button class="row link" type="button" id="demo-km">30km 달린 것으로 하기</button>
         <button class="row link" type="button" id="demo-coins">꽃씨 +100</button>
+        <button class="row link" type="button" id="demo-guest">손님 부르기</button>
         <button class="row link" type="button" id="demo-charge">10분 충전한 것으로 하기</button>
         <button class="row link" type="button" id="demo-drive">운전 중 화면 보기</button>
         <button class="row link destructive" type="button" id="demo-reset">처음부터 다시</button>
@@ -232,8 +237,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610220924","./js/albums.js":"./js/albums.js?v=2610220924","./js/drive.js":"./js/drive.js?v=2610220924","./js/main.js":"./js/main.js?v=2610220924","./js/motions.js":"./js/motions.js?v=2610220924","./js/plant.js":"./js/plant.js?v=2610220924","./js/plants.js":"./js/plants.js?v=2610220924","./js/scene.js":"./js/scene.js?v=2610220924","./js/sky.js":"./js/sky.js?v=2610220924","./js/sound.js":"./js/sound.js?v=2610220924","./js/state.js":"./js/state.js?v=2610220924","./js/storage.js":"./js/storage.js?v=2610220924","./js/tutorial.js":"./js/tutorial.js?v=2610220924","./js/ui.js":"./js/ui.js?v=2610220924"}}</script>
-<script type="module" src="js/main.js?v=2610220924"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610220931","./js/albums.js":"./js/albums.js?v=2610220931","./js/drive.js":"./js/drive.js?v=2610220931","./js/guest-visit.js":"./js/guest-visit.js?v=2610220931","./js/guests.js":"./js/guests.js?v=2610220931","./js/main.js":"./js/main.js?v=2610220931","./js/motions.js":"./js/motions.js?v=2610220931","./js/plant.js":"./js/plant.js?v=2610220931","./js/plants.js":"./js/plants.js?v=2610220931","./js/scene.js":"./js/scene.js?v=2610220931","./js/sky.js":"./js/sky.js?v=2610220931","./js/sound.js":"./js/sound.js?v=2610220931","./js/state.js":"./js/state.js?v=2610220931","./js/storage.js":"./js/storage.js?v=2610220931","./js/text.js":"./js/text.js?v=2610220931","./js/tutorial.js":"./js/tutorial.js?v=2610220931","./js/ui.js":"./js/ui.js?v=2610220931"}}</script>
+<script type="module" src="js/main.js?v=2610220931"></script>
 <!-- version:end -->
 </body>
 </html>

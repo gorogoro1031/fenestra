@@ -30,6 +30,18 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .sky { transition: background 2s ease; }
 .orb { position: absolute; left: 0; top: 0; border-radius: 50%; border: 9px solid #ecf03c; transition: transform 2s var(--ease-ios), border-color 2s ease, opacity 1s ease; }
 
+/* 온실 손님: 잎 위에 톡 나타나 둥실거리고, 누르면 만난다. 아무도 안 누르면 위로 날아간다 */
+.guest-layer { pointer-events: none; }
+.guest { position: absolute; width: 132px; height: 132px; margin: -112px 0 0 -66px; pointer-events: auto; border-radius: 50%; animation: guest-in 620ms var(--ease-ios) both; }
+.guest img { width: 100%; height: 100%; object-fit: contain; animation: guest-bob 2.6s ease-in-out 620ms infinite; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); }
+.guest:active img { transform: scale(.9); }
+.guest-firefly img { animation: guest-bob 2.6s ease-in-out 620ms infinite, firefly-glow 1.8s ease-in-out infinite; }
+.guest.leaving { animation: guest-out 700ms ease-in forwards; pointer-events: none; }
+@keyframes guest-in { from { opacity: 0; transform: translateY(30px) scale(.3); } 60% { opacity: 1; transform: translateY(-8px) scale(1.08); } }
+@keyframes guest-bob { 50% { transform: translateY(-10px) rotate(-4deg); } }
+@keyframes firefly-glow { 50% { filter: drop-shadow(0 0 18px rgba(236, 240, 60, .8)); } }
+@keyframes guest-out { to { opacity: 0; transform: translate(60px, -160px) scale(.6); } }
+
 /* 식물 그림: 화분 바닥 기준. 흔들림은 .plant(JS), 인트로·단계 전환은 .plant-grow(CSS) */
 .plant { position: absolute; will-change: transform; }
 .plant-grow { position: absolute; inset: 0; }
@@ -197,6 +209,16 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .stat { background: var(--grouped-2); border-radius: var(--r-md); padding: 22px 26px; }
 .s-label { font-size: 20px; color: var(--label-2); }
 .s-value { font-size: 40px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+/* 손님 도감: 만난 손님은 색으로, 아직이면 실루엣 */
+.gb-count { margin-left: 8px; color: var(--label-3); }
+.gb-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 24px; }
+.gb-cell { background: var(--grouped-2); border-radius: var(--r-md); padding: 14px 8px 12px; text-align: center; }
+.gb-cell img { width: 72px; height: 72px; object-fit: contain; }
+.gb-cell.unmet img { filter: brightness(0) invert(.35); opacity: .5; }
+.gb-name { font-size: 17px; font-weight: 700; margin-top: 6px; }
+.gb-cell.unmet .gb-name { color: var(--label-3); }
+.gb-times { font-size: 15px; color: var(--label-2); margin-top: 2px; }
+
 /* 온실: 식물 카드 2×2 */
 .gh-coins { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 600; margin: -6px 0 24px; }
 .gh-coins b { font-size: 30px; font-weight: 800; }
@@ -275,6 +297,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
   .opening-word, .opening-tag { animation: none; }
   .toast, .orb, .sky, .plant-img { transition: none; }
   .act.sun[aria-pressed="true"] .act-ic { animation: none; }
+  .guest, .guest img, .guest.leaving { animation: none; }
 }
 
 /* 데모 단계 선택은 칸이 5개라 버튼을 좁게 */
