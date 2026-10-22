@@ -67,16 +67,18 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* ---------- 상단: 로고·시각 한쪽, 꽃씨·버튼 위치·온실·설정 반대쪽 (조수석 모드면 좌우가 바뀐다) ---------- */
 .top { position: absolute; left: 56px; right: 56px; top: 48px; display: flex; justify-content: space-between; align-items: flex-start; }
 .stage[data-hand="passenger"] .top, .stage[data-hand="passenger"] .tools { flex-direction: row-reverse; }
-/* 로고와 그 아래 날씨·주행 블록. 무대가 세로로 길수록(로고와 위젯 사이 빈 공간이 클수록) 글자가 커진다.
-   빈 공간 ≈ 무대 높이 - 1130px(로고·인사·위젯·여백), 기온 숫자는 그 공간을 대부분 채우되 96~320px */
+/* 로고와 그 아래 인사·날씨·주행 블록. 무대가 세로로 길수록(로고와 위젯 사이 빈 공간이 클수록) 글자가 커진다.
+   빈 공간 ≈ 무대 높이 - 1110px(로고·인사·주행 줄·위젯·여백), 기온 숫자는 그 공간을 대부분 채우되 96~320px */
 .stage { container-type: size; }
-.brand { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.brand { display: flex; flex-direction: column; align-items: flex-start; height: calc(100cqh - 48px * 2 - var(--wd) * 2 - var(--wd-gap) * 2 - var(--act-h)); }
+.brand > .greet { margin-top: auto; }
+.brand > .today-line { margin-bottom: auto; }
 /* 지금 날씨: 로고 아래 큰 기온, 옆에 날씨 이름과 지역 */
 /* 인사: 이름은 기온과 같은 색(낮 옐로·밤 스카이블루) */
-.greet { font-size: 34px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
+.greet { font-size: 46px; font-weight: 300; letter-spacing: -.01em; white-space: nowrap; }
 .greet b { color: var(--temp-color, #ecf03c); font-weight: 800; transition: color 2s ease; }
-.weather-now { display: flex; align-items: center; gap: 24px; align-self: flex-start; text-align: left; margin-top: 6px; }
-.wn-temp { font: 400 128px/.9 var(--font-logo); font-size: clamp(96px, calc((100cqh - 1130px) * 1.1), 320px); letter-spacing: -.02em; color: var(--temp-color, #ecf03c); transition: color 2s ease; }
+.weather-now { display: flex; align-items: center; gap: 24px; align-self: flex-start; text-align: left; margin-top: auto; }
+.wn-temp { font: 400 128px/.9 var(--font-logo); font-size: clamp(96px, calc((100cqh - 1110px) * 1.1), 320px); letter-spacing: -.02em; color: var(--temp-color, #ecf03c); transition: color 2s ease; }
 .stage[data-scene="day"] { --temp-color: #ecf03c; }
 .stage[data-scene="night"] { --temp-color: #a8d8ff; }
 .wn-text { display: flex; flex-direction: column; gap: 6px; }
@@ -404,15 +406,16 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .opening-word { position: relative; display: inline-block; font: 400 168px/1 var(--font-logo); letter-spacing: .01em; white-space: nowrap; }
 .opening-word .ch { display: inline-block; animation: logo-rise 700ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms); }
 .opening-word .logo-leaf svg { animation: leaf-grow 800ms var(--ease-spring) 900ms both, leaf-sway 3200ms ease-in-out 1700ms infinite; }
-.opening-tag { font-size: 36px; font-weight: 400; letter-spacing: -.02em; color: var(--label-2); margin-top: 18px; animation: tag-in 800ms var(--ease-out) 1500ms both; }
+.opening-tag { font-size: 36px; font-weight: 300; letter-spacing: -.02em; color: var(--label-2); margin-top: 18px; animation: tag-in 800ms var(--ease-out) 1500ms both; }
 @keyframes logo-rise { from { opacity: 0; transform: translateY(.45em); } }
 @keyframes leaf-grow { from { transform: scale(0); } }
 @keyframes leaf-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
 @keyframes tag-in { from { opacity: 0; transform: translateY(8px); } }
 /* 막이 걷히면 로고는 위로 흐려지며 사라지고, 뒤에서 식물이 모인다 */
 /* 로고 다음 인사: 아래에서 올라왔다가, 막이 걷힐 때 위로 사라진다 */
-.opening-greet { position: absolute; left: 0; right: 0; top: 50%; text-align: center; font-size: 64px; font-weight: 700; letter-spacing: -.01em; color: #fff; opacity: 0; transform: translateY(calc(-50% + 40px)); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); pointer-events: none; }
-.opening-greet b { font-weight: 800; }
+/* 인사는 로고와 같은 크기감으로 크게, 얇게 (이름만 굵게). 긴 이름이면 두 줄로 고르게 */
+.opening-greet { position: absolute; left: 0; right: 0; top: 50%; margin: 0 auto; max-width: 1700px; text-align: center; font-size: 128px; font-weight: 300; line-height: 1.1; letter-spacing: -.02em; text-wrap: balance; color: #fff; opacity: 0; transform: translateY(calc(-50% + 40px)); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); pointer-events: none; }
+.opening-greet b { font-weight: 700; }
 .opening.greeting .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); }
 .opening.greeting .opening-greet { opacity: 1; transform: translateY(-50%); }
 .opening.reveal .opening-greet { opacity: 0; transform: translateY(calc(-50% - 40px)); }
