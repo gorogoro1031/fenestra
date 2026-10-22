@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#000000">
 <title>Fenestra</title>
-<meta name="description" content="달릴수록 자라는 몬스테라">
+<meta name="description" content="Fenestra · a little garden for every drive">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221104">
-<link rel="stylesheet" href="css/app.css?v=2610221104">
+<link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css?v=2610221137">
+<link rel="stylesheet" href="css/app.css?v=2610221137">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -37,6 +37,7 @@
 <body>
 <!-- 아이콘 모음 -->
 <svg width="0" height="0" class="sprite" aria-hidden="true">
+  <symbol id="logo-leaf" viewBox="0 0 60 84"><path d="M30 82 C 4 62 2 26 30 2 C 58 26 56 62 30 82 Z"/></symbol>
   <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14H5Z"/><path d="M5 19 14 10"/></symbol>
   <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M21.2 12h-2.4M5.2 12H2.8M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7M18.5 18.5l-1.7-1.7M7.2 7.2 5.5 5.5"/></symbol>
   <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s-6.5 7.2-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 10.2 12 3 12 3Z"/></symbol>
@@ -63,7 +64,7 @@
 
     <header class="top">
       <div class="brand">
-        <p class="wordmark">Fenestra</p>
+        <p class="wordmark" aria-label="Fenestra">fenestra<span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
         <p class="caption"><span id="chip">오후 8:00 · 맑음</span> · 오늘 <span id="today-km">0.0</span>km <span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
       </div>
       <nav class="tools" aria-label="메뉴">
@@ -236,11 +237,11 @@
       </div>
     </dialog>
 
-    <!-- 오프닝: 글자 로고가 뜬 뒤 검은 막이 걷히고, 흩어진 점들이 모여 식물이 된다 -->
+    <!-- 오프닝: 글자가 차례로 올라오고 a 끝에서 잎이 돋은 뒤 검은 막이 걷히고, 흩어진 점들이 모여 식물이 된다 -->
     <div class="opening" id="loading">
       <div class="opening-mark">
-        <p class="opening-word">Fenestra</p>
-        <p class="opening-tag">달릴수록 자라는 몬스테라</p>
+        <p class="opening-word" aria-label="Fenestra"><span class="ch" style="--i:0">f</span><span class="ch" style="--i:1">e</span><span class="ch" style="--i:2">n</span><span class="ch" style="--i:3">e</span><span class="ch" style="--i:4">s</span><span class="ch" style="--i:5">t</span><span class="ch" style="--i:6">r</span><span class="ch" style="--i:7">a</span><span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
+        <p class="opening-tag">a little garden for every drive</p>
       </div>
       <div class="boot-fail" id="boot-fail" hidden>
         <p class="boot-title">화면을 불러오지 못했어요</p>
@@ -251,8 +252,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221104","./js/albums.js":"./js/albums.js?v=2610221104","./js/drive.js":"./js/drive.js?v=2610221104","./js/guest-visit.js":"./js/guest-visit.js?v=2610221104","./js/guests.js":"./js/guests.js?v=2610221104","./js/main.js":"./js/main.js?v=2610221104","./js/motions.js":"./js/motions.js?v=2610221104","./js/plant.js":"./js/plant.js?v=2610221104","./js/plants.js":"./js/plants.js?v=2610221104","./js/qr.js":"./js/qr.js?v=2610221104","./js/scene.js":"./js/scene.js?v=2610221104","./js/sky.js":"./js/sky.js?v=2610221104","./js/sound.js":"./js/sound.js?v=2610221104","./js/state.js":"./js/state.js?v=2610221104","./js/storage.js":"./js/storage.js?v=2610221104","./js/text.js":"./js/text.js?v=2610221104","./js/tutorial.js":"./js/tutorial.js?v=2610221104","./js/ui.js":"./js/ui.js?v=2610221104"}}</script>
-<script type="module" src="js/main.js?v=2610221104"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221137","./js/albums.js":"./js/albums.js?v=2610221137","./js/drive.js":"./js/drive.js?v=2610221137","./js/guest-visit.js":"./js/guest-visit.js?v=2610221137","./js/guests.js":"./js/guests.js?v=2610221137","./js/main.js":"./js/main.js?v=2610221137","./js/motions.js":"./js/motions.js?v=2610221137","./js/plant.js":"./js/plant.js?v=2610221137","./js/plants.js":"./js/plants.js?v=2610221137","./js/qr.js":"./js/qr.js?v=2610221137","./js/scene.js":"./js/scene.js?v=2610221137","./js/sky.js":"./js/sky.js?v=2610221137","./js/sound.js":"./js/sound.js?v=2610221137","./js/state.js":"./js/state.js?v=2610221137","./js/storage.js":"./js/storage.js?v=2610221137","./js/text.js":"./js/text.js?v=2610221137","./js/tutorial.js":"./js/tutorial.js?v=2610221137","./js/ui.js":"./js/ui.js?v=2610221137"}}</script>
+<script type="module" src="js/main.js?v=2610221137"></script>
 <!-- version:end -->
 </body>
 </html>

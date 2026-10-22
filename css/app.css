@@ -59,7 +59,10 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .top { position: absolute; left: 56px; right: 56px; top: 48px; display: flex; justify-content: space-between; align-items: center; }
 .stage[data-hand="passenger"] .top, .stage[data-hand="passenger"] .tools { flex-direction: row-reverse; }
 .brand { display: flex; align-items: baseline; gap: 22px; }
-.wordmark { font: italic 500 54px/1 var(--font-logo); letter-spacing: -.01em; }
+.wordmark { position: relative; font: 400 54px/1 var(--font-logo); letter-spacing: .01em; margin-right: .3em; white-space: nowrap; }
+/* 글자 로고: a 끝에 기울어진 잎 하나 */
+.logo-leaf { position: absolute; width: .34em; height: .48em; right: -.33em; top: -.14em; transform: rotate(28deg); transform-origin: 50% 100%; }
+.logo-leaf svg { display: block; width: 100%; height: 100%; fill: var(--logo-leaf); stroke: none; transform-origin: 50% 100%; }
 .caption { font-size: 22px; font-weight: 600; color: var(--label-2); font-variant-numeric: tabular-nums; }
 /* 저장 표시: 저장될 때 잠깐 '저장됨', 저장이 막혔으면 계속 '저장 안 됨' */
 .save-chip { display: inline-flex; align-items: center; gap: 6px; margin-left: 12px; font-size: 18px; font-weight: 700; color: var(--tint); opacity: 0; transition: opacity 400ms ease; }
@@ -303,9 +306,15 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* ---------- 오프닝 ---------- */
 .opening { position: absolute; inset: 0; z-index: 30; background: #000; display: grid; place-items: center; transition: background-color 1400ms ease, opacity 900ms var(--ease-ios); }
 .opening-mark { text-align: center; transition: opacity 1100ms var(--ease-ios), transform 1400ms var(--ease-ios), filter 1100ms ease; }
-.opening-word { font: italic 500 168px/1 var(--font-logo); letter-spacing: -.015em; animation: logo-in 1800ms var(--ease-ios) both; }
-.opening-tag { font-size: 30px; font-weight: 500; color: var(--label-2); margin-top: 28px; animation: logo-in 1800ms 400ms var(--ease-ios) both; }
-@keyframes logo-in { from { opacity: 0; transform: translateY(20px); filter: blur(10px); } }
+/* 글자가 차례로 올라오고, a 끝에서 잎이 돋아 흔들린 뒤 문구가 떠오른다 */
+.opening-word { position: relative; display: inline-block; font: 400 168px/1 var(--font-logo); letter-spacing: .01em; white-space: nowrap; }
+.opening-word .ch { display: inline-block; animation: logo-rise 700ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms); }
+.opening-word .logo-leaf svg { animation: leaf-grow 800ms var(--ease-spring) 900ms both, leaf-sway 3200ms ease-in-out 1700ms infinite; }
+.opening-tag { font-size: 36px; font-weight: 400; letter-spacing: -.02em; color: var(--label-2); margin-top: 18px; animation: tag-in 800ms var(--ease-out) 1500ms both; }
+@keyframes logo-rise { from { opacity: 0; transform: translateY(.45em); } }
+@keyframes leaf-grow { from { transform: scale(0); } }
+@keyframes leaf-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+@keyframes tag-in { from { opacity: 0; transform: translateY(8px); } }
 /* 막이 걷히면 로고는 위로 흐려지며 사라지고, 뒤에서 식물이 모인다 */
 .opening.reveal { background-color: transparent; }
 .opening.reveal .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); }
@@ -322,7 +331,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .stage.intro .widgets { opacity: 0; transform: translateY(40px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .opening-word, .opening-tag { animation: none; }
+  .opening-word .ch, .opening-word .logo-leaf svg, .opening-tag { animation: none; }
   .toast, .orb, .sky, .plant-img { transition: none; }
   .act.sun[aria-pressed="true"] .act-ic { animation: none; }
   .guest, .guest img, .guest.leaving { animation: none; }

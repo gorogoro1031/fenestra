@@ -14,7 +14,7 @@ import { createGuestVisit } from './guest-visit.js';
 import { withJosa } from './text.js';
 
 // 인트로: 로고만 보이는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
-const LOGO_MS = 2000;
+const LOGO_MS = 2800;
 const OPENING_FADE_MS = 1000;
 // 식물 그림이 늦어도 인트로는 이 시간 뒤엔 넘어간다 (그림은 오는 대로 나타난다)
 const PLANT_WAIT_MS = 4000;

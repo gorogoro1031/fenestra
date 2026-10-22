@@ -26,13 +26,16 @@
   --r-wd: 46px;
 
   --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-logo: "Fraunces", Georgia, serif;
+  --font-logo: "Righteous", var(--font);
+  --logo-leaf: #2fd68a;
 
   --r-lg: 36px;
   --r-md: 24px;
   --tap: 112px;
 
   --ease-ios: cubic-bezier(.32, .72, 0, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
   --duration-scene: 1400ms;
   --duration-fast: 180ms;
 }
