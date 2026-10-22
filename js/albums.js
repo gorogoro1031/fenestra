@@ -46,3 +46,25 @@ export function albumFor(dateKey) {
   const index = Number.isFinite(day) ? (((day * STRIDE) % n) + n) % n : 0;
   return ALBUMS[index];
 }
+
+/** 폰으로 찍으면 여러 음악 앱 중 고를 수 있는 album.link 페이지 */
+export const albumLink = (album) => `https://album.link/i/${album.id}`;
+
+/** 앨범 시트에서 고르는 음악 앱. Apple Music은 앨범으로 바로, Spotify·YouTube Music은 검색 결과로 열린다 */
+export const MUSIC_APPS = Object.freeze([
+  { id: 'apple', name: 'Apple Music', color: '#fa2d48', opens: '앨범이 바로 열려요' },
+  { id: 'spotify', name: 'Spotify', color: '#1ed760', opens: '검색 결과 맨 위에 있어요' },
+  { id: 'youtube', name: 'YouTube Music', color: '#ff3b30', opens: '검색 결과 맨 위에 있어요' },
+  { id: 'other', name: '그 밖의 앱', color: '#8e8e93', opens: '쓰는 앱을 골라 열어요' },
+]);
+
+/** 고른 앱에서 이 앨범을 여는 주소 */
+export function listenLink(album, app) {
+  const query = encodeURIComponent(`${album.artist} ${album.title}`);
+  switch (app) {
+    case 'spotify': return `https://open.spotify.com/search/${query}`;
+    case 'youtube': return `https://music.youtube.com/search?q=${query}`;
+    case 'other': return albumLink(album);
+    default: return `https://music.apple.com/kr/album/${album.id}`;
+  }
+}

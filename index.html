@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610220938">
-<link rel="stylesheet" href="css/app.css?v=2610220938">
+<link rel="stylesheet" href="css/tokens.css?v=2610220946">
+<link rel="stylesheet" href="css/app.css?v=2610220946">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -151,7 +151,16 @@
           <p class="album-note" id="album-note"></p>
         </div>
       </div>
-      <p class="album-how"><svg><use href="#i-music"/></svg><span>차의 Apple Music 앱에서 검색해 들어 보세요 · <b id="album-search"></b></span></p>
+      <!-- 폰으로 듣기: 쓰는 앱을 고르면 그 앱으로 열리는 QR 하나 -->
+      <div class="listen">
+        <div class="listen-qr"><svg id="album-qr" role="img" aria-label="음악 앱으로 여는 QR 코드"><path></path></svg></div>
+        <div class="listen-body">
+          <p class="listen-title">폰 카메라로 찍어서 듣기</p>
+          <div class="segmented music-apps" id="music-app" role="group" aria-label="음악 앱"></div>
+          <p class="listen-sub" id="listen-sub"></p>
+          <p class="album-how"><svg><use href="#i-music"/></svg><span>차에서는 Apple Music에서 검색 · <b id="album-search"></b></span></p>
+        </div>
+      </div>
     </dialog>
 
     <!-- 설정 -->
@@ -237,8 +246,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610220938","./js/albums.js":"./js/albums.js?v=2610220938","./js/drive.js":"./js/drive.js?v=2610220938","./js/guest-visit.js":"./js/guest-visit.js?v=2610220938","./js/guests.js":"./js/guests.js?v=2610220938","./js/main.js":"./js/main.js?v=2610220938","./js/motions.js":"./js/motions.js?v=2610220938","./js/plant.js":"./js/plant.js?v=2610220938","./js/plants.js":"./js/plants.js?v=2610220938","./js/scene.js":"./js/scene.js?v=2610220938","./js/sky.js":"./js/sky.js?v=2610220938","./js/sound.js":"./js/sound.js?v=2610220938","./js/state.js":"./js/state.js?v=2610220938","./js/storage.js":"./js/storage.js?v=2610220938","./js/text.js":"./js/text.js?v=2610220938","./js/tutorial.js":"./js/tutorial.js?v=2610220938","./js/ui.js":"./js/ui.js?v=2610220938"}}</script>
-<script type="module" src="js/main.js?v=2610220938"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610220946","./js/albums.js":"./js/albums.js?v=2610220946","./js/drive.js":"./js/drive.js?v=2610220946","./js/guest-visit.js":"./js/guest-visit.js?v=2610220946","./js/guests.js":"./js/guests.js?v=2610220946","./js/main.js":"./js/main.js?v=2610220946","./js/motions.js":"./js/motions.js?v=2610220946","./js/plant.js":"./js/plant.js?v=2610220946","./js/plants.js":"./js/plants.js?v=2610220946","./js/qr.js":"./js/qr.js?v=2610220946","./js/scene.js":"./js/scene.js?v=2610220946","./js/sky.js":"./js/sky.js?v=2610220946","./js/sound.js":"./js/sound.js?v=2610220946","./js/state.js":"./js/state.js?v=2610220946","./js/storage.js":"./js/storage.js?v=2610220946","./js/text.js":"./js/text.js?v=2610220946","./js/tutorial.js":"./js/tutorial.js?v=2610220946","./js/ui.js":"./js/ui.js?v=2610220946"}}</script>
+<script type="module" src="js/main.js?v=2610220946"></script>
 <!-- version:end -->
 </body>
 </html>

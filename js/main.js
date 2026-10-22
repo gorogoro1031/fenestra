@@ -339,6 +339,14 @@ $('demo-reset').addEventListener('click', () => {
   closeSheets();
 });
 
+/* ---------- 오늘의 앨범: 시트의 QR은 고른 음악 앱으로 연다 (고른 앱은 저장) ---------- */
+function showAlbum() {
+  renderAlbum(todayKey(), {
+    app: prefs.musicApp,
+    onPickApp: (id) => { updatePrefs({ musicApp: id }); showAlbum(); },
+  });
+}
+
 /* ---------- 처음 안내: 처음 한 번만. ?tutorial 이면 항상, 확인용 주소(?preview·?noloading)에선 건너뛴다 ---------- */
 const tutorial = createTutorial($('tour'), {
   onOpen: () => scrim.classList.add('show'),
@@ -385,10 +393,10 @@ addEventListener('pointerdown', () => {
   syncAmbient();
 }, { once: true });
 
-setInterval(() => { state = rollDay(state, todayKey()); applyScene(); render(); renderAlbum(todayKey()); }, 60000);
+setInterval(() => { state = rollDay(state, todayKey()); applyScene(); render(); showAlbum(); }, 60000);
 
 stageEl.classList.add('booting');
-renderAlbum(todayKey());
+showAlbum();
 startIntro(applyScene()).then(() => { if (shouldShowTutorial()) tutorial.open(); });
 render();
 syncSettings();
