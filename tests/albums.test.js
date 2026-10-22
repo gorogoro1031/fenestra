@@ -2,10 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ALBUMS, albumFor } from '../js/albums.js';
 
-test('같은 날에는 같은 앨범, 첫날은 Music for Nine Post Cards', () => {
+test('같은 날에는 같은 앨범, 첫날은 브랜드와 맞는 Plantasia', () => {
   assert.equal(albumFor('2026-10-21'), albumFor('2026-10-21'));
-  assert.equal(albumFor('2026-10-22').title, 'Music for Nine Post Cards');
-  assert.equal(albumFor('2026-10-22').track, 'Dance PM');
+  assert.equal(albumFor('2026-10-22').title, "Mother Earth's Plantasia");
+  assert.equal(albumFor('2026-10-22').track, 'Plantasia');
 });
 
 test('이어지는 날들에는 목록 길이만큼 겹치지 않고 모두 한 번씩 나온다', () => {
