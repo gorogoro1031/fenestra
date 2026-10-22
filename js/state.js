@@ -22,8 +22,8 @@ export const RULES = Object.freeze({
   ROAD_KM: 30,
 });
 
-export const STAGE_NAMES = Object.freeze(['씨앗', '새싹', '첫 잎', '큰 잎', '다 자람']);
-export const LAST_STAGE = STAGE_NAMES.length - 1;
+// 단계는 씨앗(0)부터 다 자람(4)까지 다섯. 이름은 식물마다 다르다 (plants.js)
+export const LAST_STAGE = 4;
 
 const newPlant = () => ({ growth: 0, waterToday: 0, grown: false });
 

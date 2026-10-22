@@ -1,5 +1,5 @@
-import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageOf, buyPlant, selectPlant, catchGuest, STAGE_NAMES } from './state.js';
-import { PLANTS } from './plants.js';
+import { RULES, createState, sanitize, rollDay, addDistance, addChargeMinutes, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
+import { PLANTS, stageName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
@@ -196,7 +196,7 @@ $('water-btn').addEventListener('click', () => {
     setTimeout(() => {
       applyScene();
       if (result.grownNow) toast(`${withJosa(PLANTS[state.active].name, '이', '가')} 다 자랐어요 · 꽃씨 +${RULES.GROWN_REWARD}`);
-      else toast(stage === before + 1 ? `한 뼘 자랐어요 · ${STAGE_NAMES[stage]}` : '한 뼘 자랐어요');
+      else toast(stage === before + 1 ? `한 뼘 자랐어요 · ${stageName(state.active, stage)}` : '한 뼘 자랐어요');
       if (prefs.sound) chime();
     }, 600);
   } else {
@@ -270,6 +270,8 @@ scrim.addEventListener('click', closeSheets);
 function syncSettings() {
   $('pref-sound').setAttribute('aria-checked', String(prefs.sound));
   $('pref-gps').setAttribute('aria-checked', String(prefs.useGps));
+  // 데모 단계 버튼은 지금 키우는 식물의 단계 이름으로
+  $('demo-stage').querySelectorAll('button').forEach((b) => { b.textContent = stageName(state.active, Number(b.dataset.value)); });
   [['pref-scene', prefs.scene], ['pref-weather', prefs.weather], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
@@ -315,7 +317,7 @@ $('demo-stage').addEventListener('click', (e) => {
   commit({ ...state, plants: { ...state.plants, [state.active]: { ...current, growth: PLANTS[state.active].thresholds[stage], grown: false } } });
   applyScene();
   syncSettings();
-  toast(STAGE_NAMES[stage]);
+  toast(stageName(state.active, stage));
 });
 $('demo-km').addEventListener('click', () => { commit(addDistance(state, 30)); toast('30km 달렸어요 · 이슬 +3 · 꽃씨 +30'); });
 $('demo-coins').addEventListener('click', () => { commit({ ...state, coins: state.coins + 100 }); toast('꽃씨 +100'); });

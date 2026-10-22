@@ -1,6 +1,6 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
-import { RULES, STAGE_NAMES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, stageFor, kmToNextDrop } from './state.js';
-import { PLANTS, PLANT_IDS, plantImage } from './plants.js';
+import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, stageFor, kmToNextDrop } from './state.js';
+import { PLANTS, PLANT_IDS, plantImage, stageName } from './plants.js';
 import { GUESTS, GUEST_IDS, guestImage } from './guests.js';
 
 const $ = (id) => document.getElementById(id);
@@ -46,9 +46,9 @@ function pointsToNext(state) {
 export function renderStatus(state, { charging, driving, isNight }) {
   const stage = stageOf(state);
   $('plant-name').textContent = PLANTS[state.active].name;
-  $('stage-name').textContent = STAGE_NAMES[stage];
+  $('stage-name').textContent = stageName(state.active, stage);
   $('stage-sub').textContent = stage === LAST_STAGE ? '다 자랐어요. 온실에서 새 식물을 들여요' : `다음 단계까지 ${pointsToNext(state)}점`;
-  renderPips($('stage-pips'), stage + 1, STAGE_NAMES.length);
+  renderPips($('stage-pips'), stage + 1, LAST_STAGE + 1);
   const thumb = $('grow-thumb');
   const src = plantImage(state.active, stage);
   if (thumb.getAttribute('src') !== src) thumb.setAttribute('src', src);
