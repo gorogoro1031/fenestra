@@ -68,12 +68,15 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .top { position: absolute; left: 56px; right: 56px; top: 48px; display: flex; justify-content: space-between; align-items: flex-start; }
 .stage[data-hand="passenger"] .top, .stage[data-hand="passenger"] .tools { flex-direction: row-reverse; }
 /* 로고와 그 아래 날씨·주행 블록. 무대가 세로로 길수록(로고와 위젯 사이 빈 공간이 클수록) 글자가 커진다.
-   빈 공간 ≈ 무대 높이 - 1070px(로고·위젯·여백), 기온 숫자는 그 공간을 대부분 채우되 110~320px */
+   빈 공간 ≈ 무대 높이 - 1130px(로고·인사·위젯·여백), 기온 숫자는 그 공간을 대부분 채우되 96~320px */
 .stage { container-type: size; }
 .brand { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 /* 지금 날씨: 로고 아래 큰 기온, 옆에 날씨 이름과 지역 */
+/* 인사: 이름은 기온과 같은 색(낮 옐로·밤 스카이블루) */
+.greet { font-size: 34px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
+.greet b { color: var(--temp-color, #ecf03c); font-weight: 800; transition: color 2s ease; }
 .weather-now { display: flex; align-items: center; gap: 24px; align-self: flex-start; text-align: left; margin-top: 6px; }
-.wn-temp { font: 400 128px/.9 var(--font-logo); font-size: clamp(110px, calc((100cqh - 1070px) * 1.1), 320px); letter-spacing: -.02em; color: var(--temp-color, #ecf03c); transition: color 2s ease; }
+.wn-temp { font: 400 128px/.9 var(--font-logo); font-size: clamp(96px, calc((100cqh - 1130px) * 1.1), 320px); letter-spacing: -.02em; color: var(--temp-color, #ecf03c); transition: color 2s ease; }
 .stage[data-scene="day"] { --temp-color: #ecf03c; }
 .stage[data-scene="night"] { --temp-color: #a8d8ff; }
 .wn-text { display: flex; flex-direction: column; gap: 6px; }
@@ -93,6 +96,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .save-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .save-chip.show { opacity: 1; }
 .save-chip.fail { opacity: 1; color: var(--destructive); }
+.name-input { width: 320px; height: 72px; flex: none; border: 0; border-radius: 18px; padding: 0 24px; background: var(--fill); color: var(--label); font: 600 28px var(--font); }
+.name-input::placeholder { color: var(--label-3); }
+.name-input:focus { outline: 3px solid var(--tint); }
 .r-value { font-size: 22px; font-weight: 600; color: var(--tint); }
 .r-value.fail { color: var(--destructive); }
 .tools { display: flex; gap: 12px; align-items: center; }
@@ -404,6 +410,12 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 @keyframes leaf-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
 @keyframes tag-in { from { opacity: 0; transform: translateY(8px); } }
 /* 막이 걷히면 로고는 위로 흐려지며 사라지고, 뒤에서 식물이 모인다 */
+/* 로고 다음 인사: 아래에서 올라왔다가, 막이 걷힐 때 위로 사라진다 */
+.opening-greet { position: absolute; left: 0; right: 0; top: 50%; text-align: center; font-size: 64px; font-weight: 700; letter-spacing: -.01em; color: #fff; opacity: 0; transform: translateY(calc(-50% + 40px)); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); pointer-events: none; }
+.opening-greet b { font-weight: 800; }
+.opening.greeting .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); }
+.opening.greeting .opening-greet { opacity: 1; transform: translateY(-50%); }
+.opening.reveal .opening-greet { opacity: 0; transform: translateY(calc(-50% - 40px)); }
 .opening.reveal { background-color: transparent; }
 .opening.reveal .opening-mark { opacity: 0; transform: translateY(-60px); filter: blur(8px); }
 .opening.done { opacity: 0; pointer-events: none; }
@@ -420,6 +432,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 
 @media (prefers-reduced-motion: reduce) {
   .opening-word .ch, .opening-word .logo-leaf svg, .opening-tag { animation: none; }
+  .opening-greet { transition: none; }
   .toast, .orb, .sky, .plant-img { transition: none; }
   .guest, .guest img, .guest.leaving { animation: none; }
 }

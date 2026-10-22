@@ -113,6 +113,12 @@ const KO = {
   'guide.badge.next': ({ n }) => `다음 · ${n}점`,
   'guide.badge.later': '나중에',
 
+  // 인사는 두 언어 모두 영어로 (브랜드 말투)
+  'greet.morning': 'Good morning',
+  'greet.afternoon': 'Good afternoon',
+  'greet.evening': 'Good evening',
+  'name.placeholder': '이름',
+
   'tour.next': '다음',
   'tour.start': '시작하기',
   'tour.1.title': '달릴수록 자라는 몬스테라',
@@ -227,6 +233,11 @@ const EN = {
   'guide.badge.next': ({ n }) => `Next · ${n} pts`,
   'guide.badge.later': 'Later',
 
+  'greet.morning': 'Good morning',
+  'greet.afternoon': 'Good afternoon',
+  'greet.evening': 'Good evening',
+  'name.placeholder': 'Your name',
+
   'tour.next': 'Next',
   'tour.start': "Let's go",
   'tour.1.title': 'A monstera that grows as you drive',
@@ -283,6 +294,8 @@ const STATIC_EN = {
   musicApp: 'Music app',
   carSearch: 'To play in the car, search Apple Music for',
   general: 'General',
+  name: 'Name',
+  nameSub: 'Used in the greeting · Saved on this device only',
   calmSound: 'Calm sounds',
   calmSoundSub: 'Ambient music, wind and rain · Starts on first touch',
   autoSave: 'Auto-save',

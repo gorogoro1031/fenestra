@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221624">
-<link rel="stylesheet" href="css/app.css?v=2610221624">
+<link rel="stylesheet" href="css/tokens.css?v=2610221643">
+<link rel="stylesheet" href="css/app.css?v=2610221643">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -73,7 +73,9 @@
     <header class="top">
       <div class="brand">
         <p class="wordmark" aria-label="Fenestra">fenestra<span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
-        <!-- 로고 아래 빈 공간: 큰 기온(낮 옐로·밤 스카이블루), 날씨·지역. 날씨를 모를 때 누르면 다시 확인 -->
+        <!-- 시간대 인사와 이름 (운전 중 가운데 경고창과 겹치지 않게 로고 아래) -->
+        <p class="greet" id="greet">Good evening</p>
+        <!-- 그 아래 빈 공간: 큰 기온(낮 옐로·밤 스카이블루), 날씨·지역. 날씨를 모를 때 누르면 다시 확인 -->
         <button class="weather-now" type="button" id="weather-now">
           <span class="wn-temp" id="wn-temp">–°</span>
           <span class="wn-text" role="status"><b id="wn-sky">날씨 확인 중</b><span id="wn-place"></span></span>
@@ -231,6 +233,10 @@
           </div>
         </div>
         <div class="row">
+          <div><p class="r-title" data-i18n="name">이름</p><p class="r-sub" data-i18n="nameSub">인사에 쓰여요 · 이 기기에만 저장돼요</p></div>
+          <input class="name-input" id="pref-name" type="text" maxlength="20" autocomplete="off" spellcheck="false" enterkeyhint="done" aria-label="이름" data-i18n-label="name">
+        </div>
+        <div class="row">
           <div><p class="r-title" data-i18n="calmSound">잔잔한 소리</p><p class="r-sub" data-i18n="calmSoundSub">잔잔한 앰비언트 음악과 바람·빗소리 · 첫 터치부터</p></div>
           <button class="switch" type="button" role="switch" aria-checked="false" id="pref-sound" aria-label="잔잔한 소리" data-i18n-label="calmSound"></button>
         </div>
@@ -300,12 +306,14 @@
       </div>
     </dialog>
 
-    <!-- 오프닝: 글자가 차례로 올라오고 a 끝에서 잎이 돋은 뒤 검은 막이 걷히고, 흩어진 점들이 모여 식물이 된다 -->
+    <!-- 오프닝: 글자가 차례로 올라오고 a 끝에서 잎이 돋고, 인사가 올라왔다 사라진 뒤 검은 막이 걷히고, 흩어진 점들이 모여 식물이 된다 -->
     <div class="opening" id="loading">
       <div class="opening-mark">
         <p class="opening-word" aria-label="Fenestra"><span class="ch" style="--i:0">f</span><span class="ch" style="--i:1">e</span><span class="ch" style="--i:2">n</span><span class="ch" style="--i:3">e</span><span class="ch" style="--i:4">s</span><span class="ch" style="--i:5">t</span><span class="ch" style="--i:6">r</span><span class="ch" style="--i:7">a</span><span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
         <p class="opening-tag">a little garden for every drive</p>
       </div>
+      <!-- 로고 다음에 잠깐 올라왔다 사라지는 인사 -->
+      <p class="opening-greet" id="opening-greet" aria-hidden="true"></p>
       <div class="boot-fail" id="boot-fail" hidden>
         <p class="boot-title" data-i18n="bootTitle">화면을 불러오지 못했어요</p>
         <p class="boot-why" id="boot-why"></p>
@@ -315,8 +323,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221624","./js/albums-en.js":"./js/albums-en.js?v=2610221624","./js/albums.js":"./js/albums.js?v=2610221624","./js/drive.js":"./js/drive.js?v=2610221624","./js/guest-visit.js":"./js/guest-visit.js?v=2610221624","./js/guests.js":"./js/guests.js?v=2610221624","./js/i18n.js":"./js/i18n.js?v=2610221624","./js/main.js":"./js/main.js?v=2610221624","./js/motions.js":"./js/motions.js?v=2610221624","./js/plant.js":"./js/plant.js?v=2610221624","./js/plants.js":"./js/plants.js?v=2610221624","./js/qr.js":"./js/qr.js?v=2610221624","./js/scene.js":"./js/scene.js?v=2610221624","./js/sky.js":"./js/sky.js?v=2610221624","./js/sound.js":"./js/sound.js?v=2610221624","./js/state.js":"./js/state.js?v=2610221624","./js/storage.js":"./js/storage.js?v=2610221624","./js/text.js":"./js/text.js?v=2610221624","./js/trip.js":"./js/trip.js?v=2610221624","./js/tutorial.js":"./js/tutorial.js?v=2610221624","./js/ui.js":"./js/ui.js?v=2610221624","./js/weather.js":"./js/weather.js?v=2610221624"}}</script>
-<script type="module" src="js/main.js?v=2610221624"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221643","./js/albums-en.js":"./js/albums-en.js?v=2610221643","./js/albums.js":"./js/albums.js?v=2610221643","./js/drive.js":"./js/drive.js?v=2610221643","./js/guest-visit.js":"./js/guest-visit.js?v=2610221643","./js/guests.js":"./js/guests.js?v=2610221643","./js/i18n.js":"./js/i18n.js?v=2610221643","./js/main.js":"./js/main.js?v=2610221643","./js/motions.js":"./js/motions.js?v=2610221643","./js/plant.js":"./js/plant.js?v=2610221643","./js/plants.js":"./js/plants.js?v=2610221643","./js/qr.js":"./js/qr.js?v=2610221643","./js/scene.js":"./js/scene.js?v=2610221643","./js/sky.js":"./js/sky.js?v=2610221643","./js/sound.js":"./js/sound.js?v=2610221643","./js/state.js":"./js/state.js?v=2610221643","./js/storage.js":"./js/storage.js?v=2610221643","./js/text.js":"./js/text.js?v=2610221643","./js/trip.js":"./js/trip.js?v=2610221643","./js/tutorial.js":"./js/tutorial.js?v=2610221643","./js/ui.js":"./js/ui.js?v=2610221643","./js/weather.js":"./js/weather.js?v=2610221643"}}</script>
+<script type="module" src="js/main.js?v=2610221643"></script>
 <!-- version:end -->
 </body>
 </html>

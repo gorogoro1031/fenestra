@@ -4,7 +4,7 @@ import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
 import { createSky, orbPosition } from './sky.js';
-import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, renderGuide, toast } from './ui.js';
+import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, renderGuide, renderGreeting, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
@@ -14,9 +14,11 @@ import { createGuestVisit } from './guest-visit.js';
 import { t, setLang, applyStatic, getLang } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
+import { greetingPeriod, cleanName } from './text.js';
 
-// 인트로: 로고만 보이는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
-const LOGO_MS = 2800;
+// 인트로: 로고만 보이는 시간, 인사가 떠 있는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
+const LOGO_MS = 2600;
+const GREET_MS = 1900;
 const OPENING_FADE_MS = 1000;
 // 식물 그림이 늦어도 인트로는 이 시간 뒤엔 넘어간다 (그림은 오는 대로 나타난다)
 const PLANT_WAIT_MS = 4000;
@@ -122,6 +124,9 @@ function startWeather() {
   weatherWatch = watchWeather(() => { applyScene(); render(); syncSettings(); }, getLang);
 }
 
+/** 지금 인사: 시간대(확인용 시각 고정도 따른다)와 이름 */
+const greetingNow = () => ({ period: greetingPeriod(currentHours()), name: prefs.name });
+
 /** @returns {Promise<void>} 식물 그림이 새 단계로 준비되면 끝난다 */
 function applyScene() {
   const scene = currentScene();
@@ -134,6 +139,7 @@ function applyScene() {
   sky.draw({ hours: currentHours(), raining: isWet() });
   fx.setRain(isWet());
   renderChip();
+  renderGreeting($('greet'), greetingNow());
   renderWeatherNow({ temp: weatherNow().temp, label: weatherLabel(), place: fixedSky() ? t('wn.fixed') : weatherNow().place });
   syncAmbient();
   return ready;
@@ -391,6 +397,10 @@ scrim.addEventListener('click', closeSheets);
 function syncSettings() {
   $('pref-sound').setAttribute('aria-checked', String(prefs.sound));
   $('pref-gps').setAttribute('aria-checked', String(prefs.useGps));
+  // 입력 중에는 글자를 덮어쓰지 않는다 (커서가 튀지 않게)
+  const nameInput = $('pref-name');
+  if (document.activeElement !== nameInput) nameInput.value = prefs.name;
+  nameInput.placeholder = t('name.placeholder');
   // 데모 단계 버튼은 지금 키우는 식물의 단계 이름으로
   $('demo-stage').querySelectorAll('button').forEach((b) => { b.textContent = stageName(state.active, Number(b.dataset.value)); });
   $('weather-status').textContent = weatherStatusText();
@@ -415,6 +425,14 @@ function updatePrefs(patch) {
   savePrefs(prefs);
   syncSettings();
 }
+
+// 이름: 적는 대로 인사에 바로 반영, 다 적으면(완료·포커스 해제) 공백을 정리해 다시 채운다
+$('pref-name').addEventListener('input', (e) => {
+  updatePrefs({ name: cleanName(e.target.value) });
+  renderGreeting($('greet'), greetingNow());
+});
+$('pref-name').addEventListener('change', (e) => { e.target.value = prefs.name; });
+$('pref-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 
 $('pref-sound').addEventListener('click', () => {
   updatePrefs({ sound: !prefs.sound });
@@ -517,7 +535,7 @@ const tutorial = createTutorial($('tour'), {
 $('open-tour').addEventListener('click', () => { closeSheets(); tutorial.open(); });
 const shouldShowTutorial = () => query.has('tutorial') || (!prefs.tutorialSeen && PREVIEW_STAGE === null && !query.has('noloading'));
 
-/* ---------- 인트로: 로고 → 막이 걷히며 화분에서 식물이 자라 오름 → UI가 올라온다. 누르면 로고 단계를 건너뛴다 ---------- */
+/* ---------- 인트로: 로고 → 인사가 올라왔다 사라짐 → 막이 걷히며 화분에서 식물이 자라 오름 → UI가 올라온다. 누르면 바로 건너뛴다 ---------- */
 function startIntro(plantReady) {
   const opening = $('loading');
   if (query.has('noloading')) { opening.remove(); window.__fenestraReady = true; return Promise.resolve(); }
@@ -540,7 +558,12 @@ function startIntro(plantReady) {
         resolve();
       }, Math.max(OPENING_FADE_MS, assembleMs));
     };
-    setTimeout(reveal, LOGO_MS);
+    renderGreeting($('opening-greet'), greetingNow());
+    setTimeout(() => {
+      if (revealed) return;
+      opening.classList.add('greeting');
+      setTimeout(reveal, GREET_MS);
+    }, LOGO_MS);
     opening.addEventListener('click', reveal, { once: true });
   });
 }

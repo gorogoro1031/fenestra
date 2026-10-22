@@ -285,6 +285,17 @@ function renderGuestbook(state) {
   $('gb-count').textContent = `${Object.keys(state.guestbook).length} / ${GUEST_IDS.length}`;
 }
 
+/** 인사 한 줄: 'Good evening, ' + 이름(강조). 이름이 없으면 인사만 */
+export function renderGreeting(el, { period, name }) {
+  const parts = [t(`greet.${period}`)];
+  if (name) {
+    const b = document.createElement('b');
+    b.textContent = name;
+    parts.push(', ', b);
+  }
+  el.replaceChildren(...parts);
+}
+
 /** 상단 로고 옆 시각 */
 export function renderChip(now = new Date()) {
   $('chip').textContent = now.toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
