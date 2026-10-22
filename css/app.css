@@ -122,7 +122,6 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .wd.album { padding: 0; background: var(--grouped-2) center / cover; transition: transform var(--duration-fast) var(--ease-ios); }
 .wd.album:active { transform: scale(.97); }
 .wd.album::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, .75)); }
-.album-badge { position: absolute; top: 20px; right: 20px; z-index: 1; width: 48px; height: 48px; border-radius: 50%; background: #fa2d48; display: grid; place-items: center; font-size: 24px; }
 .album-meta { position: absolute; left: 26px; right: 26px; bottom: 22px; z-index: 1; display: flex; flex-direction: column; }
 .a-label { font-size: 16px; font-weight: 700; color: rgba(255, 255, 255, .72); }
 .a-title { font-size: 28px; font-weight: 800; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
