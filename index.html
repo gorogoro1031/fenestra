@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221046">
-<link rel="stylesheet" href="css/app.css?v=2610221046">
+<link rel="stylesheet" href="css/tokens.css?v=2610221104">
+<link rel="stylesheet" href="css/app.css?v=2610221104">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -64,7 +64,7 @@
     <header class="top">
       <div class="brand">
         <p class="wordmark">Fenestra</p>
-        <p class="caption"><span id="chip">오후 8:00 · 맑음</span> · 오늘 <span id="today-km">0.0</span>km</p>
+        <p class="caption"><span id="chip">오후 8:00 · 맑음</span> · 오늘 <span id="today-km">0.0</span>km <span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
       </div>
       <nav class="tools" aria-label="메뉴">
         <span class="coin-pill" aria-label="꽃씨"><i class="coin-dot" aria-hidden="true"></i>꽃씨 <b id="coin-num">0</b></span>
@@ -177,6 +177,10 @@
           <button class="switch" type="button" role="switch" aria-checked="false" id="pref-sound" aria-label="잔잔한 소리"></button>
         </div>
         <div class="row">
+          <div><p class="r-title">자동 저장</p><p class="r-sub">바뀔 때마다 이 기기에 바로 저장돼요 · 브라우저가 닫혀도 그대로 이어져요</p></div>
+          <span class="r-value" id="save-status">켜짐</span>
+        </div>
+        <div class="row">
           <div><p class="r-title">실제 주행으로 이슬 모으기</p><p class="r-sub">위치 권한 필요 · 이 화면을 열어 둔 동안만</p></div>
           <button class="switch" type="button" role="switch" aria-checked="false" id="pref-gps" aria-label="실제 주행으로 이슬 모으기"></button>
         </div>
@@ -247,8 +251,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221046","./js/albums.js":"./js/albums.js?v=2610221046","./js/drive.js":"./js/drive.js?v=2610221046","./js/guest-visit.js":"./js/guest-visit.js?v=2610221046","./js/guests.js":"./js/guests.js?v=2610221046","./js/main.js":"./js/main.js?v=2610221046","./js/motions.js":"./js/motions.js?v=2610221046","./js/plant.js":"./js/plant.js?v=2610221046","./js/plants.js":"./js/plants.js?v=2610221046","./js/qr.js":"./js/qr.js?v=2610221046","./js/scene.js":"./js/scene.js?v=2610221046","./js/sky.js":"./js/sky.js?v=2610221046","./js/sound.js":"./js/sound.js?v=2610221046","./js/state.js":"./js/state.js?v=2610221046","./js/storage.js":"./js/storage.js?v=2610221046","./js/text.js":"./js/text.js?v=2610221046","./js/tutorial.js":"./js/tutorial.js?v=2610221046","./js/ui.js":"./js/ui.js?v=2610221046"}}</script>
-<script type="module" src="js/main.js?v=2610221046"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221104","./js/albums.js":"./js/albums.js?v=2610221104","./js/drive.js":"./js/drive.js?v=2610221104","./js/guest-visit.js":"./js/guest-visit.js?v=2610221104","./js/guests.js":"./js/guests.js?v=2610221104","./js/main.js":"./js/main.js?v=2610221104","./js/motions.js":"./js/motions.js?v=2610221104","./js/plant.js":"./js/plant.js?v=2610221104","./js/plants.js":"./js/plants.js?v=2610221104","./js/qr.js":"./js/qr.js?v=2610221104","./js/scene.js":"./js/scene.js?v=2610221104","./js/sky.js":"./js/sky.js?v=2610221104","./js/sound.js":"./js/sound.js?v=2610221104","./js/state.js":"./js/state.js?v=2610221104","./js/storage.js":"./js/storage.js?v=2610221104","./js/text.js":"./js/text.js?v=2610221104","./js/tutorial.js":"./js/tutorial.js?v=2610221104","./js/ui.js":"./js/ui.js?v=2610221104"}}</script>
+<script type="module" src="js/main.js?v=2610221104"></script>
 <!-- version:end -->
 </body>
 </html>

@@ -61,6 +61,13 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .brand { display: flex; align-items: baseline; gap: 22px; }
 .wordmark { font: italic 500 54px/1 var(--font-logo); letter-spacing: -.01em; }
 .caption { font-size: 22px; font-weight: 600; color: var(--label-2); font-variant-numeric: tabular-nums; }
+/* 저장 표시: 저장될 때 잠깐 '저장됨', 저장이 막혔으면 계속 '저장 안 됨' */
+.save-chip { display: inline-flex; align-items: center; gap: 6px; margin-left: 12px; font-size: 18px; font-weight: 700; color: var(--tint); opacity: 0; transition: opacity 400ms ease; }
+.save-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.save-chip.show { opacity: 1; }
+.save-chip.fail { opacity: 1; color: var(--destructive); }
+.r-value { font-size: 22px; font-weight: 600; color: var(--tint); }
+.r-value.fail { color: var(--destructive); }
 .tools { display: flex; gap: 12px; align-items: center; }
 .icon-btn { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; font-size: 36px; background: var(--panel); transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast); }
 .icon-btn:active { transform: scale(.92); background: var(--grouped-2); }

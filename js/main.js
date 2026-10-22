@@ -120,9 +120,42 @@ function render() {
 
 function commit(next) {
   state = next;
-  if (PREVIEW_STAGE === null) saveState(state);
+  if (PREVIEW_STAGE === null) showSaved(saveState(state));
   render();
 }
+
+/* ---------- 자동 저장 표시: 저장될 때 잠깐 '저장됨', 브라우저가 저장을 막으면 계속 '저장 안 됨' ---------- */
+// 주행 중엔 이슬이 자주 쌓이므로 '저장됨'은 이 간격보다 자주 띄우지 않는다
+const SAVED_CHIP_EVERY_MS = 8000;
+const SAVED_CHIP_SHOW_MS = 1600;
+let savedChipAt = 0;
+let savedChipTimer = 0;
+function showSaved(ok) {
+  const chip = $('save-chip');
+  $('save-status').textContent = ok ? '켜짐' : '저장이 막혀 있어요';
+  $('save-status').classList.toggle('fail', !ok);
+  if (!ok) {
+    chip.textContent = '저장 안 됨';
+    chip.classList.add('fail');
+    return;
+  }
+  chip.classList.remove('fail');
+  const now = Date.now();
+  if (now - savedChipAt < SAVED_CHIP_EVERY_MS) return;
+  savedChipAt = now;
+  chip.textContent = '저장됨';
+  chip.classList.add('show');
+  clearTimeout(savedChipTimer);
+  savedChipTimer = setTimeout(() => chip.classList.remove('show'), SAVED_CHIP_SHOW_MS);
+}
+
+// 화면이 가려지거나 닫히기 직전에도 한 번 더 저장 (주행 중 브라우저가 닫혀도 마지막 상태가 남게)
+function saveNow() {
+  if (PREVIEW_STAGE === null) saveState(state);
+  savePrefs(prefs);
+}
+addEventListener('pagehide', saveNow);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveNow(); });
 
 /* ---------- 잎 터치·바람 ---------- */
 const GUST_EVERY_MS = [6000, 14000];
