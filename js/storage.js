@@ -3,7 +3,7 @@ const KEY_STATE = 'fenestra:v1:state';
 // v2: 소리 기본값을 켜짐으로 바꾸면서 예전 설정을 새로 시작
 const KEY_PREFS = 'fenestra:v2:prefs';
 
-export const DEFAULT_PREFS = Object.freeze({ sound: true, useGps: false, scene: 'auto', sky: 'auto', tutorialSeen: false, hand: 'driver', musicApp: 'apple' });
+export const DEFAULT_PREFS = Object.freeze({ sound: true, useGps: false, scene: 'auto', sky: 'auto', theme: 'dark', tutorialSeen: false, hand: 'driver', musicApp: 'apple' });
 
 function read(key) {
   try {
@@ -34,6 +34,8 @@ export function loadPrefs() {
     scene: ['auto', 'day', 'night'].includes(raw.scene) ? raw.scene : DEFAULT_PREFS.scene,
     // 날씨: 실제(auto)가 기본, 나머지는 확인용으로 고정. 예전 'weather'(직접 고르던 값)는 버린다
     sky: ['auto', 'clear', 'cloudy', 'rain'].includes(raw.sky) ? raw.sky : DEFAULT_PREFS.sky,
+    // 화면 색: 다크(검은 바탕)가 기본, 비비드는 식물마다 다른 배경색
+    theme: raw.theme === 'vivid' ? 'vivid' : 'dark',
     tutorialSeen: raw.tutorialSeen === true,
     hand: raw.hand === 'passenger' ? 'passenger' : 'driver',
     musicApp: ['apple', 'spotify', 'youtube'].includes(raw.musicApp) ? raw.musicApp : 'apple',

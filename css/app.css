@@ -17,6 +17,15 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
   transform: translate(-50%, -50%) scale(var(--fit, 1));
 }
 .stage.booting, .stage.booting * { transition: none !important; }
+/* 화면 색: 다크는 검은 바탕, 비비드는 키우는 식물의 색 (밤엔 깊게, 비 오면 조금 어둡게) */
+.stage { transition: background-color 2s ease; }
+.stage[data-plant="monstera"] { --vivid-day: var(--vivid-monstera); --vivid-night: var(--vivid-monstera-night); }
+.stage[data-plant="cactus"] { --vivid-day: var(--vivid-cactus); --vivid-night: var(--vivid-cactus-night); }
+.stage[data-plant="sansevieria"] { --vivid-day: var(--vivid-sansevieria); --vivid-night: var(--vivid-sansevieria-night); }
+.stage[data-plant="rubber"] { --vivid-day: var(--vivid-rubber); --vivid-night: var(--vivid-rubber-night); }
+.stage[data-theme="vivid"][data-scene="day"] { background-color: var(--vivid-day); }
+.stage[data-theme="vivid"][data-scene="night"] { background-color: var(--vivid-night); }
+.stage[data-theme="vivid"][data-scene="day"][data-weather="rain"] { background-color: color-mix(in srgb, var(--vivid-day) 62%, #000); }
 
 .glass {
   background: var(--glass); border: 1px solid var(--glass-line);

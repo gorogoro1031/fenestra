@@ -122,6 +122,8 @@ function applyScene() {
   const scene = currentScene();
   stageEl.dataset.scene = scene;
   stageEl.dataset.hand = prefs.hand;
+  stageEl.dataset.theme = prefs.theme;
+  stageEl.dataset.plant = state.active;
   stageEl.dataset.weather = isWet() ? 'rain' : 'clear';
   const ready = plant.setStage(state.active, stageOf(state)).catch(() => toast('식물 그림을 불러오지 못했어요 · 연결을 확인해 주세요'));
   sky.draw({ hours: currentHours(), raining: isWet() });
@@ -349,7 +351,7 @@ function syncSettings() {
   // 데모 단계 버튼은 지금 키우는 식물의 단계 이름으로
   $('demo-stage').querySelectorAll('button').forEach((b) => { b.textContent = stageName(state.active, Number(b.dataset.value)); });
   $('weather-status').textContent = weatherStatusText();
-  [['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
+  [['pref-theme', prefs.theme], ['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
 }
@@ -377,6 +379,10 @@ $('pref-sound').addEventListener('click', () => {
 $('pref-gps').addEventListener('click', () => {
   updatePrefs({ useGps: !prefs.useGps });
   setGps(prefs.useGps);
+});
+$('pref-theme').addEventListener('click', (e) => {
+  const value = e.target.closest('button')?.dataset.value;
+  if (value) { updatePrefs({ theme: value }); applyScene(); }
 });
 $('pref-scene').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;

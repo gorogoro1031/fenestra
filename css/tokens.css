@@ -25,6 +25,12 @@
   --act-h: 160px;
   --r-wd: 46px;
 
+  /* 비비드 모드 배경: 식물마다 잎과 반대쪽 색. 낮은 선명하게, 밤은 깊게 */
+  --vivid-monstera: #c9583a;     --vivid-monstera-night: #2a120c;
+  --vivid-cactus: #b8486f;       --vivid-cactus-night: #2a0d1a;
+  --vivid-sansevieria: #5246c4;  --vivid-sansevieria-night: #0d0b2c;
+  --vivid-rubber: #1b7484;       --vivid-rubber-night: #061d24;
+
   --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-logo: "Righteous", var(--font);
   --logo-leaf: #2fd68a;
