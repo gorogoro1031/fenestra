@@ -3,6 +3,9 @@ const KEY_STATE = 'fenestra:v1:state';
 // v2: 소리 기본값을 켜짐으로 바꾸면서 예전 설정을 새로 시작
 const KEY_PREFS = 'fenestra:v2:prefs';
 
+// 처음 켤 때 언어: 브라우저가 한국어면 한국어, 아니면 영어
+const browserLang = () => (typeof navigator !== 'undefined' && !/^ko/i.test(navigator.language || 'ko') ? 'en' : 'ko');
+
 export const DEFAULT_PREFS = Object.freeze({ sound: true, useGps: false, scene: 'auto', sky: 'auto', theme: 'dark', tutorialSeen: false, hand: 'driver', musicApp: 'apple' });
 
 function read(key) {
@@ -36,6 +39,7 @@ export function loadPrefs() {
     sky: ['auto', 'clear', 'cloudy', 'rain'].includes(raw.sky) ? raw.sky : DEFAULT_PREFS.sky,
     // 화면 색: 다크(검은 바탕)가 기본, 비비드는 식물마다 다른 배경색
     theme: raw.theme === 'vivid' ? 'vivid' : 'dark',
+    lang: ['ko', 'en'].includes(raw.lang) ? raw.lang : browserLang(),
     tutorialSeen: raw.tutorialSeen === true,
     hand: raw.hand === 'passenger' ? 'passenger' : 'driver',
     musicApp: ['apple', 'spotify', 'youtube'].includes(raw.musicApp) ? raw.musicApp : 'apple',

@@ -1,5 +1,7 @@
 // 실제 날씨: 대략의 위치로 Open-Meteo(무료, 키 없음)에서 지금 날씨 코드를 받아 온다.
 // 광합성(햇빛 모으기)과 하늘·비·손님·소리가 이 날씨를 따른다
+import { getLang } from './i18n.js';
+
 const API = 'https://api.open-meteo.com/v1/forecast';
 // 15분마다 새로 받고, 마지막으로 받은 날씨는 1시간까지만 믿는다
 export const WEATHER_RULES = Object.freeze({ REFRESH_MS: 15 * 60 * 1000, STALE_MS: 60 * 60 * 1000, TIMEOUT_MS: 10000 });
@@ -8,18 +10,24 @@ const COORD_DIGITS = 2;
 
 /** @typedef {'clear'|'partly'|'cloudy'|'fog'|'rain'|'snow'} SkyKind */
 
+// en: 영어 이름, short: 카드처럼 좁은 칸에 쓰는 짧은 영어 이름
 const KINDS = Object.freeze({
-  clear: { label: '맑음', wet: false },
-  partly: { label: '구름 조금', wet: false },
-  cloudy: { label: '흐림', wet: false },
-  fog: { label: '안개', wet: false },
-  rain: { label: '비', wet: true },
-  snow: { label: '눈', wet: true },
+  clear: { label: '맑음', en: 'Clear', wet: false },
+  partly: { label: '구름 조금', en: 'Partly cloudy', short: 'Part sun', wet: false },
+  cloudy: { label: '흐림', en: 'Cloudy', wet: false },
+  fog: { label: '안개', en: 'Fog', wet: false },
+  rain: { label: '비', en: 'Rain', wet: true },
+  snow: { label: '눈', en: 'Snow', wet: true },
 });
 export const SKY_KINDS = Object.freeze(Object.keys(KINDS));
 
-/** 하늘 종류의 이름과, 비·눈처럼 젖는 날씨인지 */
-export const skyInfo = (kind) => KINDS[kind] || null;
+/** 하늘 종류의 (지금 언어) 이름과, 비·눈처럼 젖는 날씨인지 */
+export function skyInfo(kind, { short = false } = {}) {
+  const k = KINDS[kind];
+  if (!k) return null;
+  const label = getLang() === 'en' ? (short && k.short) || k.en : k.label;
+  return { label, wet: k.wet };
+}
 
 /** WMO 날씨 코드 → 하늘 종류. 모르는 코드는 null */
 export function kindFromCode(code) {
@@ -70,11 +78,12 @@ function coarsePosition() {
   });
 }
 
-const ERROR_TEXT = { denied: '위치 권한이 꺼져 있어요', 'no-geo': '이 브라우저는 위치를 쓸 수 없어요', 'no-position': '위치를 찾지 못했어요' };
+// 오류는 i18n 키로 내보내고 글자는 화면에서 고른다
+const ERROR_KEY = { denied: 'loc.denied', 'no-geo': 'loc.noGeo', 'no-position': 'loc.noPosition' };
 
 /**
  * 실제 날씨를 주기적으로 받아 알려 준다
- * @param {(live: {status:'loading'|'ok'|'error', kind:SkyKind|null, at:number, error:string}) => void} onChange
+ * @param {(live: {status:'loading'|'ok'|'error', kind:SkyKind|null, at:number, error:string}) => void} onChange error는 i18n 키
  * @returns {{refresh: () => void, stop: () => void, current: () => object}}
  */
 export function watchWeather(onChange) {
@@ -91,7 +100,7 @@ export function watchWeather(onChange) {
     } catch (err) {
       // 실패해도 1시간 안에 받은 날씨가 있으면 그대로 쓴다
       const fresh = live.kind && Date.now() - live.at < WEATHER_RULES.STALE_MS;
-      emit(fresh ? live : { status: 'error', kind: null, at: live.at, error: ERROR_TEXT[err.message] || '날씨를 받아 오지 못했어요' });
+      emit(fresh ? live : { status: 'error', kind: null, at: live.at, error: ERROR_KEY[err.message] || 'weather.fetch' });
     }
   }
 
@@ -100,6 +109,6 @@ export function watchWeather(onChange) {
     refresh,
     stop: () => clearTimeout(timer),
     // 마지막 날씨가 1시간이 넘었으면 모르는 것으로 본다
-    current: () => (live.kind && Date.now() - live.at >= WEATHER_RULES.STALE_MS ? { ...live, status: 'error', kind: null, error: '날씨가 오래됐어요' } : live),
+    current: () => (live.kind && Date.now() - live.at >= WEATHER_RULES.STALE_MS ? { ...live, status: 'error', kind: null, error: 'weather.stale' } : live),
   };
 }

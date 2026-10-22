@@ -46,6 +46,9 @@ js/ui.js           상태를 화면에 표시
 js/sound.js        코드로 만든 바람·빗소리·차임
 js/drive.js        위치로 거리·속도 재기
 js/weather.js      대략의 위치로 실제 날씨 받기 (Open-Meteo, 좌표는 약 1km 단위로만 보냄)
+js/trip.js         주행 한 번의 거리·늘어난 이슬·꽃씨·햇빛 (주행 요약 카드)
+js/i18n.js         한국어·영어 문구 (설정 → 언어, 처음엔 브라우저 언어)
+js/albums-en.js    영어 화면의 앨범 소개
 js/storage.js      브라우저 저장소
 js/main.js         연결
 assets/            성장 단계 식물 이미지 (GPT Image 2.5 Sunburst 생성, webp)

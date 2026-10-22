@@ -13,12 +13,12 @@ function haversineKm(a, b) {
 }
 
 /**
- * @param {{onDistance:(km:number)=>void, onSpeed:(kmh:number)=>void, onError:(msg:string)=>void}} handlers
+ * @param {{onDistance:(km:number)=>void, onSpeed:(kmh:number)=>void, onError:(key:string)=>void}} handlers onError는 i18n 키
  * @returns {() => void} 멈추는 함수
  */
 export function watchDriving({ onDistance, onSpeed, onError }) {
   if (!navigator.geolocation) {
-    onError('이 브라우저는 위치를 쓸 수 없어요');
+    onError('loc.noGeo');
     return () => {};
   }
   let last = null;
@@ -37,7 +37,7 @@ export function watchDriving({ onDistance, onSpeed, onError }) {
       last = pos;
       onDistance(km);
     },
-    (err) => onError(err.code === 1 ? '위치 권한이 꺼져 있어요' : '위치를 찾지 못했어요'),
+    (err) => onError(err.code === 1 ? 'loc.denied' : 'loc.noPosition'),
     { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 },
   );
   return () => navigator.geolocation.clearWatch(id);

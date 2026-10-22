@@ -1,5 +1,7 @@
 // 온실 손님: 잎을 흔들면 가끔 숨어 있던 손님이 나와 잎에 앉는다. 누르면 만나고 꽃씨를 받는다.
 // 시간·날씨·키우는 식물에 따라 오는 손님이 다르다
+import { getLang } from './i18n.js';
+
 export const GUEST_RULES = Object.freeze({
   // 잎을 한 번 흔들 때 손님이 나올 확률, 한 번 나온 뒤 쉬는 시간, 하루에 손님으로 받는 꽃씨 한도
   SPAWN_CHANCE: 1 / 8,
@@ -22,6 +24,9 @@ export const GUESTS = Object.freeze({
   lizard: { name: '도마뱀', coins: 10, weight: (c) => (c.plant === 'cactus' ? 1 : 0) },
 });
 export const GUEST_IDS = Object.freeze(Object.keys(GUESTS));
+const GUEST_EN = Object.freeze({ ladybug: 'Ladybug', butterfly: 'Butterfly', bee: 'Bee', firefly: 'Firefly', snail: 'Snail', lizard: 'Lizard' });
+/** 지금 언어의 손님 이름 */
+export const guestName = (id) => (getLang() === 'en' ? GUEST_EN[id] : GUESTS[id]?.name);
 export const guestImage = (id) => `assets/guests/${id}.webp`;
 
 /** @param {GuestContext} ctx */

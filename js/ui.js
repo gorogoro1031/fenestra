@@ -1,7 +1,8 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
 import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, stageFor, kmToNextDrop } from './state.js';
-import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf } from './plants.js';
-import { GUESTS, GUEST_IDS, guestImage } from './guests.js';
+import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf, plantName, plantHint } from './plants.js';
+import { GUESTS, GUEST_IDS, guestImage, guestName } from './guests.js';
+import { t, locale } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -50,9 +51,9 @@ function pointsToNext(state) {
  */
 export function renderStatus(state, { photo, driving, isNight }) {
   const stage = stageOf(state);
-  $('plant-name').textContent = PLANTS[state.active].name;
+  $('plant-name').textContent = plantName(state.active);
   $('stage-name').textContent = stageName(state.active, stage);
-  $('stage-sub').textContent = stage === LAST_STAGE ? '다 자랐어요. 온실에서 새 식물을 들여요' : `다음 단계까지 ${pointsToNext(state)}점`;
+  $('stage-sub').textContent = stage === LAST_STAGE ? t('stage.grownSub') : t('stage.toNext', { n: pointsToNext(state) });
   renderPips($('stage-pips'), stage + 1, LAST_STAGE + 1);
   const thumb = $('grow-thumb');
   const src = plantImage(state.active, stage);
@@ -67,7 +68,7 @@ export function renderStatus(state, { photo, driving, isNight }) {
   const grown = stage === LAST_STAGE;
   $('grow-steps').hidden = grown;
   $('grow-meaning').hidden = !grown;
-  $('grow-meaning').textContent = grown ? `라틴어로 ‘${adultOf(state.active).meaning}’` : '';
+  $('grow-meaning').textContent = grown ? t('latin', { meaning: adultOf(state.active).meaning }) : '';
   $('drops-num').textContent = String(state.drops);
   renderDots($('drops-dots'), state.drops, RULES.MAX_DROPS);
   $('light-num').textContent = String(Math.round(state.light));
@@ -77,7 +78,7 @@ export function renderStatus(state, { photo, driving, isNight }) {
   $('gift-badge').hidden = !(state.waterCount === 0 && state.totalKm === 0 && state.drops > 0);
   const hasNewGuest = state.newGuests.length > 0;
   $('guest-dot').hidden = !hasNewGuest;
-  $('open-greenhouse').setAttribute('aria-label', hasNewGuest ? '온실 · 새 손님' : '온실');
+  $('open-greenhouse').setAttribute('aria-label', t(hasNewGuest ? 'greenhouse.labelNew' : 'greenhouse.label'));
 
   const check = waterCheck(state);
   const waterBtn = $('water-btn');
@@ -96,23 +97,23 @@ export function renderStatus(state, { photo, driving, isNight }) {
 
 /** 광합성 카드 아래 줄. 카드 폭에 맞게 짧게 */
 function photoSub({ rate, reason, label }, full) {
-  if (reason === 'loading') return '날씨 확인 중';
-  if (reason === 'unknown') return '날씨 모름';
-  if (reason === 'night') return '밤엔 쉬어요';
-  if (reason === 'weather') return `${label} · 쉬어요`;
-  if (full) return '햇빛 가득';
-  return `${label} · 1분에 ${rate}`;
+  if (reason === 'loading') return t('photo.loading');
+  if (reason === 'unknown') return t('photo.unknown');
+  if (reason === 'night') return t('photo.night');
+  if (reason === 'weather') return t('photo.weather', { label });
+  if (full) return t('photo.full');
+  return t('photo.rate', { label, rate });
 }
 
 function waterSubtitle(state, check, { driving, isNight }) {
-  if (driving) return '차를 세우면 줄 수 있어요';
-  if (check.reason === 'grown') return '다 자랐어요';
+  if (driving) return t('water.driving');
+  if (check.reason === 'grown') return t('water.grown');
   // 소수점은 한 자리, .0이면 떼서 짧게 (7.3km · 10km)
-  if (check.reason === 'no-drops') return `다음 이슬까지 ${Number(kmToNextDrop(state).toFixed(1))}km`;
-  if (check.reason === 'dry-limit') return '오늘은 충분해요';
-  if (stageOf(state) === 0 && state.waterCount === 0) return `새싹까지 물 ${pointsToNext(state)}번`;
-  if (!bonusNow(state, { isNight })) return '이슬 1개';
-  return { sun: '햇빛과 함께 ×2', dry: '한 번에 ×2', night: '밤이라 ×2', road: '많이 달린 날 ×2' }[PLANTS[state.active].rule];
+  if (check.reason === 'no-drops') return t('water.noDrops', { km: Number(kmToNextDrop(state).toFixed(1)) });
+  if (check.reason === 'dry-limit') return t('water.dryLimit');
+  if (stageOf(state) === 0 && state.waterCount === 0) return t('water.firstSprout', { n: pointsToNext(state) });
+  if (!bonusNow(state, { isNight })) return t('water.one');
+  return t(`water.bonus.${PLANTS[state.active].rule}`);
 }
 
 /**
@@ -120,16 +121,16 @@ function waterSubtitle(state, check, { driving, isNight }) {
  * @param {{km:number, drops:number, coins:number, light:number}} trip
  */
 export function renderTrip(trip, state, now = new Date()) {
-  const time = now.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
-  $('trip-when').textContent = `이번 주행 · ${time} 도착`;
+  const time = now.toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
+  $('trip-when').textContent = t('trip.when', { time });
   $('trip-km').firstChild.textContent = trip.km.toFixed(1);
   $('trip-drops').textContent = `+${trip.drops}`;
   $('trip-coins').textContent = `+${trip.coins}`;
   $('trip-light').textContent = `+${Math.round(trip.light)}`;
   const stage = stageOf(state);
-  const plant = PLANTS[state.active].name;
-  const next = stage === LAST_STAGE ? `${plant} 다 자랐어요 · 온실에서 새 식물을 들여요` : `${plant} ‘${stageName(state.active, stage + 1)}’까지 ${pointsToNext(state)}점`;
-  const drop = state.drops >= RULES.MAX_DROPS ? '이슬 가득' : `다음 이슬까지 ${Number(kmToNextDrop(state).toFixed(1))}km`;
+  const plant = plantName(state.active);
+  const next = stage === LAST_STAGE ? t('trip.grown', { plant }) : t('trip.next', { plant, stage: stageName(state.active, stage + 1), n: pointsToNext(state) });
+  const drop = state.drops >= RULES.MAX_DROPS ? t('trip.dropFull') : t('trip.nextDrop', { km: Number(kmToNextDrop(state).toFixed(1)) });
   $('trip-line').textContent = `${next} · ${drop}`;
   // 줄 수 있는 물이 있을 때만 '물 주러 가기'
   $('trip-water').hidden = !waterCheck(state).ok;
@@ -151,23 +152,23 @@ export function renderGreenhouse(state, onPick) {
     // 다 키운 식물은 라틴어 이름으로, 아래에 원래 이름과 뜻
     const name = document.createElement('p');
     name.className = 'gh-name';
-    name.textContent = owned?.grown ? adultOf(id).name : info.name;
+    name.textContent = owned?.grown ? adultOf(id).name : plantName(id);
     const hint = document.createElement('p');
     hint.className = 'gh-hint';
-    hint.textContent = info.hint;
+    hint.textContent = plantHint(id);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'gh-btn';
     if (state.active === id) {
       btn.classList.add('current');
-      btn.textContent = owned.grown ? '다 키웠어요' : '키우는 중';
+      btn.textContent = t(owned.grown ? 'gh.grownDone' : 'gh.growing');
       btn.disabled = true;
     } else if (owned) {
-      btn.textContent = owned.grown ? '다 키움 · 보기' : '이 식물 키우기';
+      btn.textContent = t(owned.grown ? 'gh.grownView' : 'gh.grow');
       btn.addEventListener('click', () => onPick('select', id));
     } else {
       btn.classList.add('buy');
-      btn.textContent = `꽃씨 ${info.price}개로 들이기`;
+      btn.textContent = t('gh.buy', { n: info.price });
       btn.disabled = state.coins < info.price;
       btn.addEventListener('click', () => onPick('buy', id));
     }
@@ -175,7 +176,7 @@ export function renderGreenhouse(state, onPick) {
     if (owned?.grown) {
       const meaning = document.createElement('p');
       meaning.className = 'gh-meaning';
-      meaning.textContent = `${info.name} · 라틴어로 ‘${adultOf(id).meaning}’`;
+      meaning.textContent = t('gh.meaning', { plant: plantName(id), meaning: adultOf(id).meaning });
       parts.push(meaning);
     }
     li.append(...parts, hint, btn);
@@ -200,10 +201,10 @@ function renderGuestbook(state) {
     img.alt = '';
     const name = document.createElement('p');
     name.className = 'gb-name';
-    name.textContent = times ? GUESTS[id].name : '???';
+    name.textContent = times ? guestName(id) : '???';
     const count = document.createElement('p');
     count.className = 'gb-times';
-    count.textContent = times ? `${times}번 만남` : `꽃씨 +${GUESTS[id].coins}`;
+    count.textContent = times ? t('gb.met', { n: times }) : t('gb.reward', { n: GUESTS[id].coins });
     li.append(img, name, count);
     if (state.newGuests.includes(id)) {
       const badge = document.createElement('span');
@@ -219,7 +220,7 @@ function renderGuestbook(state) {
 
 /** 상단 시각 옆 날씨 이름 */
 export function renderChip(label, now = new Date()) {
-  const time = now.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
+  const time = now.toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
   $('chip').textContent = `${time} · ${label}`;
 }
 

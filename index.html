@@ -11,15 +11,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221216">
-<link rel="stylesheet" href="css/app.css?v=2610221216">
+<link rel="stylesheet" href="css/tokens.css?v=2610221232">
+<link rel="stylesheet" href="css/app.css?v=2610221232">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
     var problems = [];
     addEventListener('error', function (e) {
       var t = e.target;
-      problems.push(t && t !== window && (t.src || t.href) ? '불러오기 실패: ' + (t.src || t.href) : (e.message || '알 수 없는 오류'));
+      problems.push(t && t !== window && (t.src || t.href) ? 'load failed: ' + (t.src || t.href) : (e.message || 'unknown error'));
     }, true);
     addEventListener('unhandledrejection', function (e) {
       problems.push(String((e.reason && e.reason.message) || e.reason));
@@ -28,7 +28,15 @@
       if (window.__fenestraReady) return;
       var box = document.getElementById('boot-fail');
       if (!box) return;
-      document.getElementById('boot-why').textContent = (problems.join(' / ') || '응답이 없어요').slice(0, 400);
+      // 영어 설정(또는 설정 전 영어 브라우저)이면 안내도 영어로
+      var en = false;
+      try { var saved = JSON.parse(localStorage.getItem('fenestra:v2:prefs') || '{}'); en = saved.lang ? saved.lang === 'en' : !/^ko/i.test(navigator.language || ''); } catch (err) { en = false; }
+      if (en) {
+        document.querySelector('.boot-title').textContent = "Couldn't load the app";
+        document.querySelector('.boot-retry').textContent = 'Reload';
+      }
+      var why = problems.join(' / ') || (en ? 'No response' : '응답이 없어요');
+      document.getElementById('boot-why').textContent = why.slice(0, 400);
       box.hidden = false;
     }, 10000);
   })();
@@ -65,26 +73,26 @@
     <header class="top">
       <div class="brand">
         <p class="wordmark" aria-label="Fenestra">fenestra<span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
-        <p class="caption"><span id="chip">오후 8:00 · 맑음</span> · 오늘 <span id="today-km">0.0</span>km <span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
+        <p class="caption"><span id="chip">오후 8:00 · 맑음</span> · <span data-i18n="today">오늘</span> <span id="today-km">0.0</span>km <span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
       </div>
-      <nav class="tools" aria-label="메뉴">
-        <span class="coin-pill" aria-label="꽃씨"><i class="coin-dot" aria-hidden="true"></i>꽃씨 <b id="coin-num">0</b></span>
-        <div class="segmented hand" id="pref-hand" role="group" aria-label="버튼 위치">
-          <button type="button" data-value="driver">운전석</button><button type="button" data-value="passenger">조수석</button>
+      <nav class="tools" aria-label="메뉴" data-i18n-label="menu">
+        <span class="coin-pill" aria-label="꽃씨" data-i18n-label="pips"><i class="coin-dot" aria-hidden="true"></i><span data-i18n="pips">꽃씨</span> <b id="coin-num">0</b></span>
+        <div class="segmented hand" id="pref-hand" role="group" aria-label="버튼 위치" data-i18n-label="handLabel">
+          <button type="button" data-value="driver" data-i18n="driver">운전석</button><button type="button" data-value="passenger" data-i18n="passenger">조수석</button>
         </div>
         <button class="icon-btn" type="button" id="open-greenhouse" aria-label="온실"><svg><use href="#i-leaf"/></svg><span class="new-dot" id="guest-dot" hidden></span></button>
-        <button class="icon-btn" type="button" id="open-settings" aria-label="설정"><svg><use href="#i-gear"/></svg></button>
+        <button class="icon-btn" type="button" id="open-settings" aria-label="설정" data-i18n-label="settings"><svg><use href="#i-gear"/></svg></button>
       </nav>
     </header>
 
-    <p class="banner glass" id="driving-banner" role="status" hidden><svg><use href="#i-car"/></svg>운전 중에는 보기만 해요 · 차를 세우면 돌볼 수 있어요</p>
+    <p class="banner glass" id="driving-banner" role="status" hidden><svg><use href="#i-car"/></svg><span data-i18n="drivingBanner">운전 중에는 보기만 해요 · 차를 세우면 돌볼 수 있어요</span></p>
     <p class="banner glass toast" id="toast" role="status" aria-live="polite"></p>
 
     <!-- 위젯 격자: 운전석 모드면 왼쪽 아래, 조수석 모드면 오른쪽 아래 -->
-    <section class="widgets" id="widgets" aria-label="식물 상태와 돌보기">
+    <section class="widgets" id="widgets" aria-label="식물 상태와 돌보기" data-i18n-label="widgetsLabel">
       <button class="wd album" type="button" id="album-card" aria-haspopup="dialog">
         <span class="album-meta">
-          <span class="a-label">오늘의 앨범</span>
+          <span class="a-label" data-i18n="todaysAlbum">오늘의 앨범</span>
           <span class="a-title" id="album-title"></span>
           <span class="a-artist" id="album-artist"></span>
         </span>
@@ -100,58 +108,58 @@
         <p class="sr-only" id="stage-sub"></p>
       </div>
       <div class="wd" style="--c: var(--water)">
-        <p class="wd-key"><span>이슬</span></p>
-        <span class="wd-badge" id="gift-badge" hidden>첫 선물</span>
+        <p class="wd-key"><span data-i18n="dew">이슬</span></p>
+        <span class="wd-badge" id="gift-badge" hidden data-i18n="firstGift">첫 선물</span>
         <p class="wd-count"><span id="drops-num">0</span><small> / 12</small></p>
         <div class="dots cols-6" id="drops-dots" aria-hidden="true"></div>
       </div>
       <div class="wd" style="--c: var(--sun)">
-        <p class="wd-key"><span>햇빛</span></p>
+        <p class="wd-key"><span data-i18n="sunlight">햇빛</span></p>
         <p class="wd-count"><span id="light-num">0</span><small> / 100</small></p>
         <div class="dots cols-5" id="light-dots" aria-hidden="true"></div>
       </div>
       <!-- 이슬이 없으면 회색 카드로 바뀌고, 아이콘 둘레 고리가 다음 이슬까지 차오른다 -->
       <button class="act water" type="button" id="water-btn">
         <span class="act-ic" aria-hidden="true"><svg><use href="#i-drop"/></svg></span>
-        <span class="act-tx"><b>물 주기</b><span id="water-sub">이슬 1개</span></span>
+        <span class="act-tx"><b data-i18n="water">물 주기</b><span id="water-sub">이슬 1개</span></span>
       </button>
       <!-- 광합성: 실제 날씨가 맑은 낮이면 저절로 햇빛이 모인다. 누르면 설명, 날씨를 모르면 다시 확인 -->
       <button class="act sun" type="button" id="photo-btn">
         <span class="act-ic" aria-hidden="true"><svg><use href="#i-sun"/></svg></span>
-        <span class="act-tx" role="status"><b>광합성</b><span id="photo-sub">날씨 확인 중</span></span>
+        <span class="act-tx" role="status"><b data-i18n="basking">광합성</b><span id="photo-sub">날씨 확인 중</span></span>
       </button>
     </section>
 
     <!-- 온실: 식물 고르기·들이기 -->
     <dialog class="sheet" id="greenhouse-sheet" aria-labelledby="greenhouse-title">
       <div class="sheet-head">
-        <h2 id="greenhouse-title">온실</h2>
-        <button class="text-btn" type="button" data-close>완료</button>
+        <h2 id="greenhouse-title" data-i18n="greenhouse">온실</h2>
+        <button class="text-btn" type="button" data-close data-i18n="done">완료</button>
       </div>
-      <p class="gh-coins"><i class="coin-dot" aria-hidden="true"></i>꽃씨 <b id="gh-coin-num">0</b>개 <span>· 1km 달리면 1개 · 다 키우면 +50</span></p>
+      <p class="gh-coins"><i class="coin-dot" aria-hidden="true"></i><span data-i18n="ghPips">꽃씨 </span><b id="gh-coin-num">0</b><span data-i18n="pipsUnit">개</span> <span data-i18n="pipsRule">· 1km 달리면 1개 · 다 키우면 +50</span></p>
       <ul class="gh-grid" id="gh-grid"></ul>
-      <p class="section-label">손님 도감 <span class="gb-count" id="gb-count"></span></p>
+      <p class="section-label"><span data-i18n="visitorLog">손님 도감</span> <span class="gb-count" id="gb-count"></span></p>
       <ul class="gb-grid" id="guestbook"></ul>
       <div class="stats">
-        <div class="stat"><p class="s-label">누적 거리</p><p class="s-value"><span id="stat-km">0</span> km</p></div>
-        <div class="stat"><p class="s-label">물 준 횟수</p><p class="s-value"><span id="stat-water">0</span>번</p></div>
-        <div class="stat"><p class="s-label">다 키운 식물</p><p class="s-value"><span id="stat-grown">0</span>종</p></div>
+        <div class="stat"><p class="s-label" data-i18n="totalKm">누적 거리</p><p class="s-value"><span id="stat-km">0</span> km</p></div>
+        <div class="stat"><p class="s-label" data-i18n="waterings">물 준 횟수</p><p class="s-value"><span id="stat-water">0</span><span data-i18n="waterUnit">번</span></p></div>
+        <div class="stat"><p class="s-label" data-i18n="plantsGrown">다 키운 식물</p><p class="s-value"><span id="stat-grown">0</span><span data-i18n="grownUnit">종</span></p></div>
       </div>
     </dialog>
 
     <!-- 주행 요약: 1km 넘게 달리고 2분 동안 멈추면 이번 주행을 정리해 보여 준다 -->
     <dialog class="sheet trip-sheet" id="trip-sheet" aria-labelledby="trip-km">
-      <p class="trip-when" id="trip-when">이번 주행</p>
+      <p class="trip-when" id="trip-when" data-i18n="thisDrive">이번 주행</p>
       <p class="trip-km" id="trip-km">0<small>km</small></p>
       <div class="trip-stats">
-        <div class="trip-stat" style="--c: var(--water)"><p>이슬</p><b id="trip-drops">+0</b></div>
-        <div class="trip-stat" style="--c: var(--sun)"><p>꽃씨</p><b id="trip-coins">+0</b></div>
-        <div class="trip-stat" style="--c: var(--sun)"><p>햇빛</p><b id="trip-light">+0</b></div>
+        <div class="trip-stat" style="--c: var(--water)"><p data-i18n="dew">이슬</p><b id="trip-drops">+0</b></div>
+        <div class="trip-stat" style="--c: var(--sun)"><p data-i18n="pips">꽃씨</p><b id="trip-coins">+0</b></div>
+        <div class="trip-stat" style="--c: var(--sun)"><p data-i18n="sunlight">햇빛</p><b id="trip-light">+0</b></div>
       </div>
       <p class="trip-line" id="trip-line"></p>
       <div class="trip-btns">
-        <button class="trip-btn go" type="button" id="trip-water">물 주러 가기</button>
-        <button class="trip-btn" type="button" data-close>닫기</button>
+        <button class="trip-btn go" type="button" id="trip-water" data-i18n="goWater">물 주러 가기</button>
+        <button class="trip-btn" type="button" data-close data-i18n="close">닫기</button>
       </div>
     </dialog>
 
@@ -159,7 +167,7 @@
     <dialog class="sheet album-sheet" id="album-sheet" aria-labelledby="album-sheet-title">
       <div class="sheet-head">
         <p class="a-label" id="album-date">오늘의 앨범</p>
-        <button class="text-btn" type="button" data-close>완료</button>
+        <button class="text-btn" type="button" data-close data-i18n="done">완료</button>
       </div>
       <div class="album-body">
         <img class="album-cover" id="album-cover" alt="" width="320" height="320">
@@ -172,12 +180,12 @@
       </div>
       <!-- 폰으로 듣기: 쓰는 앱을 고르면 그 앱으로 열리는 QR 하나 -->
       <div class="listen">
-        <div class="listen-qr"><svg id="album-qr" role="img" aria-label="음악 앱으로 여는 QR 코드"><path></path></svg></div>
+        <div class="listen-qr"><svg id="album-qr" role="img" aria-label="음악 앱으로 여는 QR 코드" data-i18n-label="qrLabel"><path></path></svg></div>
         <div class="listen-body">
-          <p class="listen-title">폰 카메라로 찍어서 듣기</p>
-          <div class="segmented music-apps" id="music-app" role="group" aria-label="음악 앱"></div>
+          <p class="listen-title" data-i18n="scanToListen">폰 카메라로 찍어서 듣기</p>
+          <div class="segmented music-apps" id="music-app" role="group" aria-label="음악 앱" data-i18n-label="musicApp"></div>
           <p class="listen-sub" id="listen-sub"></p>
-          <p class="album-how"><svg><use href="#i-music"/></svg><span>차에서 들으려면 Apple Music에서 검색<b id="album-search"></b></span></p>
+          <p class="album-how"><svg><use href="#i-music"/></svg><span><span data-i18n="carSearch">차에서 들으려면 Apple Music에서 검색</span><b id="album-search"></b></span></p>
         </div>
       </div>
     </dialog>
@@ -185,66 +193,72 @@
     <!-- 설정 -->
     <dialog class="sheet" id="settings-sheet" aria-labelledby="settings-title">
       <div class="sheet-head">
-        <h2 id="settings-title">설정</h2>
-        <button class="text-btn" type="button" data-close>완료</button>
+        <h2 id="settings-title" data-i18n="settings">설정</h2>
+        <button class="text-btn" type="button" data-close data-i18n="done">완료</button>
       </div>
-      <p class="section-label">일반</p>
+      <p class="section-label" data-i18n="general">일반</p>
       <div class="group">
         <div class="row">
-          <div><p class="r-title">잔잔한 소리</p><p class="r-sub">잔잔한 앰비언트 음악과 바람·빗소리 · 첫 터치부터</p></div>
-          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-sound" aria-label="잔잔한 소리"></button>
+          <div><p class="r-title">언어 · Language</p></div>
+          <div class="segmented" id="pref-lang">
+            <button type="button" data-value="ko">한국어</button><button type="button" data-value="en">English</button>
+          </div>
         </div>
         <div class="row">
-          <div><p class="r-title">자동 저장</p><p class="r-sub">바뀔 때마다 이 기기에 바로 저장돼요 · 브라우저가 닫혀도 그대로 이어져요</p></div>
+          <div><p class="r-title" data-i18n="calmSound">잔잔한 소리</p><p class="r-sub" data-i18n="calmSoundSub">잔잔한 앰비언트 음악과 바람·빗소리 · 첫 터치부터</p></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-sound" aria-label="잔잔한 소리" data-i18n-label="calmSound"></button>
+        </div>
+        <div class="row">
+          <div><p class="r-title" data-i18n="autoSave">자동 저장</p><p class="r-sub" data-i18n="autoSaveSub">바뀔 때마다 이 기기에 바로 저장돼요 · 브라우저가 닫혀도 그대로 이어져요</p></div>
           <span class="r-value" id="save-status">켜짐</span>
         </div>
         <div class="row">
-          <div><p class="r-title">실제 주행으로 이슬 모으기</p><p class="r-sub">위치 권한 필요 · 이 화면을 열어 둔 동안만</p></div>
-          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-gps" aria-label="실제 주행으로 이슬 모으기"></button>
+          <div><p class="r-title" data-i18n="gps">실제 주행으로 이슬 모으기</p><p class="r-sub" data-i18n="gpsSub">위치 권한 필요 · 이 화면을 열어 둔 동안만</p></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-gps" aria-label="실제 주행으로 이슬 모으기" data-i18n-label="gps"></button>
         </div>
-        <button class="row link" type="button" id="open-tour">처음 안내 다시 보기</button>
+        <button class="row link" type="button" id="open-tour" data-i18n="replayTour">처음 안내 다시 보기</button>
       </div>
-      <p class="section-label">화면</p>
+      <p class="section-label" data-i18n="display">화면</p>
       <div class="group">
         <div class="row">
-          <div><p class="r-title">화면 색</p><p class="r-sub">다크는 검은 바탕 · 비비드는 키우는 식물마다 다른 색, 밤엔 깊은 색</p></div>
+          <div><p class="r-title" data-i18n="color">화면 색</p><p class="r-sub" data-i18n="colorSub">다크는 검은 바탕 · 비비드는 키우는 식물마다 다른 색, 밤엔 깊은 색</p></div>
           <div class="segmented" id="pref-theme">
-            <button type="button" data-value="dark">다크</button><button type="button" data-value="vivid">비비드</button>
+            <button type="button" data-value="dark" data-i18n="dark">다크</button><button type="button" data-value="vivid" data-i18n="vivid">비비드</button>
           </div>
         </div>
         <div class="row">
-          <div><p class="r-title">낮과 밤</p><p class="r-sub">자동은 실제 시각대로 해·달이 뜨고 져요 · 낮·밤은 정오·자정으로 고정</p></div>
+          <div><p class="r-title" data-i18n="dayNight">낮과 밤</p><p class="r-sub" data-i18n="dayNightSub">자동은 실제 시각대로 해·달이 뜨고 져요 · 낮·밤은 정오·자정으로 고정</p></div>
           <div class="segmented" id="pref-scene">
-            <button type="button" data-value="auto">자동</button><button type="button" data-value="day">낮</button><button type="button" data-value="night">밤</button>
+            <button type="button" data-value="auto" data-i18n="auto">자동</button><button type="button" data-value="day" data-i18n="day">낮</button><button type="button" data-value="night" data-i18n="night">밤</button>
           </div>
         </div>
         <div class="row">
-          <div><p class="r-title">날씨</p><p class="r-sub"><span id="weather-status">실제 날씨를 확인하는 중</span> · 대략의 위치 필요 · 날씨 정보 Open-Meteo</p></div>
+          <div><p class="r-title" data-i18n="weather">날씨</p><p class="r-sub"><span id="weather-status">실제 날씨를 확인하는 중</span> <span data-i18n="weatherSub">· 대략의 위치 필요 · 날씨 정보 Open-Meteo</span></p></div>
           <div class="segmented" id="pref-weather">
-            <button type="button" data-value="auto">실제</button><button type="button" data-value="clear">맑음</button><button type="button" data-value="cloudy">흐림</button><button type="button" data-value="rain">비</button>
+            <button type="button" data-value="auto" data-i18n="live">실제</button><button type="button" data-value="clear" data-i18n="clear">맑음</button><button type="button" data-value="cloudy" data-i18n="cloudy">흐림</button><button type="button" data-value="rain" data-i18n="rain">비</button>
           </div>
         </div>
       </div>
-      <p class="section-label">데모</p>
+      <p class="section-label" data-i18n="demo">데모</p>
       <div class="group">
         <div class="row">
-          <div><p class="r-title">단계 바로 보기</p><p class="r-sub">누르면 그 단계로</p></div>
+          <div><p class="r-title" data-i18n="jumpStage">단계 바로 보기</p><p class="r-sub" data-i18n="jumpStageSub">누르면 그 단계로</p></div>
           <div class="segmented" id="demo-stage">
             <button type="button" data-value="0">씨앗</button><button type="button" data-value="1">새싹</button><button type="button" data-value="2">첫 잎</button><button type="button" data-value="3">큰 잎</button><button type="button" data-value="4">다 자람</button>
           </div>
         </div>
-        <a class="row link" href="music-test.html">Apple Music 링크 확인 (차에서)</a>
-        <button class="row link" type="button" id="demo-km">30km 달린 것으로 하기</button>
-        <button class="row link" type="button" id="demo-coins">꽃씨 +100</button>
-        <button class="row link" type="button" id="demo-guest">손님 부르기</button>
-        <button class="row link" type="button" id="demo-photo">맑은 낮 10분 광합성한 것으로 하기</button>
-        <button class="row link" type="button" id="demo-drive">운전 중 화면 보기</button>
-        <button class="row link" type="button" id="demo-trip">주행 요약 보기</button>
-        <button class="row link destructive" type="button" id="demo-reset">처음부터 다시</button>
+        <a class="row link" href="music-test.html" data-i18n="musicTest">Apple Music 링크 확인 (차에서)</a>
+        <button class="row link" type="button" id="demo-km" data-i18n="demoKm">30km 달린 것으로 하기</button>
+        <button class="row link" type="button" id="demo-coins" data-i18n="demoCoins">꽃씨 +100</button>
+        <button class="row link" type="button" id="demo-guest" data-i18n="demoGuest">손님 부르기</button>
+        <button class="row link" type="button" id="demo-photo" data-i18n="demoPhoto">맑은 낮 10분 광합성한 것으로 하기</button>
+        <button class="row link" type="button" id="demo-drive" data-i18n="demoDrive">운전 중 화면 보기</button>
+        <button class="row link" type="button" id="demo-trip" data-i18n="demoTrip">주행 요약 보기</button>
+        <button class="row link destructive" type="button" id="demo-reset" data-i18n="demoReset">처음부터 다시</button>
       </div>
     </dialog>
 
-    <!-- 처음 안내: 카드 4장 (내용은 tutorial.js) -->
+    <!-- 처음 안내: 카드 5장 (내용은 i18n.js의 tour.*) -->
     <dialog class="tour" id="tour" aria-labelledby="tour-title">
       <div class="tour-content">
         <div class="tour-art" aria-hidden="true"><svg><use href="#i-leaf"/></svg></div>
@@ -253,9 +267,9 @@
       </div>
       <div class="tour-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="tour-actions">
-        <button class="text-btn muted" type="button" id="tour-skip">건너뛰기</button>
+        <button class="text-btn muted" type="button" id="tour-skip" data-i18n="skip">건너뛰기</button>
         <div class="tour-nav">
-          <button class="tour-btn secondary" type="button" id="tour-prev">이전</button>
+          <button class="tour-btn secondary" type="button" id="tour-prev" data-i18n="back">이전</button>
           <button class="tour-btn primary" type="button" id="tour-next">다음</button>
         </div>
       </div>
@@ -268,16 +282,16 @@
         <p class="opening-tag">a little garden for every drive</p>
       </div>
       <div class="boot-fail" id="boot-fail" hidden>
-        <p class="boot-title">화면을 불러오지 못했어요</p>
+        <p class="boot-title" data-i18n="bootTitle">화면을 불러오지 못했어요</p>
         <p class="boot-why" id="boot-why"></p>
-        <button class="boot-retry" type="button" onclick="location.reload()">다시 불러오기</button>
+        <button class="boot-retry" type="button" onclick="location.reload()" data-i18n="reload">다시 불러오기</button>
       </div>
     </div>
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221216","./js/albums.js":"./js/albums.js?v=2610221216","./js/drive.js":"./js/drive.js?v=2610221216","./js/guest-visit.js":"./js/guest-visit.js?v=2610221216","./js/guests.js":"./js/guests.js?v=2610221216","./js/main.js":"./js/main.js?v=2610221216","./js/motions.js":"./js/motions.js?v=2610221216","./js/plant.js":"./js/plant.js?v=2610221216","./js/plants.js":"./js/plants.js?v=2610221216","./js/qr.js":"./js/qr.js?v=2610221216","./js/scene.js":"./js/scene.js?v=2610221216","./js/sky.js":"./js/sky.js?v=2610221216","./js/sound.js":"./js/sound.js?v=2610221216","./js/state.js":"./js/state.js?v=2610221216","./js/storage.js":"./js/storage.js?v=2610221216","./js/text.js":"./js/text.js?v=2610221216","./js/trip.js":"./js/trip.js?v=2610221216","./js/tutorial.js":"./js/tutorial.js?v=2610221216","./js/ui.js":"./js/ui.js?v=2610221216","./js/weather.js":"./js/weather.js?v=2610221216"}}</script>
-<script type="module" src="js/main.js?v=2610221216"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221232","./js/albums-en.js":"./js/albums-en.js?v=2610221232","./js/albums.js":"./js/albums.js?v=2610221232","./js/drive.js":"./js/drive.js?v=2610221232","./js/guest-visit.js":"./js/guest-visit.js?v=2610221232","./js/guests.js":"./js/guests.js?v=2610221232","./js/i18n.js":"./js/i18n.js?v=2610221232","./js/main.js":"./js/main.js?v=2610221232","./js/motions.js":"./js/motions.js?v=2610221232","./js/plant.js":"./js/plant.js?v=2610221232","./js/plants.js":"./js/plants.js?v=2610221232","./js/qr.js":"./js/qr.js?v=2610221232","./js/scene.js":"./js/scene.js?v=2610221232","./js/sky.js":"./js/sky.js?v=2610221232","./js/sound.js":"./js/sound.js?v=2610221232","./js/state.js":"./js/state.js?v=2610221232","./js/storage.js":"./js/storage.js?v=2610221232","./js/text.js":"./js/text.js?v=2610221232","./js/trip.js":"./js/trip.js?v=2610221232","./js/tutorial.js":"./js/tutorial.js?v=2610221232","./js/ui.js":"./js/ui.js?v=2610221232","./js/weather.js":"./js/weather.js?v=2610221232"}}</script>
+<script type="module" src="js/main.js?v=2610221232"></script>
 <!-- version:end -->
 </body>
 </html>

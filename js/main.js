@@ -1,5 +1,5 @@
 import { RULES, createState, sanitize, rollDay, addDistance, photosynthesize, markGuestsSeen, lightPerMinute, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
-import { PLANTS, stageName, adultOf } from './plants.js';
+import { PLANTS, stageName, adultOf, plantName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
@@ -9,9 +9,9 @@ import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
-import { GUESTS, pickGuest, shouldSpawn } from './guests.js';
+import { pickGuest, shouldSpawn, guestName } from './guests.js';
 import { createGuestVisit } from './guest-visit.js';
-import { withJosa } from './text.js';
+import { t, setLang, applyStatic } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
 
@@ -47,6 +47,8 @@ const previewState = (stage) => {
 
 let state = PREVIEW_STAGE !== null ? previewState(PREVIEW_STAGE) : rollDay(sanitize(loadState(), todayKey()), todayKey());
 let prefs = loadPrefs();
+setLang(prefs.lang);
+applyStatic();
 let weatherWatch = null;
 // 이번 주행 (실제 주행으로 이슬 모으기를 켰을 때만 쌓인다)
 let trip = null;
@@ -101,10 +103,11 @@ function weatherNow() {
 }
 // 비·눈이면 화면이 젖는다 (빗줄기·어두운 하늘·달팽이·빗소리)
 const isWet = () => Boolean(skyInfo(weatherNow().kind)?.wet);
-function weatherLabel() {
+/** 지금 날씨 이름. short면 카드처럼 좁은 칸용 짧은 이름 */
+function weatherLabel({ short = false } = {}) {
   const w = weatherNow();
-  if (w.status === 'ok') return skyInfo(w.kind).label;
-  return w.status === 'loading' ? '날씨 확인 중' : '날씨 모름';
+  if (w.status === 'ok') return skyInfo(w.kind, { short }).label;
+  return t(w.status === 'loading' ? 'weather.loading' : 'weather.unknown');
 }
 /** 광합성 카드에 보일 것: 1분에 모이는 햇빛과 이유 */
 function photoInfo() {
@@ -112,7 +115,7 @@ function photoInfo() {
   const isDay = currentScene() === 'day';
   const rate = lightPerMinute({ kind: w.kind, isDay });
   const reason = w.status === 'loading' ? 'loading' : w.status === 'error' ? 'unknown' : !isDay ? 'night' : rate > 0 ? 'ok' : 'weather';
-  return { rate, reason, label: weatherLabel() };
+  return { rate, reason, label: weatherLabel({ short: true }) };
 }
 /** 위치 권한을 묻고 날씨를 받기 시작한다. 처음 안내가 끝난 뒤에 부른다 */
 function startWeather() {
@@ -128,7 +131,7 @@ function applyScene() {
   stageEl.dataset.theme = prefs.theme;
   stageEl.dataset.plant = state.active;
   stageEl.dataset.weather = isWet() ? 'rain' : 'clear';
-  const ready = plant.setStage(state.active, stageOf(state)).catch(() => toast('식물 그림을 불러오지 못했어요 · 연결을 확인해 주세요'));
+  const ready = plant.setStage(state.active, stageOf(state)).catch(() => toast(t('toast.plantImgFail')));
   sky.draw({ hours: currentHours(), raining: isWet() });
   fx.setRain(isWet());
   renderChip(weatherLabel());
@@ -167,12 +170,18 @@ const SAVED_CHIP_EVERY_MS = 8000;
 const SAVED_CHIP_SHOW_MS = 1600;
 let savedChipAt = 0;
 let savedChipTimer = 0;
+// 마지막 저장이 됐는지 (설정의 자동 저장 줄을 언어가 바뀌어도 다시 그릴 수 있게)
+let saveOk = true;
+function renderSaveStatus() {
+  $('save-status').textContent = t(saveOk ? 'save.on' : 'save.blocked');
+  $('save-status').classList.toggle('fail', !saveOk);
+}
 function showSaved(ok) {
   const chip = $('save-chip');
-  $('save-status').textContent = ok ? '켜짐' : '저장이 막혀 있어요';
-  $('save-status').classList.toggle('fail', !ok);
+  saveOk = ok;
+  renderSaveStatus();
   if (!ok) {
-    chip.textContent = '저장 안 됨';
+    chip.textContent = t('save.chipFail');
     chip.classList.add('fail');
     return;
   }
@@ -180,7 +189,7 @@ function showSaved(ok) {
   const now = Date.now();
   if (now - savedChipAt < SAVED_CHIP_EVERY_MS) return;
   savedChipAt = now;
-  chip.textContent = '저장됨';
+  chip.textContent = t('save.chip');
   chip.classList.add('show');
   clearTimeout(savedChipTimer);
   savedChipTimer = setTimeout(() => chip.classList.remove('show'), SAVED_CHIP_SHOW_MS);
@@ -233,8 +242,8 @@ const guests = createGuestVisit($('guest-layer'), {
     const earned = state.coins - before;
     fx.burst(x, y);
     if (prefs.sound) chime();
-    const met = firstTime ? `처음 만난 ${GUESTS[id].name} · 온실 도감에 적었어요` : `${withJosa(GUESTS[id].name, '을', '를')} 만났어요`;
-    toast(earned > 0 ? `${met} · 꽃씨 +${earned}` : `${met} · 오늘 손님 꽃씨는 다 받았어요`);
+    const met = t(firstTime ? 'toast.guestFirst' : 'toast.guestAgain', { name: guestName(id) });
+    toast(`${met} · ${earned > 0 ? t('toast.coins', { n: earned }) : t('toast.guestCap')}`);
   },
 });
 
@@ -268,12 +277,12 @@ $('water-btn').addEventListener('click', () => {
       applyScene();
       // 다 자라면 라틴어 이름을 얻는다: '몬스테라가 페네스트라가 됐어요'
       const adult = adultOf(state.active);
-      if (result.grownNow) toast(`${withJosa(PLANTS[state.active].name, '이', '가')} ${withJosa(adult.name, '이', '가')} 됐어요 · 라틴어로 ‘${adult.meaning}’ · 꽃씨 +${RULES.GROWN_REWARD}`);
-      else toast(stage === before + 1 ? `한 뼘 자랐어요 · ${stageName(state.active, stage)}` : '한 뼘 자랐어요');
+      if (result.grownNow) toast(t('toast.grown', { plant: plantName(state.active), adult: adult.name, meaning: adult.meaning, reward: RULES.GROWN_REWARD }));
+      else toast(stage === before + 1 ? t('toast.grew', { stage: stageName(state.active, stage) }) : t('toast.grewPlain'));
       if (prefs.sound) chime();
     }, 600);
   } else {
-    toast(result.bonus ? `두 배로 +${result.grew}` : `+${result.grew}`);
+    toast(result.bonus ? t('toast.double', { n: result.grew }) : `+${result.grew}`);
   }
 });
 
@@ -290,11 +299,11 @@ setInterval(() => {
 $('photo-btn').addEventListener('click', () => {
   const w = weatherNow();
   if (w.status === 'error' && weatherWatch) {
-    toast(`${w.error} · 다시 확인할게요`);
+    toast(t('toast.recheck', { error: t(w.error) }));
     weatherWatch.refresh();
     return;
   }
-  toast(`맑은 낮엔 1분에 햇빛 ${RULES.LIGHT_PER_MINUTE.clear}, 구름 조금이면 ${RULES.LIGHT_PER_MINUTE.partly} · 흐리거나 비 오면 쉬어요`);
+  toast(t('toast.photoRule', { clear: RULES.LIGHT_PER_MINUTE.clear, partly: RULES.LIGHT_PER_MINUTE.partly }));
 });
 
 /* ---------- 주행 ---------- */
@@ -319,7 +328,7 @@ function setGps(on) {
       commit(next);
     },
     onSpeed: markDriving,
-    onError: (msg) => toast(msg),
+    onError: (key) => toast(t(key)),
   });
 }
 
@@ -358,7 +367,7 @@ function renderGreenhouseSheet() {
     commit(next);
     applyScene();
     renderGreenhouseSheet();
-    toast(`${withJosa(PLANTS[id].name, '을', '를')} ${action === 'buy' ? '들였어요' : '키워요'}`);
+    toast(t(action === 'buy' ? 'toast.bought' : 'toast.selected', { plant: plantName(id) }));
     if (action === 'buy' && prefs.sound) chime();
   });
 }
@@ -389,19 +398,20 @@ function syncSettings() {
   // 데모 단계 버튼은 지금 키우는 식물의 단계 이름으로
   $('demo-stage').querySelectorAll('button').forEach((b) => { b.textContent = stageName(state.active, Number(b.dataset.value)); });
   $('weather-status').textContent = weatherStatusText();
-  [['pref-theme', prefs.theme], ['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
+  renderSaveStatus();
+  [['pref-lang', prefs.lang], ['pref-theme', prefs.theme], ['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
 }
 
 /** 설정의 날씨 줄: 실제 날씨를 받았는지, 언제 받았는지 */
 function weatherStatusText() {
-  if (fixedSky()) return `확인용으로 ${skyInfo(fixedSky()).label} 고정`;
+  if (fixedSky()) return t('weather.status.fixed', { label: skyInfo(fixedSky()).label });
   const w = weatherNow();
-  if (w.status === 'loading') return '실제 날씨를 확인하는 중';
-  if (w.status === 'error') return w.error;
+  if (w.status === 'loading') return t('weather.status.loading');
+  if (w.status === 'error') return t(w.error);
   const mins = Math.round((Date.now() - w.at) / 60000);
-  return `실제 날씨 ${skyInfo(w.kind).label} · ${mins < 1 ? '방금' : `${mins}분 전`} 확인`;
+  return t('weather.status.ok', { label: skyInfo(w.kind).label, ago: mins < 1 ? t('time.justNow') : t('time.minAgo', { n: mins }) });
 }
 
 function updatePrefs(patch) {
@@ -417,6 +427,19 @@ $('pref-sound').addEventListener('click', () => {
 $('pref-gps').addEventListener('click', () => {
   updatePrefs({ useGps: !prefs.useGps });
   setGps(prefs.useGps);
+});
+// 언어: 고정 글자를 바꾸고, 글자를 그리는 화면을 모두 다시 그린다
+$('pref-lang').addEventListener('click', (e) => {
+  const value = e.target.closest('button')?.dataset.value;
+  if (!value || value === prefs.lang) return;
+  updatePrefs({ lang: value });
+  setLang(value);
+  applyStatic();
+  applyScene();
+  render();
+  showAlbum();
+  syncSettings();
+  if ($('greenhouse-sheet').open) renderGreenhouseSheet();
 });
 $('pref-theme').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;
@@ -454,8 +477,8 @@ $('demo-stage').addEventListener('click', (e) => {
   syncSettings();
   toast(stageName(state.active, stage));
 });
-$('demo-km').addEventListener('click', () => { commit(addDistance(state, 30)); toast('30km 달렸어요 · 이슬 +3 · 꽃씨 +30'); });
-$('demo-coins').addEventListener('click', () => { commit({ ...state, coins: state.coins + 100 }); toast('꽃씨 +100'); });
+$('demo-km').addEventListener('click', () => { commit(addDistance(state, 30)); toast(t('toast.demoKm')); });
+$('demo-coins').addEventListener('click', () => { commit({ ...state, coins: state.coins + 100 }); toast(t('toast.coins', { n: 100 })); });
 $('demo-guest').addEventListener('click', () => {
   closeSheets();
   const { x, y } = plant.ring();
@@ -464,7 +487,7 @@ $('demo-guest').addEventListener('click', () => {
 $('demo-photo').addEventListener('click', () => {
   commit(photosynthesize(state, 10, { kind: 'clear', isDay: true }));
   arcs.pulse();
-  toast(`햇빛 +${10 * RULES.LIGHT_PER_MINUTE.clear}`);
+  toast(t('toast.light', { n: 10 * RULES.LIGHT_PER_MINUTE.clear }));
 });
 $('demo-drive').addEventListener('click', () => {
   closeSheets();

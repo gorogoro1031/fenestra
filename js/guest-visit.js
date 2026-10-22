@@ -1,5 +1,6 @@
 // 잎 위에 앉은 손님 하나를 보여 주고, 누르면 만나고, 아무도 안 누르면 날아가게 한다
-import { GUESTS, GUEST_RULES, guestImage } from './guests.js';
+import { GUEST_RULES, guestImage, guestName } from './guests.js';
+import { t } from './i18n.js';
 
 const LEAVE_MS = 700;
 
@@ -29,7 +30,7 @@ export function createGuestVisit(host, { onCatch }) {
       el.className = `guest guest-${id}`;
       el.style.left = `${x}px`;
       el.style.top = `${y}px`;
-      el.setAttribute('aria-label', `${GUESTS[id].name} 만나기`);
+      el.setAttribute('aria-label', t('guest.meet', { name: guestName(id) }));
       const img = document.createElement('img');
       img.src = guestImage(id);
       img.alt = '';

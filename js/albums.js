@@ -49,9 +49,10 @@ export function albumFor(dateKey) {
 
 /** 앨범 시트에서 고르는 음악 앱. Apple Music은 앨범으로 바로, Spotify·YouTube Music은 검색 결과로 열린다 */
 export const MUSIC_APPS = Object.freeze([
-  { id: 'apple', name: 'Apple Music', color: '#fa2d48', opens: '앨범이 바로 열려요' },
-  { id: 'spotify', name: 'Spotify', color: '#1ed760', opens: '검색 결과 맨 위에 있어요' },
-  { id: 'youtube', name: 'YouTube Music', color: '#ff3b30', opens: '검색 결과 맨 위에 있어요' },
+  // opens: 열렸을 때 어떻게 보이는지 (i18n 키)
+  { id: 'apple', name: 'Apple Music', color: '#fa2d48', opens: 'app.opens.album' },
+  { id: 'spotify', name: 'Spotify', color: '#1ed760', opens: 'app.opens.search' },
+  { id: 'youtube', name: 'YouTube Music', color: '#ff3b30', opens: 'app.opens.search' },
 ]);
 
 /** 고른 앱에서 이 앨범을 여는 주소 */
