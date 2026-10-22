@@ -21,7 +21,7 @@ export function renderAlbum(dateKey) {
   const [, m, d] = dateKey.split('-').map(Number);
   $('album-date').textContent = `${m}월 ${d}일 · 오늘의 앨범`;
   $('album-sheet-title').textContent = album.title;
-  $('album-meta').textContent = `${album.artist} · ${album.year}`;
+  $('album-meta').textContent = album.track ? `${album.artist} · ${album.year} · 추천 곡 ${album.track}` : `${album.artist} · ${album.year}`;
   $('album-note').textContent = album.note;
   $('album-search').textContent = `‘${album.title}’`;
 }

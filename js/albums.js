@@ -1,9 +1,9 @@
 // 매일 하나씩 소개하는 앨범. 한국 Apple Music에 있는 것만 (2026-10-21 확인)
-// 표지는 Apple 서버의 이미지를 그대로 불러온다
+// 표지는 Apple 서버의 이미지를 그대로 불러온다. track이 있으면 그 앨범의 추천 곡
 export const ALBUMS = Object.freeze([
-  {"id": 1454691596, "title": "Mother Earth's Plantasia", "artist": "Mort Garson", "year": 1976, "art": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/50/7c/1b/507c1b1a-0af1-aa25-1544-ed3e44303842/15567.jpg/600x600bb.jpg", "note": "식물에게 들려주려고 만든 1976년 신시사이저 앨범. 페네스트라의 출발점"},
+  {"id": 1773946851, "title": "Music for Nine Post Cards", "artist": "Hiroshi Yoshimura", "year": 1982, "track": "Dance PM", "art": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/eb/9c/4b/eb9c4b6e-10c8-a540-4655-e0e7f854c2e6/281892.jpg/600x600bb.jpg", "note": "엽서 아홉 장처럼 짧고 맑은 피아노·신스 소품"},
   {"id": 1790521507, "title": "Green", "artist": "Hiroshi Yoshimura", "year": 1987, "art": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/b4/f1/82/b4f182c0-0538-f509-1390-4f3c1d5f09c1/190.jpg/600x600bb.jpg", "note": "이름처럼 초록빛. 잎 사이로 바람이 지나가는 듯한 일본 환경음악"},
-  {"id": 1773946851, "title": "Music for Nine Post Cards", "artist": "Hiroshi Yoshimura", "year": 2017, "art": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/eb/9c/4b/eb9c4b6e-10c8-a540-4655-e0e7f854c2e6/281892.jpg/600x600bb.jpg", "note": "엽서 아홉 장처럼 짧고 맑은 피아노·신스 소품"},
+  {"id": 1454691596, "title": "Mother Earth's Plantasia", "artist": "Mort Garson", "year": 1976, "art": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/50/7c/1b/507c1b1a-0af1-aa25-1544-ed3e44303842/15567.jpg/600x600bb.jpg", "note": "식물에게 들려주려고 만든 1976년 신시사이저 앨범. 페네스트라의 출발점"},
   {"id": 1479717638, "title": "Still Way (Wave Notation 2)", "artist": "Satoshi Ashikawa", "year": 1982, "art": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/e0/84/39/e084393e-1e8d-832a-1897-ffb46bda6ae0/4251648408499_3000.jpg/600x600bb.jpg", "note": "물결처럼 천천히 번지는 소리. 해 질 녘 도로에 잘 어울려요"},
   {"id": 724435863, "title": "Ambient 1: Music for Airports", "artist": "Brian Eno", "year": 1978, "art": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ee/71/42/ee71425d-6bc9-3df8-c90b-8539f59144ab/00724386649553.rgb.jpg/600x600bb.jpg", "note": "앰비언트라는 말을 만든 앨범. 아무것도 하지 않아도 되는 시간"},
   {"id": 714499703, "title": "The Pearl", "artist": "Harold Budd & Brian Eno", "year": 1984, "art": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/7d/f7/8a/7df78a98-2a85-9175-828f-8aa997eb1bfe/00094633197657.rgb.jpg/600x600bb.jpg", "note": "물에 비친 빛 같은 피아노. 밤 드라이브용"},
@@ -29,7 +29,8 @@ export const ALBUMS = Object.freeze([
   {"id": 1313141842, "title": "수잔", "artist": "김사월", "year": 2015, "art": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/49/94/5e/49945e42-cb1d-c2c1-52e5-af231a4aa9fe/suzanne_cover.jpg/600x600bb.jpg", "note": "조용히 이야기하듯 부르는 포크"},
 ]);
 
-const FIRST_DAY = Date.UTC(2026, 9, 21);
+// 첫날(이날의 앨범이 목록 맨 앞)
+const FIRST_DAY = Date.UTC(2026, 9, 22);
 const DAY_MS = 86400000;
 // 목록 길이와 서로소인 보폭으로 건너뛰어 비슷한 앨범이 연달아 나오지 않게 한다
 const STRIDE = 11;
