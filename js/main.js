@@ -4,7 +4,7 @@ import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
 import { createSky, orbPosition } from './sky.js';
-import { renderStatus, renderGreenhouse, renderChip, toast } from './ui.js';
+import { renderStatus, renderGreenhouse, renderChip, renderTrip, toast } from './ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
@@ -13,6 +13,7 @@ import { GUESTS, pickGuest, shouldSpawn } from './guests.js';
 import { createGuestVisit } from './guest-visit.js';
 import { withJosa } from './text.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
+import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
 
 // 인트로: 로고만 보이는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
 const LOGO_MS = 2800;
@@ -47,6 +48,8 @@ const previewState = (stage) => {
 let state = PREVIEW_STAGE !== null ? previewState(PREVIEW_STAGE) : rollDay(sanitize(loadState(), todayKey()), todayKey());
 let prefs = loadPrefs();
 let weatherWatch = null;
+// 이번 주행 (실제 주행으로 이슬 모으기를 켰을 때만 쌓인다)
+let trip = null;
 let drivingUntil = 0;
 let stopGps = () => {};
 
@@ -278,6 +281,7 @@ $('water-btn').addEventListener('click', () => {
 setInterval(() => {
   const next = photosynthesize(state, 1, { kind: weatherNow().kind, isDay: currentScene() === 'day' });
   if (next === state) return;
+  if (trip) trip = addToTrip(trip, state, next, { now: Date.now() });
   commit(next);
   arcs.pulse();
 }, PHOTO_TICK_MS);
@@ -297,6 +301,9 @@ $('photo-btn').addEventListener('click', () => {
 function markDriving(kmh) {
   if (kmh <= DRIVING_SPEED_KMH) return;
   drivingUntil = Date.now() + DRIVING_HOLD_MS;
+  if (trip) trip = markMoving(trip, Date.now());
+  // 다시 달리기 시작하면 요약 카드는 닫는다
+  if ($('trip-sheet').open) closeSheets();
   render();
   setTimeout(render, DRIVING_HOLD_MS + 100);
 }
@@ -306,11 +313,37 @@ function setGps(on) {
   stopGps = () => {};
   if (!on) return;
   stopGps = watchDriving({
-    onDistance: (km) => commit(addDistance(rollDay(state, todayKey()), km)),
+    onDistance: (km) => {
+      const next = addDistance(rollDay(state, todayKey()), km);
+      trip = addToTrip(trip ?? startTrip(Date.now()), state, next, { km, now: Date.now() });
+      commit(next);
+    },
     onSpeed: markDriving,
     onError: (msg) => toast(msg),
   });
 }
+
+/* ---------- 주행 요약: 2분 동안 멈춰 있으면 이번 주행을 끝내고, 1km 넘게 달렸으면 카드로 보여 준다 ---------- */
+const TRIP_CHECK_MS = 15000;
+setInterval(() => {
+  if (!trip || isDriving() || !tripEnded(trip, Date.now())) return;
+  const done = trip;
+  trip = null;
+  if (worthShowing(done)) showTrip(done);
+}, TRIP_CHECK_MS);
+
+function showTrip(done) {
+  closeSheets();
+  renderTrip(done, state);
+  openSheet($('trip-sheet'));
+}
+$('trip-water').addEventListener('click', () => {
+  closeSheets();
+  const btn = $('water-btn');
+  btn.classList.remove('nudge');
+  void btn.offsetWidth;
+  btn.classList.add('nudge');
+});
 
 /* ---------- 기록·설정 시트 ---------- */
 const scrim = document.createElement('div');
@@ -439,6 +472,7 @@ $('demo-drive').addEventListener('click', () => {
   render();
   setTimeout(render, DEMO_DRIVE_MS + 100);
 });
+$('demo-trip').addEventListener('click', () => showTrip({ km: 32.4, drops: 3, coins: 32, light: 18 }));
 $('demo-reset').addEventListener('click', () => {
   clearAll();
   commit(createState(todayKey()));

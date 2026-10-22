@@ -116,6 +116,26 @@ function waterSubtitle(state, check, { driving, isNight }) {
 }
 
 /**
+ * 주행 요약 카드
+ * @param {{km:number, drops:number, coins:number, light:number}} trip
+ */
+export function renderTrip(trip, state, now = new Date()) {
+  const time = now.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
+  $('trip-when').textContent = `이번 주행 · ${time} 도착`;
+  $('trip-km').firstChild.textContent = trip.km.toFixed(1);
+  $('trip-drops').textContent = `+${trip.drops}`;
+  $('trip-coins').textContent = `+${trip.coins}`;
+  $('trip-light').textContent = `+${Math.round(trip.light)}`;
+  const stage = stageOf(state);
+  const plant = PLANTS[state.active].name;
+  const next = stage === LAST_STAGE ? `${plant} 다 자랐어요 · 온실에서 새 식물을 들여요` : `${plant} ‘${stageName(state.active, stage + 1)}’까지 ${pointsToNext(state)}점`;
+  const drop = state.drops >= RULES.MAX_DROPS ? '이슬 가득' : `다음 이슬까지 ${Number(kmToNextDrop(state).toFixed(1))}km`;
+  $('trip-line').textContent = `${next} · ${drop}`;
+  // 줄 수 있는 물이 있을 때만 '물 주러 가기'
+  $('trip-water').hidden = !waterCheck(state).ok;
+}
+
+/**
  * 온실: 식물 카드마다 상태와 버튼(키우는 중 · 키우기 · 들이기)
  * @param {(action:'select'|'buy', id:string) => void} onPick
  */

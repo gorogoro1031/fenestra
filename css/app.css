@@ -317,6 +317,24 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .tour-btn.primary { background: var(--tint); color: #000; }
 .tour-btn.secondary { background: var(--fill); }
 
+/* ---------- 주행 요약 ---------- */
+.sheet.trip-sheet { width: 760px; padding: 40px 44px 36px; border-radius: 40px; }
+.trip-when { font-size: 20px; font-weight: 700; color: var(--label-2); }
+.trip-km { font: 400 120px/1 var(--font-logo); margin-top: 10px; }
+.trip-km small { font: 700 40px var(--font); margin-left: 8px; color: var(--label-2); }
+.trip-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 26px; }
+.trip-stat { border-radius: var(--r-md); padding: 18px 20px; background: color-mix(in srgb, var(--c) 12%, var(--panel)); }
+.trip-stat p { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: var(--label-2); }
+.trip-stat p::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.trip-stat b { display: block; margin-top: 6px; font-size: 40px; font-weight: 800; color: var(--c); font-variant-numeric: tabular-nums; }
+.trip-line { margin-top: 20px; font-size: 20px; color: var(--label-2); word-break: keep-all; }
+.trip-btns { display: flex; gap: 12px; margin-top: 28px; }
+.trip-btn { flex: 1; height: 96px; border-radius: 999px; background: var(--grouped-2); font-size: 26px; font-weight: 800; }
+.trip-btn.go { background: var(--tint); color: #00260e; }
+/* '물 주러 가기'를 누르면 물 주기 버튼이 한 번 톡 */
+.act.water.nudge { animation: nudge 700ms var(--ease-ios); }
+@keyframes nudge { 30% { transform: scale(1.06); } 60% { transform: scale(.98); } }
+
 /* ---------- 오프닝 ---------- */
 .opening { position: absolute; inset: 0; z-index: 30; background: #000; display: grid; place-items: center; transition: background-color 1400ms ease, opacity 900ms var(--ease-ios); }
 .opening-mark { text-align: center; transition: opacity 1100ms var(--ease-ios), transform 1400ms var(--ease-ios), filter 1100ms ease; }

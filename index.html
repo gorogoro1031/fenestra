@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221215">
-<link rel="stylesheet" href="css/app.css?v=2610221215">
+<link rel="stylesheet" href="css/tokens.css?v=2610221216">
+<link rel="stylesheet" href="css/app.css?v=2610221216">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -139,6 +139,22 @@
       </div>
     </dialog>
 
+    <!-- 주행 요약: 1km 넘게 달리고 2분 동안 멈추면 이번 주행을 정리해 보여 준다 -->
+    <dialog class="sheet trip-sheet" id="trip-sheet" aria-labelledby="trip-km">
+      <p class="trip-when" id="trip-when">이번 주행</p>
+      <p class="trip-km" id="trip-km">0<small>km</small></p>
+      <div class="trip-stats">
+        <div class="trip-stat" style="--c: var(--water)"><p>이슬</p><b id="trip-drops">+0</b></div>
+        <div class="trip-stat" style="--c: var(--sun)"><p>꽃씨</p><b id="trip-coins">+0</b></div>
+        <div class="trip-stat" style="--c: var(--sun)"><p>햇빛</p><b id="trip-light">+0</b></div>
+      </div>
+      <p class="trip-line" id="trip-line"></p>
+      <div class="trip-btns">
+        <button class="trip-btn go" type="button" id="trip-water">물 주러 가기</button>
+        <button class="trip-btn" type="button" data-close>닫기</button>
+      </div>
+    </dialog>
+
     <!-- 오늘의 앨범 -->
     <dialog class="sheet album-sheet" id="album-sheet" aria-labelledby="album-sheet-title">
       <div class="sheet-head">
@@ -223,6 +239,7 @@
         <button class="row link" type="button" id="demo-guest">손님 부르기</button>
         <button class="row link" type="button" id="demo-photo">맑은 낮 10분 광합성한 것으로 하기</button>
         <button class="row link" type="button" id="demo-drive">운전 중 화면 보기</button>
+        <button class="row link" type="button" id="demo-trip">주행 요약 보기</button>
         <button class="row link destructive" type="button" id="demo-reset">처음부터 다시</button>
       </div>
     </dialog>
@@ -259,8 +276,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221215","./js/albums.js":"./js/albums.js?v=2610221215","./js/drive.js":"./js/drive.js?v=2610221215","./js/guest-visit.js":"./js/guest-visit.js?v=2610221215","./js/guests.js":"./js/guests.js?v=2610221215","./js/main.js":"./js/main.js?v=2610221215","./js/motions.js":"./js/motions.js?v=2610221215","./js/plant.js":"./js/plant.js?v=2610221215","./js/plants.js":"./js/plants.js?v=2610221215","./js/qr.js":"./js/qr.js?v=2610221215","./js/scene.js":"./js/scene.js?v=2610221215","./js/sky.js":"./js/sky.js?v=2610221215","./js/sound.js":"./js/sound.js?v=2610221215","./js/state.js":"./js/state.js?v=2610221215","./js/storage.js":"./js/storage.js?v=2610221215","./js/text.js":"./js/text.js?v=2610221215","./js/tutorial.js":"./js/tutorial.js?v=2610221215","./js/ui.js":"./js/ui.js?v=2610221215","./js/weather.js":"./js/weather.js?v=2610221215"}}</script>
-<script type="module" src="js/main.js?v=2610221215"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221216","./js/albums.js":"./js/albums.js?v=2610221216","./js/drive.js":"./js/drive.js?v=2610221216","./js/guest-visit.js":"./js/guest-visit.js?v=2610221216","./js/guests.js":"./js/guests.js?v=2610221216","./js/main.js":"./js/main.js?v=2610221216","./js/motions.js":"./js/motions.js?v=2610221216","./js/plant.js":"./js/plant.js?v=2610221216","./js/plants.js":"./js/plants.js?v=2610221216","./js/qr.js":"./js/qr.js?v=2610221216","./js/scene.js":"./js/scene.js?v=2610221216","./js/sky.js":"./js/sky.js?v=2610221216","./js/sound.js":"./js/sound.js?v=2610221216","./js/state.js":"./js/state.js?v=2610221216","./js/storage.js":"./js/storage.js?v=2610221216","./js/text.js":"./js/text.js?v=2610221216","./js/trip.js":"./js/trip.js?v=2610221216","./js/tutorial.js":"./js/tutorial.js?v=2610221216","./js/ui.js":"./js/ui.js?v=2610221216","./js/weather.js":"./js/weather.js?v=2610221216"}}</script>
+<script type="module" src="js/main.js?v=2610221216"></script>
 <!-- version:end -->
 </body>
 </html>
