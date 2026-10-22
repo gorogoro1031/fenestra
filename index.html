@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221411">
-<link rel="stylesheet" href="css/app.css?v=2610221411">
+<link rel="stylesheet" href="css/tokens.css?v=2610221624">
+<link rel="stylesheet" href="css/app.css?v=2610221624">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -72,15 +72,14 @@
 
     <header class="top">
       <div class="brand">
-        <div class="brand-row">
-          <p class="wordmark" aria-label="Fenestra">fenestra<span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
-          <p class="caption"><span id="chip">오후 8:00</span> · <span data-i18n="today">오늘</span> <span id="today-km">0.0</span>km <span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
-        </div>
-        <!-- 지금 날씨: 큰 기온, 날씨 이름, 지역. 날씨를 모를 때 누르면 다시 확인 -->
+        <p class="wordmark" aria-label="Fenestra">fenestra<span class="logo-leaf" aria-hidden="true"><svg><use href="#logo-leaf"/></svg></span></p>
+        <!-- 로고 아래 빈 공간: 큰 기온(낮 옐로·밤 스카이블루), 날씨·지역. 날씨를 모를 때 누르면 다시 확인 -->
         <button class="weather-now" type="button" id="weather-now">
           <span class="wn-temp" id="wn-temp">–°</span>
           <span class="wn-text" role="status"><b id="wn-sky">날씨 확인 중</b><span id="wn-place"></span></span>
         </button>
+        <!-- 그 아래 시각과 오늘 주행거리(크게) -->
+        <p class="today-line"><span class="clock" id="chip">오후 8:00</span><span class="today-km"><small data-i18n="today">오늘 주행</small><b id="today-km">0.0</b><small>km</small></span><span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
       </div>
       <nav class="tools" aria-label="메뉴" data-i18n-label="menu">
         <span class="coin-pill" aria-label="꽃씨" data-i18n-label="pips"><i class="coin-dot" aria-hidden="true"></i><span data-i18n="pips">꽃씨</span> <b id="coin-num">0</b></span>
@@ -316,8 +315,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221411","./js/albums-en.js":"./js/albums-en.js?v=2610221411","./js/albums.js":"./js/albums.js?v=2610221411","./js/drive.js":"./js/drive.js?v=2610221411","./js/guest-visit.js":"./js/guest-visit.js?v=2610221411","./js/guests.js":"./js/guests.js?v=2610221411","./js/i18n.js":"./js/i18n.js?v=2610221411","./js/main.js":"./js/main.js?v=2610221411","./js/motions.js":"./js/motions.js?v=2610221411","./js/plant.js":"./js/plant.js?v=2610221411","./js/plants.js":"./js/plants.js?v=2610221411","./js/qr.js":"./js/qr.js?v=2610221411","./js/scene.js":"./js/scene.js?v=2610221411","./js/sky.js":"./js/sky.js?v=2610221411","./js/sound.js":"./js/sound.js?v=2610221411","./js/state.js":"./js/state.js?v=2610221411","./js/storage.js":"./js/storage.js?v=2610221411","./js/text.js":"./js/text.js?v=2610221411","./js/trip.js":"./js/trip.js?v=2610221411","./js/tutorial.js":"./js/tutorial.js?v=2610221411","./js/ui.js":"./js/ui.js?v=2610221411","./js/weather.js":"./js/weather.js?v=2610221411"}}</script>
-<script type="module" src="js/main.js?v=2610221411"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221624","./js/albums-en.js":"./js/albums-en.js?v=2610221624","./js/albums.js":"./js/albums.js?v=2610221624","./js/drive.js":"./js/drive.js?v=2610221624","./js/guest-visit.js":"./js/guest-visit.js?v=2610221624","./js/guests.js":"./js/guests.js?v=2610221624","./js/i18n.js":"./js/i18n.js?v=2610221624","./js/main.js":"./js/main.js?v=2610221624","./js/motions.js":"./js/motions.js?v=2610221624","./js/plant.js":"./js/plant.js?v=2610221624","./js/plants.js":"./js/plants.js?v=2610221624","./js/qr.js":"./js/qr.js?v=2610221624","./js/scene.js":"./js/scene.js?v=2610221624","./js/sky.js":"./js/sky.js?v=2610221624","./js/sound.js":"./js/sound.js?v=2610221624","./js/state.js":"./js/state.js?v=2610221624","./js/storage.js":"./js/storage.js?v=2610221624","./js/text.js":"./js/text.js?v=2610221624","./js/trip.js":"./js/trip.js?v=2610221624","./js/tutorial.js":"./js/tutorial.js?v=2610221624","./js/ui.js":"./js/ui.js?v=2610221624","./js/weather.js":"./js/weather.js?v=2610221624"}}</script>
+<script type="module" src="js/main.js?v=2610221624"></script>
 <!-- version:end -->
 </body>
 </html>
