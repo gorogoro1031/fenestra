@@ -157,3 +157,17 @@ test('저장소 값이 깨져 있어도 안전하게, 예전 한 종짜리 저�
   assert.equal(weird.active, 'monstera');
   assert.deepEqual(Object.keys(weird.plants).sort(), ['cactus', 'monstera']);
 });
+
+test('지역 식물은 꽃씨로 살 수 없고, 그 지역 슈퍼차저 도장이 있으면 씨앗으로 받는다', async () => {
+  const { grantRegionalSeeds, buyPlant } = await import('../js/state.js');
+  const { chargers } = await import('../js/charge.js');
+  const rich = { ...createState('2026-10-23'), coins: 9999 };
+  assert.equal(buyPlant(rich, 'forsythia'), rich);
+  assert.equal(grantRegionalSeeds(rich), rich);
+  const capital = chargers().find((c) => c.region === 'capital');
+  const stamped = { ...rich, stamps: { [capital.id]: '2026-10-23' } };
+  const granted = grantRegionalSeeds(stamped);
+  assert.deepEqual(granted.plants.forsythia, { growth: 0, waterToday: 0, grown: false });
+  assert.equal(granted.active, stamped.active);
+  assert.equal(grantRegionalSeeds(granted), granted);
+});

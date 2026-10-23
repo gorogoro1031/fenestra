@@ -1,7 +1,7 @@
 // 게임 규칙과 상태 변화. 화면·브라우저에 의존하지 않는 순수 함수만 둔다
 import { PLANTS, PLANT_IDS, FIRST_PLANT } from './plants.js';
 import { GUESTS, GUEST_IDS, GUEST_RULES } from './guests.js';
-import { CHARGE_RULES, cleanStamps } from './charge.js';
+import { CHARGE_RULES, cleanStamps, regionCount } from './charge.js';
 
 // 이슬: 달린 거리로 모아 물을 줄 때 쓴다 (코드에선 drops)
 export const RULES = Object.freeze({
@@ -198,8 +198,15 @@ export function fertilize(state) {
 /** 꽃씨로 새 식물을 산다. 사면 바로 그 식물을 키운다 */
 export function buyPlant(state, id) {
   const info = PLANTS[id];
-  if (!info || state.plants[id] || state.coins < info.price) return state;
+  if (!info || info.region || state.plants[id] || state.coins < info.price) return state;
   return { ...state, coins: state.coins - info.price, active: id, plants: { ...state.plants, [id]: newPlant() } };
+}
+
+/** 지역 식물: 그 지역 슈퍼차저 도장이 하나라도 있으면 씨앗을 받아 키울 수 있다 */
+export function grantRegionalSeeds(state) {
+  const due = PLANT_IDS.filter((id) => PLANTS[id].region && !state.plants[id] && regionCount(state.stamps, PLANTS[id].region) >= 1);
+  if (!due.length) return state;
+  return { ...state, plants: { ...state.plants, ...Object.fromEntries(due.map((id) => [id, newPlant()])) } };
 }
 
 /** 가진 식물 중에서 키울 식물을 바꾼다 */

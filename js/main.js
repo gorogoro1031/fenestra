@@ -1,4 +1,4 @@
-import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, waterCheck, fertilize, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, waterCheck, fertilize, stageOf, buyPlant, selectPlant, catchGuest, grantRegionalSeeds } from './state.js';
 import { PLANTS, stageName, adultOf, plantName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
@@ -57,6 +57,8 @@ const previewState = (stage) => {
 };
 
 let state = PREVIEW_STAGE !== null ? previewState(PREVIEW_STAGE) : rollDay(sanitize(loadState(), todayKey()), todayKey());
+// 실험판: 이미 도장이 있는 지역의 식물 씨앗을 받는다 (지역 식물이 새로 생겨도 바로 받게)
+if (LAB) state = grantRegionalSeeds(state);
 let prefs = loadPrefs();
 setLang(prefs.lang);
 applyStatic();
@@ -413,7 +415,7 @@ function tickCharge() {
   const r = settleCharge(rollDay(state, todayKey()), chargeSession, now, todayKey());
   chargeSession = r.session;
   if (r.fert || r.newStamp) {
-    commit(r.state);
+    commit(grantRegionalSeeds(r.state));
     const charger = chargerById(chargeSession.id);
     const place = chargerPlace(charger).name;
     const region = regionById(charger.region);

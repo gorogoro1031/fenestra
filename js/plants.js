@@ -39,9 +39,19 @@ export const PLANTS = Object.freeze({
     hint: '오늘 30km 넘게 달린 날엔 두 배로 자라요',
     en: Object.freeze({ name: 'Rubber Plant', stages: Object.freeze(['Seed', 'Seedling', 'One Stem', 'Two Stems', 'Viator']), adult: 'Viator', meaning: 'traveler', hint: 'Double growth on days you drive over 30 km' }),
   }),
+  // 지역 식물(실험판): 꽃씨로 살 수 없고, 그 지역(region) 슈퍼차저에 처음 들르면 씨앗을 받는다
+  forsythia: Object.freeze({
+    name: '개나리', price: null, region: 'capital', rule: 'sun', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '새싹', '어린 가지', '꽃봉오리', '아우레아']),
+    adult: Object.freeze({ name: '아우레아', meaning: '황금빛의' }),
+    hint: '맑은 낮에 물을 주면 두 배로 자라요',
+    en: Object.freeze({ name: 'Forsythia', stages: Object.freeze(['Seed', 'Sprout', 'Young Twigs', 'Buds', 'Aurea']), adult: 'Aurea', meaning: 'golden', hint: 'Double growth when watered on sunny days' }),
+  }),
 });
 
 export const PLANT_IDS = Object.freeze(Object.keys(PLANTS));
+/** 꽃씨로 들일 수 있는 식물 (지역 식물 빼고) */
+export const SHOP_PLANT_IDS = Object.freeze(PLANT_IDS.filter((id) => !PLANTS[id].region));
 export const FIRST_PLANT = 'monstera';
 
 // 도감: 원산지, 알맞은 온도(°C, 여러 원예 자료에서 겹치는 값), 소개, 단계별 한 줄 설명
@@ -104,6 +114,21 @@ const GUIDE = Object.freeze({
       origin: 'Northeast India · Southeast Asia',
       about: 'A tree from Northeast India and Southeast Asia. Its stem gives a white sap once used for rubber, and in the wild it can grow over 30 m tall. The farther you drive, the faster this traveler grows.',
       stages: ['Waiting in the soil for its first water', 'Two round seed leaves appear', 'One stem with glossy leaves', 'The stem becomes two', 'A grown rubber tree, ready for the road'],
+    },
+  },
+  forsythia: {
+    temp: [10, 25],
+    ko: {
+      tag: '봄볕에 노랗게 깨어나요',
+      origin: '한국',
+      about: '한국에서만 자라는 키 작은 나무예요. 봄이 오면 잎보다 먼저 노란 꽃이 가지마다 가득 피어나고, 꽃 모양이 종을 닮아 영어로는 골든벨이라고도 불러요. 수도권 슈퍼차저에서 받은 씨앗이에요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '가는 가지에 연한 새잎이 돋아요', '가지가 여럿으로 갈라져 뻗어요', '가지마다 노란 꽃봉오리가 맺혀요', '가지 가득 노란 꽃이 핀 어른 개나리예요'],
+    },
+    en: {
+      tag: 'Wakes up yellow in the spring sun',
+      origin: 'Korea',
+      about: 'A small shrub native to Korea. In spring, yellow flowers fill every branch before the leaves come, and their bell shape gives it the name golden bell. This seed came from a Capital Area Supercharger.',
+      stages: ['Waiting in the soil for its first water', 'Soft new leaves on a thin twig', 'The twig branches out', 'Yellow buds form on every branch', 'A grown forsythia covered in yellow flowers'],
     },
   },
 });

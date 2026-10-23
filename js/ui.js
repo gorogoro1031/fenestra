@@ -1,6 +1,6 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
 import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, bonusInfo, stageFor, kmToNextDrop } from './state.js';
-import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf, plantName, guideOf, conditionFor } from './plants.js';
+import { PLANTS, PLANT_IDS, SHOP_PLANT_IDS, plantImage, stageName, adultOf, plantName, guideOf, conditionFor } from './plants.js';
 import { GUESTS, guestImage, guestName, guestInfo, friendIds, isResident } from './guests.js';
 import { CHARGE_RULES, REGIONS, regionCount } from './charge.js';
 import { t, locale, pick } from './i18n.js';
@@ -228,66 +228,71 @@ export function renderTrip(trip, state, now = new Date()) {
  * @param {(id:string) => void} onOpen 카드를 누르면 그 식물 설명
  */
 export function renderGreenhouse(state, onPick, onOpen, { regional = false } = {}) {
-  const cards = PLANT_IDS.map((id) => {
-    const info = PLANTS[id];
-    const owned = state.plants[id];
-    const li = document.createElement('li');
-    li.className = `gh-card${state.active === id ? ' active' : ''}${owned ? '' : ' locked'}`;
-    const open = document.createElement('button');
-    open.type = 'button';
-    open.className = 'gh-open';
-    open.addEventListener('click', () => onOpen(id));
-    const img = document.createElement('img');
-    img.src = plantImage(id, owned ? Math.max(1, stageFor(owned.growth, info.thresholds)) : LAST_STAGE);
-    img.alt = '';
-    // 다 키운 식물은 라틴어 이름으로
-    const name = document.createElement('p');
-    name.className = 'gh-name';
-    name.textContent = owned?.grown ? adultOf(id).name : plantName(id);
-    const hint = document.createElement('p');
-    hint.className = 'gh-hint';
-    hint.textContent = guideOf(id).tag;
-    open.append(img, name, hint);
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'gh-btn';
-    if (state.active === id) {
-      btn.classList.add('current');
-      btn.textContent = owned.grown ? t('gh.grownDone') : `${stageName(id, stageFor(owned.growth, info.thresholds))} · ${t('gh.more')}`;
-      btn.addEventListener('click', () => onOpen(id));
-      const tag = document.createElement('span');
-      tag.className = 'gh-tagx';
-      tag.textContent = t('gh.growing');
-      li.append(tag);
-    } else if (owned) {
-      btn.textContent = t(owned.grown ? 'gh.grownView' : 'gh.grow');
-      btn.addEventListener('click', () => onPick('select', id));
-    } else {
-      btn.classList.add('buy');
-      btn.textContent = t('gh.buy', { n: info.price });
-      btn.disabled = state.coins < info.price;
-      btn.addEventListener('click', () => onPick('buy', id));
-    }
-    li.append(open, btn);
-    return li;
-  });
+  const cards = SHOP_PLANT_IDS.map((id) => plantCard(state, id, onPick, onOpen));
   $('gh-grid').replaceChildren(...cards);
-  const seeds = regional ? renderRegionalPlants(state) : 0;
-  $('tab-plants-n').textContent = `${Object.keys(state.plants).length + seeds}/${PLANT_IDS.length + (regional ? REGIONS.length : 0)}`;
+  const seeds = regional ? renderRegionalPlants(state, onPick, onOpen) : 0;
+  const shopOwned = SHOP_PLANT_IDS.filter((id) => state.plants[id]).length;
+  $('tab-plants-n').textContent = `${shopOwned + seeds}/${SHOP_PLANT_IDS.length + (regional ? REGIONS.length : 0)}`;
   $('gh-coin-num').textContent = String(state.coins);
   $('stat-km').textContent = state.totalKm.toFixed(1);
   $('stat-water').textContent = String(state.waterCount);
   $('stat-grown').textContent = String(Object.values(state.plants).filter((p) => p.grown).length);
 }
 
+/** 도감 식물 카드 하나: 그림, 이름, 한 줄 소개, 키우기·들이기 버튼 */
+function plantCard(state, id, onPick, onOpen) {
+  const info = PLANTS[id];
+  const owned = state.plants[id];
+  const li = document.createElement('li');
+  li.className = `gh-card${state.active === id ? ' active' : ''}${owned ? '' : ' locked'}`;
+  const open = document.createElement('button');
+  open.type = 'button';
+  open.className = 'gh-open';
+  open.addEventListener('click', () => onOpen(id));
+  const img = document.createElement('img');
+  img.src = plantImage(id, owned ? Math.max(1, stageFor(owned.growth, info.thresholds)) : LAST_STAGE);
+  img.alt = '';
+  // 다 키운 식물은 라틴어 이름으로
+  const name = document.createElement('p');
+  name.className = 'gh-name';
+  name.textContent = owned?.grown ? adultOf(id).name : plantName(id);
+  const hint = document.createElement('p');
+  hint.className = 'gh-hint';
+  hint.textContent = guideOf(id).tag;
+  open.append(img, name, hint);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'gh-btn';
+  if (state.active === id) {
+    btn.classList.add('current');
+    btn.textContent = owned.grown ? t('gh.grownDone') : `${stageName(id, stageFor(owned.growth, info.thresholds))} · ${t('gh.more')}`;
+    btn.addEventListener('click', () => onOpen(id));
+    const tag = document.createElement('span');
+    tag.className = 'gh-tagx';
+    tag.textContent = t('gh.growing');
+    li.append(tag);
+  } else if (owned) {
+    btn.textContent = t(owned.grown ? 'gh.grownView' : 'gh.grow');
+    btn.addEventListener('click', () => onPick('select', id));
+  } else {
+    btn.classList.add('buy');
+    btn.textContent = t('gh.buy', { n: info.price });
+    btn.disabled = state.coins < info.price;
+    btn.addEventListener('click', () => onPick('buy', id));
+  }
+  li.append(open, btn);
+  return li;
+}
+
 /**
  * 도감 식물 탭의 지역 식물(실험판): 그 지역 슈퍼차저에 처음 들러 씨앗을 받았으면 그림과 이름, 아니면 실루엣과 ???.
- * 자라는 단계 그림이 아직 없어서 키우기는 '곧'으로 둔다
+ * 받은 씨앗 중 자라는 그림이 있는 식물(PLANTS에 있음)은 다른 식물처럼 키울 수 있고, 없으면 '곧'
  * @returns {number} 받은 씨앗 수
  */
-function renderRegionalPlants(state) {
+function renderRegionalPlants(state, onPick, onOpen) {
   const cards = REGIONS.map((r) => {
     const seed = regionCount(state.stamps, r.id) >= 1;
+    if (seed && state.plants[r.plant]) return plantCard(state, r.plant, onPick, onOpen);
     const li = document.createElement('li');
     li.className = `gh-card${seed ? '' : ' locked'}`;
     const body = document.createElement('div');
