@@ -525,7 +525,7 @@ function renderGreenhouseSheet() {
     guideId = id;
     showGuide();
     $('plant-sheet').show();
-  });
+  }, { regional: LAB });
   renderGuestbook(state, (id) => {
     guestId = id;
     renderGuest(state, id);

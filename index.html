@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610232302">
-<link rel="stylesheet" href="css/app.css?v=2610232302">
+<link rel="stylesheet" href="css/tokens.css?v=2610232308">
+<link rel="stylesheet" href="css/app.css?v=2610232308">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -167,12 +167,16 @@
       <section class="hub-pane" id="hub-plants">
         <h2 class="hub-title" id="greenhouse-title" data-i18n="plantsTab">식물</h2>
         <p class="hub-sub" data-i18n="plantsHubSub">카드를 누르면 자세히 볼 수 있어요 · 꽃씨는 1km 달리면 1개, 다 키우면 +50</p>
-        <ul class="gh-grid" id="gh-grid"></ul>
+        <div class="hub-scroll">
+          <ul class="gh-grid" id="gh-grid"></ul>
+          <p class="gh-sec" data-lab hidden><span data-i18n="regionalPlants">지역 식물</span><small data-i18n="regionalPlantsSub">슈퍼차저에 처음 들른 지역의 씨앗을 받아요</small></p>
+          <ul class="gh-grid gh-regional" id="gh-regional" data-lab hidden></ul>
+        </div>
       </section>
       <section class="hub-pane" id="hub-guests" hidden>
         <h2 class="hub-title" data-i18n="visitorsTab">프렌즈</h2>
         <p class="hub-sub" data-i18n="visitorsHubSub">잎을 흔들면 가끔 프렌즈가 놀러 와요 · 누르면 자세히</p>
-        <ul class="gb-grid" id="guestbook"></ul>
+        <div class="hub-scroll"><ul class="gb-grid" id="guestbook"></ul></div>
       </section>
     </dialog>
 
@@ -516,8 +520,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610232302","./js/albums-en.js":"./js/albums-en.js?v=2610232302","./js/albums.js":"./js/albums.js?v=2610232302","./js/charge-ui.js":"./js/charge-ui.js?v=2610232302","./js/charge.js":"./js/charge.js?v=2610232302","./js/detail-ui.js":"./js/detail-ui.js?v=2610232302","./js/drive.js":"./js/drive.js?v=2610232302","./js/guest-visit.js":"./js/guest-visit.js?v=2610232302","./js/guests.js":"./js/guests.js?v=2610232302","./js/i18n.js":"./js/i18n.js?v=2610232302","./js/korea-map.js":"./js/korea-map.js?v=2610232302","./js/main.js":"./js/main.js?v=2610232302","./js/map-gl.js":"./js/map-gl.js?v=2610232302","./js/map-ui.js":"./js/map-ui.js?v=2610232302","./js/motions.js":"./js/motions.js?v=2610232302","./js/plant.js":"./js/plant.js?v=2610232302","./js/plants.js":"./js/plants.js?v=2610232302","./js/qr.js":"./js/qr.js?v=2610232302","./js/scene.js":"./js/scene.js?v=2610232302","./js/sky.js":"./js/sky.js?v=2610232302","./js/sound.js":"./js/sound.js?v=2610232302","./js/state.js":"./js/state.js?v=2610232302","./js/storage.js":"./js/storage.js?v=2610232302","./js/superchargers.js":"./js/superchargers.js?v=2610232302","./js/text.js":"./js/text.js?v=2610232302","./js/trip.js":"./js/trip.js?v=2610232302","./js/tutorial.js":"./js/tutorial.js?v=2610232302","./js/ui.js":"./js/ui.js?v=2610232302","./js/weather.js":"./js/weather.js?v=2610232302"}}</script>
-<script type="module" src="js/main.js?v=2610232302"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610232308","./js/albums-en.js":"./js/albums-en.js?v=2610232308","./js/albums.js":"./js/albums.js?v=2610232308","./js/charge-ui.js":"./js/charge-ui.js?v=2610232308","./js/charge.js":"./js/charge.js?v=2610232308","./js/detail-ui.js":"./js/detail-ui.js?v=2610232308","./js/drive.js":"./js/drive.js?v=2610232308","./js/guest-visit.js":"./js/guest-visit.js?v=2610232308","./js/guests.js":"./js/guests.js?v=2610232308","./js/i18n.js":"./js/i18n.js?v=2610232308","./js/korea-map.js":"./js/korea-map.js?v=2610232308","./js/main.js":"./js/main.js?v=2610232308","./js/map-gl.js":"./js/map-gl.js?v=2610232308","./js/map-ui.js":"./js/map-ui.js?v=2610232308","./js/motions.js":"./js/motions.js?v=2610232308","./js/plant.js":"./js/plant.js?v=2610232308","./js/plants.js":"./js/plants.js?v=2610232308","./js/qr.js":"./js/qr.js?v=2610232308","./js/scene.js":"./js/scene.js?v=2610232308","./js/sky.js":"./js/sky.js?v=2610232308","./js/sound.js":"./js/sound.js?v=2610232308","./js/state.js":"./js/state.js?v=2610232308","./js/storage.js":"./js/storage.js?v=2610232308","./js/superchargers.js":"./js/superchargers.js?v=2610232308","./js/text.js":"./js/text.js?v=2610232308","./js/trip.js":"./js/trip.js?v=2610232308","./js/tutorial.js":"./js/tutorial.js?v=2610232308","./js/ui.js":"./js/ui.js?v=2610232308","./js/weather.js":"./js/weather.js?v=2610232308"}}</script>
+<script type="module" src="js/main.js?v=2610232308"></script>
 <!-- version:end -->
 </body>
 </html>

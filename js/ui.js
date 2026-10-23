@@ -2,8 +2,8 @@
 import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, bonusInfo, stageFor, kmToNextDrop } from './state.js';
 import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf, plantName, guideOf, conditionFor } from './plants.js';
 import { GUESTS, guestImage, guestName, guestInfo, friendIds, isResident } from './guests.js';
-import { CHARGE_RULES } from './charge.js';
-import { t, locale } from './i18n.js';
+import { CHARGE_RULES, REGIONS, regionCount } from './charge.js';
+import { t, locale, pick } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -227,7 +227,7 @@ export function renderTrip(trip, state, now = new Date()) {
  * @param {(action:'select'|'buy', id:string) => void} onPick
  * @param {(id:string) => void} onOpen 카드를 누르면 그 식물 설명
  */
-export function renderGreenhouse(state, onPick, onOpen) {
+export function renderGreenhouse(state, onPick, onOpen, { regional = false } = {}) {
   const cards = PLANT_IDS.map((id) => {
     const info = PLANTS[id];
     const owned = state.plants[id];
@@ -272,11 +272,41 @@ export function renderGreenhouse(state, onPick, onOpen) {
     return li;
   });
   $('gh-grid').replaceChildren(...cards);
-  $('tab-plants-n').textContent = `${Object.keys(state.plants).length}/${PLANT_IDS.length}`;
+  const seeds = regional ? renderRegionalPlants(state) : 0;
+  $('tab-plants-n').textContent = `${Object.keys(state.plants).length + seeds}/${PLANT_IDS.length + (regional ? REGIONS.length : 0)}`;
   $('gh-coin-num').textContent = String(state.coins);
   $('stat-km').textContent = state.totalKm.toFixed(1);
   $('stat-water').textContent = String(state.waterCount);
   $('stat-grown').textContent = String(Object.values(state.plants).filter((p) => p.grown).length);
+}
+
+/**
+ * 도감 식물 탭의 지역 식물(실험판): 그 지역 슈퍼차저에 처음 들러 씨앗을 받았으면 그림과 이름, 아니면 실루엣과 ???.
+ * 자라는 단계 그림이 아직 없어서 키우기는 '곧'으로 둔다
+ * @returns {number} 받은 씨앗 수
+ */
+function renderRegionalPlants(state) {
+  const cards = REGIONS.map((r) => {
+    const seed = regionCount(state.stamps, r.id) >= 1;
+    const li = document.createElement('li');
+    li.className = `gh-card${seed ? '' : ' locked'}`;
+    const body = document.createElement('div');
+    body.className = 'gh-open';
+    const img = document.createElement('img');
+    img.src = `assets/regional/${r.plant}.webp`;
+    img.alt = '';
+    const name = document.createElement('p');
+    name.className = 'gh-name';
+    name.textContent = seed ? pick(r.plantKo, r.plantEn) : '???';
+    const hint = document.createElement('p');
+    hint.className = 'gh-hint';
+    hint.textContent = t(seed ? 'gh.regionalSeed' : 'gh.regionalLocked');
+    body.append(img, name, hint);
+    li.append(body);
+    return li;
+  });
+  $('gh-regional').replaceChildren(...cards);
+  return REGIONS.filter((r) => regionCount(state.stamps, r.id) >= 1).length;
 }
 
 /**

@@ -16,14 +16,14 @@ export const CHARGE_RULES = Object.freeze({
   REGION_COINS: 100,
 });
 
-/** 지역 묶음과 첫 도장에 받는 지역 식물 (지역 주민은 만나기 전까지 비밀이라 여기 이름을 두지 않는다) */
+/** 지역 묶음과 첫 도장에 받는 지역 식물 (plant: 그림 이름). 지역 주민은 guests.js */
 export const REGIONS = Object.freeze([
-  { id: 'capital', ko: '수도권', en: 'Capital Area', plantKo: '개나리', plantEn: 'Forsythia' },
-  { id: 'gangwon', ko: '강원', en: 'Gangwon', plantKo: '철쭉', plantEn: 'Royal Azalea' },
-  { id: 'chung', ko: '충청', en: 'Chungcheong', plantKo: '백목련', plantEn: 'White Magnolia' },
-  { id: 'jeolla', ko: '전라', en: 'Jeolla', plantKo: '동백나무', plantEn: 'Camellia' },
-  { id: 'gyeong', ko: '경상', en: 'Gyeongsang', plantKo: '백일홍', plantEn: 'Zinnia' },
-  { id: 'jeju', ko: '제주', en: 'Jeju', plantKo: '귤나무', plantEn: 'Tangerine Tree' },
+  { id: 'capital', ko: '수도권', en: 'Capital Area', plant: 'forsythia', plantKo: '개나리', plantEn: 'Forsythia' },
+  { id: 'gangwon', ko: '강원', en: 'Gangwon', plant: 'azalea', plantKo: '철쭉', plantEn: 'Royal Azalea' },
+  { id: 'chung', ko: '충청', en: 'Chungcheong', plant: 'magnolia', plantKo: '백목련', plantEn: 'White Magnolia' },
+  { id: 'jeolla', ko: '전라', en: 'Jeolla', plant: 'camellia', plantKo: '동백나무', plantEn: 'Camellia' },
+  { id: 'gyeong', ko: '경상', en: 'Gyeongsang', plant: 'zinnia', plantKo: '백일홍', plantEn: 'Zinnia' },
+  { id: 'jeju', ko: '제주', en: 'Jeju', plant: 'tangerine', plantKo: '귤나무', plantEn: 'Tangerine Tree' },
 ]);
 export const regionById = (id) => REGIONS.find((r) => r.id === id) || REGIONS[0];
 

@@ -612,6 +612,15 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .hub-stats > span { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
 .hub-stats b { color: var(--label); font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .hub-pane { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+/* 카드가 한 화면을 넘으면 도감 안에서만 스크롤 */
+.hub-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 24px; }
+.gh-sec { display: flex; align-items: baseline; gap: 16px; margin-top: 44px; font-size: 32px; font-weight: 800; }
+.gh-sec small { font-size: 24px; font-weight: 500; color: var(--label-2); }
+.hub-sheet .gh-grid.gh-regional { grid-template-columns: repeat(6, 1fr); gap: 18px; margin-top: 20px; }
+.hub-sheet .gh-regional .gh-card { border-radius: 30px; padding: 18px 18px 22px; }
+.hub-sheet .gh-regional .gh-card img { height: 220px; }
+.hub-sheet .gh-regional .gh-name { font-size: 30px; }
+.hub-sheet .gh-regional .gh-hint { font-size: 22px; white-space: pre-line; }
 .page-sheet .hub-title { font-size: 72px; font-weight: 800; letter-spacing: -.02em; margin-top: 30px; }
 .hub-sub { font-size: 26px; color: var(--label-2); margin-top: 8px; word-break: keep-all; }
 .hub-sheet .gh-grid { grid-template-columns: repeat(4, 1fr); gap: 22px; margin: 30px 0 0; }

@@ -145,6 +145,8 @@ const KO = {
   'toast.demoCharge': '슈퍼차저에 도착한 것으로 했어요 · 10분 지난 상태',
 
   'gh.growing': '키우는 중',
+  'gh.regionalSeed': '씨앗을 받았어요\n곧 키울 수 있어요',
+  'gh.regionalLocked': '어느 지역 슈퍼차저에\n처음 들르면 받아요',
   'gh.grownDone': '다 키웠어요',
   'gh.grow': '이 식물 키우기',
   'gh.grownView': '다 키움 · 보기',
@@ -335,6 +337,8 @@ const EN = {
   'toast.demoCharge': 'Pretending you’ve been at a Supercharger for 10 min',
 
   'gh.growing': 'Growing',
+  'gh.regionalSeed': 'Seed collected · Growing soon',
+  'gh.regionalLocked': 'Collected on a first Supercharger visit in its region',
   'gh.grownDone': 'Fully grown',
   'gh.grow': 'Grow this',
   'gh.grownView': 'Grown · View',
@@ -496,6 +500,8 @@ const STATIC_EN = {
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
   zoomAll: 'All',
+  regionalPlants: 'Regional plants',
+  regionalPlantsSub: 'A seed from each region on your first Supercharger visit there',
   mapLoadFail: 'Couldn’t load the map · Check your connection',
   resident: 'Local resident',
   regionStamps: 'Regional stamps',
