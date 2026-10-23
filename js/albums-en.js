@@ -22,7 +22,7 @@ const EN = {
   1498704719: { country: 'Japan', genre: 'Piano · Film Score', about: 'Piano pieces by Joe Hisaishi, famous for Studio Ghibli scores. Lots of familiar melodies to hum along to with your passenger.' },
   1625058458: { country: 'USA', genre: 'Jazz · Pop', about: "Norah Jones's debut. Warm piano and voice make any ride feel easy." },
   1422655717: { country: 'USA · Brazil', genre: 'Bossa Nova · Jazz', about: 'The bossa nova classic by saxophonist Stan Getz and guitarist João Gilberto, with ‘The Girl from Ipanema’. Try it with the window down a little.' },
-  1078898175: { country: 'Japan', genre: 'Jazz Hip-hop', about: 'The debut of Japanese producer Nujabes. Soft beats over jazz samples go well with city streets at night.' },
+  1078914477: { country: 'Japan', genre: 'Jazz Hip-hop', about: 'The second album by Japanese producer Nujabes. Finely woven jazz piano and strings roll on gently, perfect for a road where the view drifts slowly by.' },
   1450778313: { artist: 'HYUKOH', country: 'Korea', genre: 'Indie Rock', about: 'The first full album from Korean band HYUKOH, led by Oh Hyuk. Rough yet tender guitars hold all the nerves and thrill of being 23.' },
   1242154383: { artist: 'The Black Skirts', country: 'Korea', genre: 'Indie Rock · Pop', about: 'The third album from The Black Skirts, the one-man band of Cho Hyu-il. Full of love songs, made for late-night drives.' },
   1313141842: { title: 'Suzanne', artist: 'Kim Sawol', country: 'Korea', genre: 'Folk', about: 'The first solo album from Korean singer-songwriter Kim Sawol. Quiet, talk-like songs and guitar for driving alone at night.' },
