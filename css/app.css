@@ -497,7 +497,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 }
 .cn-fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .cn-cable { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; opacity: 0; }
-.cn-bolt { fill: #ecf03c; opacity: 0; transform-origin: 81px 11px; }
+.cn-bolt { fill: #ecf03c; opacity: 0; transform-origin: 95px 8px; }
 .cn.near .cn-car, .cn.on .cn-car { color: var(--fert); }
 .cn.on .cn-cable { opacity: .7; }
 .cn.on .cn-bolt { animation: cn-bolt 1.6s var(--ease-out) infinite; }
