@@ -13,10 +13,11 @@ function haversineKm(a, b) {
 }
 
 /**
- * @param {{onDistance:(km:number)=>void, onSpeed:(kmh:number)=>void, onError:(key:string)=>void}} handlers onError는 i18n 키
+ * @param {{onDistance:(km:number)=>void, onSpeed:(kmh:number)=>void, onError:(key:string)=>void, onPosition?:(pos:{lat:number, lon:number})=>void}} handlers
+ *  onError는 i18n 키, onPosition은 믿을 만한 위치를 받을 때마다 (충전소 찾기용)
  * @returns {() => void} 멈추는 함수
  */
-export function watchDriving({ onDistance, onSpeed, onError }) {
+export function watchDriving({ onDistance, onSpeed, onError, onPosition = () => {} }) {
   if (!navigator.geolocation) {
     onError('loc.noGeo');
     return () => {};
@@ -26,6 +27,7 @@ export function watchDriving({ onDistance, onSpeed, onError }) {
     (pos) => {
       const { coords, timestamp } = pos;
       if (coords.accuracy > MAX_ACCURACY_M) return;
+      onPosition({ lat: coords.latitude, lon: coords.longitude });
       if (coords.speed !== null && Number.isFinite(coords.speed)) onSpeed(coords.speed * 3.6);
       if (!last) { last = pos; return; }
       const km = haversineKm(last.coords, coords);

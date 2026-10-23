@@ -1,4 +1,4 @@
-import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, fertilize, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
 import { PLANTS, stageName, adultOf, plantName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
@@ -15,6 +15,8 @@ import { t, setLang, applyStatic, getLang } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
 import { greetingPeriod, cleanName } from './text.js';
+import { CHARGE_RULES, chargerNear, chargerById, updateSession, settleCharge } from './charge.js';
+import { renderCharge, chargerPlace } from './charge-ui.js';
 
 // 인트로: 로고 모션 시간(끝나면 '탭하여 계속하기'), 탭한 뒤 인사가 떠 있는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
 const LOGO_MS = 2600;
@@ -37,6 +39,9 @@ const WEATHER_OVERRIDE = SKY_KINDS.includes(query.get('weather')) ? query.get('w
 const TEMP_OVERRIDE = query.has('temp') && Number.isFinite(Number(query.get('temp'))) ? Number(query.get('temp')) : null;
 const HOUR_OVERRIDE = query.has('hour') && Number.isFinite(Number(query.get('hour'))) ? Number(query.get('hour')) : null;
 const todayKey = () => new Date().toLocaleDateString('sv-SE');
+// ?lab: 실험판. 다듬는 중인 기능(충전 리워드)을 이 주소에서만 보인다
+const LAB = query.has('lab');
+if (LAB) document.querySelectorAll('[data-lab]').forEach((el) => { el.hidden = false; });
 
 // ?preview=0~4 : 해당 단계로 꾸민 임시 상태로 보기, ?plant=cactus 처럼 종도 고를 수 있다 (저장하지 않음)
 const PREVIEW_STAGE = query.has('preview') ? Math.min(4, Math.max(0, Number(query.get('preview')) || 0)) : null;
@@ -163,6 +168,7 @@ function syncAmbient() {
 function render() {
   if (isDriving()) guests.leave();
   renderStatus(state, { ...careContext(), driving: isDriving() });
+  if (LAB) $('fert-num').textContent = String(state.fert);
 }
 
 function commit(next) {
@@ -332,8 +338,65 @@ function setGps(on) {
     },
     onSpeed: markDriving,
     onError: (key) => toast(t(key)),
+    onPosition: (pos) => {
+      if (!LAB) return;
+      nearCharger = chargerNear(pos);
+      tickCharge();
+    },
   });
 }
+
+/* ---------- 충전 리워드(실험판): 슈퍼차저 근처에 10분 넘게 서 있으면 충전 중, 10분마다 비료. 처음 간 곳은 도장 ---------- */
+const CHARGE_TICK_MS = 30000;
+// 데모로 머물게 하는 슈퍼차저 (서울 파르나스)
+const DEMO_CHARGER_ID = 1115;
+const DEMO_CHARGE_MS = 10 * 60 * 1000;
+// 마지막 위치에서 가까운 슈퍼차저. 서 있으면 위치가 잘 안 바뀌므로 마지막 값을 그대로 믿는다
+let nearCharger = null;
+let chargeSession = null;
+function tickCharge() {
+  const now = Date.now();
+  chargeSession = updateSession(chargeSession, nearCharger, now);
+  const r = settleCharge(rollDay(state, todayKey()), chargeSession, now, todayKey());
+  chargeSession = r.session;
+  if (r.fert || r.newStamp) {
+    commit(r.state);
+    const place = chargerPlace(chargerById(chargeSession.id)).city;
+    const parts = [r.newStamp && t('toast.stamp', { place, n: CHARGE_RULES.FIRST_STAMP_COINS }), r.fert && t('toast.fert', { n: r.fert })].filter(Boolean);
+    toast(parts.join(' · '));
+    if (prefs.effects) chime();
+  }
+  if ($('charge-sheet').open) showCharge();
+}
+const showCharge = () => renderCharge({ state, session: chargeSession, now: Date.now(), gpsOn: prefs.useGps, today: todayKey() });
+if (LAB) setInterval(tickCharge, CHARGE_TICK_MS);
+
+$('open-charge').addEventListener('click', () => { showCharge(); openSheet($('charge-sheet')); });
+$('fert-use').addEventListener('click', () => {
+  if (isDriving()) return;
+  const result = fertilize(state);
+  if (!result.grew) return;
+  closeSheets();
+  fx.water(anchor);
+  arcs.pulse();
+  if (prefs.effects) drip();
+  plant.glow();
+  commit(result.state);
+  if (!result.stageUp) { toast(t('toast.fertUsed', { n: result.grew })); return; }
+  setTimeout(() => {
+    applyScene();
+    const adult = adultOf(state.active);
+    toast(result.grownNow ? t('toast.grown', { plant: plantName(state.active), adult: adult.name, meaning: adult.meaning, reward: RULES.GROWN_REWARD }) : t('toast.grew', { stage: stageName(state.active, stageOf(state)) }));
+    if (prefs.effects) chime();
+  }, 600);
+});
+$('demo-charge').addEventListener('click', () => {
+  nearCharger = chargerById(DEMO_CHARGER_ID);
+  chargeSession = { id: DEMO_CHARGER_ID, since: Date.now() - DEMO_CHARGE_MS, paid: 0 };
+  closeSheets();
+  toast(t('toast.demoCharge'));
+  setTimeout(() => { tickCharge(); showCharge(); openSheet($('charge-sheet')); }, 400);
+});
 
 /* ---------- 주행 요약: 2분 동안 멈춰 있으면 이번 주행을 끝내고, 1km 넘게 달렸으면 카드로 보여 준다 ---------- */
 const TRIP_CHECK_MS = 15000;
@@ -458,6 +521,7 @@ $('pref-lang').addEventListener('click', (e) => {
   syncSettings();
   if ($('greenhouse-sheet').open) renderGreenhouseSheet();
   if ($('plant-sheet').open) renderGuide(state);
+  if ($('charge-sheet').open) showCharge();
   // 지역 이름을 새 언어로 다시 받는다
   weatherWatch?.refresh();
 });

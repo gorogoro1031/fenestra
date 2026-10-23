@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610230933">
-<link rel="stylesheet" href="css/app.css?v=2610230933">
+<link rel="stylesheet" href="css/tokens.css?v=2610231111">
+<link rel="stylesheet" href="css/app.css?v=2610231111">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -84,6 +84,7 @@
         <p class="today-line"><span class="clock" id="chip">오후 8:00</span><span class="today-km"><small data-i18n="today">오늘 주행</small><b id="today-km">0.0</b><small>km</small></span><span class="save-chip" id="save-chip" role="status" aria-live="polite"></span></p>
       </div>
       <nav class="tools" aria-label="메뉴" data-i18n-label="menu">
+        <button class="coin-pill fert-pill" type="button" id="open-charge" aria-label="충전 리워드" data-i18n-label="chargeTitle" data-lab hidden><i class="fert-dot" aria-hidden="true"></i><span data-i18n="fert">비료</span> <b id="fert-num">0</b></button>
         <span class="coin-pill" aria-label="꽃씨" data-i18n-label="pips"><i class="coin-dot" aria-hidden="true"></i><span data-i18n="pips">꽃씨</span> <b id="coin-num">0</b></span>
         <div class="segmented hand" id="pref-hand" role="group" aria-label="버튼 위치" data-i18n-label="handLabel">
           <button type="button" data-value="driver" data-i18n="driver">운전석</button><button type="button" data-value="passenger" data-i18n="passenger">조수석</button>
@@ -191,6 +192,34 @@
       </div>
     </dialog>
 
+    <!-- 충전 리워드 (실험판 ?lab): 지금 머문 슈퍼차저와 비료, 충전소 도장책 -->
+    <dialog class="sheet charge-sheet" id="charge-sheet" aria-labelledby="charge-title">
+      <div class="sheet-head">
+        <h2 id="charge-title" data-i18n="chargeTitle">충전 리워드</h2>
+        <button class="text-btn" type="button" data-close data-i18n="done">완료</button>
+      </div>
+      <div class="charge-body">
+        <div class="charge-left">
+          <div class="cn" id="cn">
+            <p class="cn-k" id="cn-k"></p>
+            <h3 class="cn-name" id="cn-name"></h3>
+            <p class="cn-place" id="cn-place"></p>
+            <p class="cn-min" id="cn-min"></p>
+            <div class="cn-bar" id="cn-bar-wrap"><i id="cn-bar"></i></div>
+            <p class="cn-sub" id="cn-sub"></p>
+          </div>
+          <div class="fert-row">
+            <div><b id="fert-count"></b><p id="fert-sub"></p></div>
+            <button class="trip-btn go" type="button" id="fert-use" data-i18n="useFert">비료 쓰기</button>
+          </div>
+        </div>
+        <div class="charge-right">
+          <div class="stamps-head"><h3 data-i18n="stampBook">충전소 도장책</h3><span id="stamp-count"></span></div>
+          <ol class="stamps" id="stamps"></ol>
+        </div>
+      </div>
+    </dialog>
+
     <!-- 오늘의 앨범 -->
     <dialog class="sheet album-sheet" id="album-sheet" aria-labelledby="album-sheet-title">
       <div class="sheet-head">
@@ -289,6 +318,7 @@
         <button class="row link" type="button" id="demo-guest" data-i18n="demoGuest">손님 부르기</button>
         <button class="row link" type="button" id="demo-drive" data-i18n="demoDrive">운전 중 화면 보기</button>
         <button class="row link" type="button" id="demo-trip" data-i18n="demoTrip">주행 요약 보기</button>
+        <button class="row link" type="button" id="demo-charge" data-i18n="demoCharge" data-lab hidden>슈퍼차저에 도착한 것으로 하기</button>
         <button class="row link destructive" type="button" id="demo-reset" data-i18n="demoReset">처음부터 다시</button>
       </div>
     </dialog>
@@ -328,8 +358,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610230933","./js/albums-en.js":"./js/albums-en.js?v=2610230933","./js/albums.js":"./js/albums.js?v=2610230933","./js/drive.js":"./js/drive.js?v=2610230933","./js/guest-visit.js":"./js/guest-visit.js?v=2610230933","./js/guests.js":"./js/guests.js?v=2610230933","./js/i18n.js":"./js/i18n.js?v=2610230933","./js/main.js":"./js/main.js?v=2610230933","./js/motions.js":"./js/motions.js?v=2610230933","./js/plant.js":"./js/plant.js?v=2610230933","./js/plants.js":"./js/plants.js?v=2610230933","./js/qr.js":"./js/qr.js?v=2610230933","./js/scene.js":"./js/scene.js?v=2610230933","./js/sky.js":"./js/sky.js?v=2610230933","./js/sound.js":"./js/sound.js?v=2610230933","./js/state.js":"./js/state.js?v=2610230933","./js/storage.js":"./js/storage.js?v=2610230933","./js/text.js":"./js/text.js?v=2610230933","./js/trip.js":"./js/trip.js?v=2610230933","./js/tutorial.js":"./js/tutorial.js?v=2610230933","./js/ui.js":"./js/ui.js?v=2610230933","./js/weather.js":"./js/weather.js?v=2610230933"}}</script>
-<script type="module" src="js/main.js?v=2610230933"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231111","./js/albums-en.js":"./js/albums-en.js?v=2610231111","./js/albums.js":"./js/albums.js?v=2610231111","./js/charge-ui.js":"./js/charge-ui.js?v=2610231111","./js/charge.js":"./js/charge.js?v=2610231111","./js/drive.js":"./js/drive.js?v=2610231111","./js/guest-visit.js":"./js/guest-visit.js?v=2610231111","./js/guests.js":"./js/guests.js?v=2610231111","./js/i18n.js":"./js/i18n.js?v=2610231111","./js/main.js":"./js/main.js?v=2610231111","./js/motions.js":"./js/motions.js?v=2610231111","./js/plant.js":"./js/plant.js?v=2610231111","./js/plants.js":"./js/plants.js?v=2610231111","./js/qr.js":"./js/qr.js?v=2610231111","./js/scene.js":"./js/scene.js?v=2610231111","./js/sky.js":"./js/sky.js?v=2610231111","./js/sound.js":"./js/sound.js?v=2610231111","./js/state.js":"./js/state.js?v=2610231111","./js/storage.js":"./js/storage.js?v=2610231111","./js/superchargers.js":"./js/superchargers.js?v=2610231111","./js/text.js":"./js/text.js?v=2610231111","./js/trip.js":"./js/trip.js?v=2610231111","./js/tutorial.js":"./js/tutorial.js?v=2610231111","./js/ui.js":"./js/ui.js?v=2610231111","./js/weather.js":"./js/weather.js?v=2610231111"}}</script>
+<script type="module" src="js/main.js?v=2610231111"></script>
 <!-- version:end -->
 </body>
 </html>

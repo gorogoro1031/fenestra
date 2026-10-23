@@ -1,6 +1,7 @@
 // 게임 규칙과 상태 변화. 화면·브라우저에 의존하지 않는 순수 함수만 둔다
 import { PLANTS, PLANT_IDS, FIRST_PLANT } from './plants.js';
 import { GUESTS, GUEST_IDS, GUEST_RULES } from './guests.js';
+import { CHARGE_RULES, cleanStamps } from './charge.js';
 
 // 이슬: 달린 거리로 모아 물을 줄 때 쓴다 (코드에선 drops)
 export const RULES = Object.freeze({
@@ -29,6 +30,8 @@ export function createState(today = '') {
     coins: 0, coinRemainder: 0,
     // 손님 도감(만난 횟수), 오늘 손님에게 받은 꽃씨, 처음 만나고 아직 온실에서 안 본 손님
     guestbook: {}, guestCoinsToday: 0, newGuests: [],
+    // 충전 리워드(실험판): 비료 수와 충전소 도장책({슈퍼차저 id: 처음 간 날})
+    fert: 0, stamps: {},
     active: FIRST_PLANT,
     plants: { [FIRST_PLANT]: newPlant() },
   };
@@ -177,6 +180,21 @@ export function water(state, ctx = {}) {
   return { state: next, grew, stageUp: after > before, bonus, grownNow };
 }
 
+/**
+ * 비료 하나를 쓴다: 지금 식물이 물 세 번만큼 자란다. 다 자라면 꽃씨 덤
+ * @returns {{state: object, grew: number, stageUp: boolean, grownNow: boolean}}
+ */
+export function fertilize(state) {
+  const plant = activePlant(state);
+  if (state.fert <= 0 || plant.grown || stageOf(state) === LAST_STAGE) return { state, grew: 0, stageUp: false, grownNow: false };
+  const before = stageOf(state);
+  let next = { ...withActive(state, { growth: plant.growth + CHARGE_RULES.FERT_GROWTH }), fert: state.fert - 1 };
+  const after = stageOf(next);
+  const grownNow = after === LAST_STAGE;
+  if (grownNow) next = { ...withActive(next, { grown: true }), coins: next.coins + RULES.GROWN_REWARD };
+  return { state: next, grew: CHARGE_RULES.FERT_GROWTH, stageUp: after > before, grownNow };
+}
+
 /** 꽃씨로 새 식물을 산다. 사면 바로 그 식물을 키운다 */
 export function buyPlant(state, id) {
   const info = PLANTS[id];
@@ -215,6 +233,8 @@ export function sanitize(raw, today = '') {
     guestbook: Object.fromEntries(GUEST_IDS.filter((id) => Number.isFinite(raw.guestbook?.[id]) && raw.guestbook[id] > 0).map((id) => [id, Math.floor(raw.guestbook[id])])),
     guestCoinsToday: Math.floor(num(raw.guestCoinsToday, 0, GUEST_RULES.DAILY_COINS)),
     newGuests: GUEST_IDS.filter((id) => Array.isArray(raw.newGuests) && raw.newGuests.includes(id) && raw.guestbook?.[id] > 0),
+    fert: Math.floor(num(raw.fert, 0, CHARGE_RULES.MAX_FERT)),
+    stamps: cleanStamps(raw.stamps),
     active: plants[raw.active] ? raw.active : FIRST_PLANT,
     plants,
   };
