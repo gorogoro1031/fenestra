@@ -83,9 +83,10 @@ function renderCard(state, c, me) {
   $('mc-head').textContent = t(visited ? 'map.got' : 'map.ifVisit');
   $('mc-pips').textContent = t('map.pipsN', { n: stampCoins(c) });
   $('mc-pips').classList.toggle('y', c.far);
-  $('mc-stamp-k').textContent = t(nth === 1 ? 'map.firstStamp' : nth === 2 ? 'map.secondStamp' : 'map.regionStamp', { region });
+  $('mc-stamp-k').textContent = t(nth === 1 ? 'map.firstStamp' : nth === 2 ? 'map.secondStamp' : 'map.regionStamp');
   $('mc-stamp').textContent = nth === 1 ? t('map.seed', { plant: plantOf(c.region) }) : nth === 2 ? t('map.badge', { region }) : t('map.allDone');
-  $('mc-resident').textContent = nth >= goal ? t('map.residentMeet') : t('map.residentMore', { region });
+  // 이 지역 도장이 목표에 닿으면 만날 수 있고, 이미 한 곳 가 봤으면 한 곳 더, 아니면 두 곳 규칙
+  $('mc-resident').textContent = t(nth >= goal ? 'map.residentMeet' : visited ? 'map.residentOne' : 'map.residentTwo');
 }
 
 function renderRegions(state, active) {
