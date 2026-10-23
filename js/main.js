@@ -69,6 +69,7 @@ let stopGps = () => {};
 const plant = createPlant($('plant-layer'));
 const sky = createSky($('sky'), $('orb'), { reduced: matchMedia('(prefers-reduced-motion: reduce)').matches });
 sky.setMode(prefs.orb);
+sky.setSize(prefs.orbSize);
 const arcs = createArcs($('arcs'));
 const fx = createFx($('fx'));
 let anchor = { cx: 960, y: 600, potTop: 800 };
@@ -173,7 +174,7 @@ function renderSunTime({ isDay, x, y }) {
   const at = new Date();
   at.setHours(Math.floor(hours), Math.round((hours % 1) * 60), 0, 0);
   el.textContent = t(isDay ? 'sun.set' : 'sun.rise', { time: at.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', hour12: false }) });
-  el.style.transform = `translate(calc(${x.toFixed(1)}px - 50%), ${(y + plant.ring().r + 26).toFixed(1)}px)`;
+  el.style.transform = `translate(calc(${x.toFixed(1)}px - 50%), ${(y + sky.radius() + 26).toFixed(1)}px)`;
 }
 
 const isDriving = () => Date.now() < drivingUntil;
@@ -579,7 +580,7 @@ function syncSettings() {
   $('demo-stage').querySelectorAll('button').forEach((b) => { b.textContent = stageName(state.active, Number(b.dataset.value)); });
   $('weather-status').textContent = weatherStatusText();
   renderSaveStatus();
-  [['pref-lang', prefs.lang], ['pref-orb', prefs.orb], ['pref-theme', prefs.theme], ['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
+  [['pref-lang', prefs.lang], ['pref-orb', prefs.orb], ['pref-orb-size', prefs.orbSize], ['pref-theme', prefs.theme], ['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
 }
@@ -644,6 +645,13 @@ $('pref-orb').addEventListener('click', (e) => {
   if (!value) return;
   updatePrefs({ orb: value });
   sky.setMode(value);
+  applyScene();
+});
+$('pref-orb-size').addEventListener('click', (e) => {
+  const value = e.target.closest('button')?.dataset.value;
+  if (!value) return;
+  updatePrefs({ orbSize: value });
+  sky.setSize(value);
   applyScene();
 });
 $('pref-scene').addEventListener('click', (e) => {

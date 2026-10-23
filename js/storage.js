@@ -8,7 +8,7 @@ const KEY_PREFS = 'fenestra:v2:prefs';
 // 처음 켤 때 언어: 브라우저가 한국어면 한국어, 아니면 영어
 const browserLang = () => (typeof navigator !== 'undefined' && !/^ko/i.test(navigator.language || 'ko') ? 'en' : 'ko');
 
-export const DEFAULT_PREFS = Object.freeze({ orb: 'motion', ambient: true, effects: true, useGps: false, scene: 'auto', sky: 'auto', theme: 'dark', name: '', tutorialSeen: false, hand: 'driver', musicApp: 'apple' });
+export const DEFAULT_PREFS = Object.freeze({ orb: 'motion', orbSize: 'medium', ambient: true, effects: true, useGps: false, scene: 'auto', sky: 'auto', theme: 'dark', name: '', tutorialSeen: false, hand: 'driver', musicApp: 'apple' });
 
 function read(key) {
   try {
@@ -45,6 +45,8 @@ export function loadPrefs() {
     theme: raw.theme === 'vivid' ? 'vivid' : 'dark',
     // 해·달: 속도에 따라 움직임까지(기본), 고리만, 끄기
     orb: ['motion', 'ring', 'off'].includes(raw.orb) ? raw.orb : DEFAULT_PREFS.orb,
+    // 해·달 크기: 작게·보통(기본)·크게
+    orbSize: ['small', 'medium', 'large'].includes(raw.orbSize) ? raw.orbSize : DEFAULT_PREFS.orbSize,
     lang: ['ko', 'en'].includes(raw.lang) ? raw.lang : browserLang(),
     // 인사에 쓰는 이름 (이 기기에만)
     name: cleanName(raw.name),

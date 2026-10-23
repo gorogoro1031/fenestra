@@ -16,6 +16,9 @@ const FAST_NIGHT = [190, 165, 255];
 const LINE = 9;
 const FRAME_MS = 33;
 // 속도 단계(km/h): 30 넘으면 빛이 넓게, 50 넘으면 메아리, 100 넘으면 더 자주 + 선을 도는 빛
+// 해·달 크기: 식물을 감싸는 원에 대한 비율. 보통이 기본
+export const ORB_SIZES = Object.freeze({ small: 0.5, medium: 0.7, large: 1 });
+
 export const SPEED_TIERS = Object.freeze([30, 50, 100]);
 const ECHO_EVERY_MS = { 2: 8000, 3: 5000 };
 const ECHO_LIFE_MS = 7000;
@@ -73,6 +76,8 @@ export function createSky(skyEl, canvas, { reduced = false } = {}) {
   let size = { W: 1920, H: 1200, horizon: 964 };
   // mode: 'motion' 속도에 따라 움직임까지, 'ring' 고리만(움직임 없음), 'off' 감춤
   let mode = 'motion';
+  let scale = ORB_SIZES.medium;
+  const radius = () => ring.r * scale;
   let target = { x: 960, y: 400, color: LEMON, isDay: true, dim: 1 };
   let pos = null;
   let kmh = 0;
@@ -88,7 +93,7 @@ export function createSky(skyEl, canvas, { reduced = false } = {}) {
     const { W, H, horizon } = size;
     const x = ring.x + (p - 0.5) * W * ARC_WIDTH;
     // 지평선(하단 바 위) 아래 반지름만큼 숨어 있다가 정오·자정에 원래 자리까지 오른다
-    const y = horizon + ring.r - (horizon + ring.r - ring.y) * lift;
+    const y = horizon + radius() - (horizon + radius() - ring.y) * lift;
     const color = isDay ? mix(LEMON, DUSK, low) : MOON;
     const dim = raining ? 0.35 : 1;
     target = { x, y, color, isDay, dim: (isDay ? 1 : 0.85) * dim };
@@ -113,12 +118,12 @@ export function createSky(skyEl, canvas, { reduced = false } = {}) {
     const fast = clamp01(energy - 1);
     const tint = mix(target.color, target.isDay ? FAST_DAY : FAST_NIGHT, fast);
     const { x, y } = pos;
-    const { r } = ring;
+    const r = radius();
     const t = now / 1000;
 
     // 선에서 안팎으로 번지는 빛: 정지 9초 → 100 넘으면 6초 주기로 숨 쉰다
     const breathe = moving ? Math.sin((t * Math.PI * 2) / (9 - energy)) : 0;
-    const spread = 70 + energy * 28 + breathe * (8 + energy * 4);
+    const spread = (70 + energy * 28 + breathe * (8 + energy * 4)) * scale;
     const glowA = (0.3 + energy * 0.05 + breathe * 0.04) * target.dim;
     const inner = Math.max(0, r - spread * 0.7);
     const glow = ctx.createRadialGradient(x, y, inner, x, y, r + spread);
@@ -137,8 +142,8 @@ export function createSky(skyEl, canvas, { reduced = false } = {}) {
     echoes = echoes.filter((born) => now - born < ECHO_LIFE_MS);
     echoes.forEach((born) => {
       const p = (now - born) / ECHO_LIFE_MS;
-      const er = r + (1 - (1 - p) ** 2) * 520;
-      const w = 26 + p * 50;
+      const er = r + (1 - (1 - p) ** 2) * 520 * scale;
+      const w = (26 + p * 50) * scale;
       const a = 0.16 * Math.sin(Math.PI * p) * target.dim;
       const eg = ctx.createRadialGradient(x, y, Math.max(0, er - w), x, y, er + w);
       eg.addColorStop(0, `rgba(${tint}, 0)`);
@@ -196,5 +201,12 @@ export function createSky(skyEl, canvas, { reduced = false } = {}) {
     setMode(next) {
       mode = next;
     },
+    /** @param {'small'|'medium'|'large'} next */
+    setSize(next) {
+      scale = ORB_SIZES[next] ?? ORB_SIZES.medium;
+      pos = null;
+    },
+    /** 지금 그리는 고리 반지름 (일출·일몰 글자 자리) */
+    radius,
   };
 }

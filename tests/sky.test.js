@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { orbPosition, sunTimes, speedTier } from '../js/sky.js';
+import { orbPosition, sunTimes, speedTier, ORB_SIZES } from '../js/sky.js';
 
 test('정오엔 해가 가장 높고, 자정엔 달이 가장 높다', () => {
   const noon = orbPosition(12);
@@ -50,4 +50,10 @@ test('실제 해 뜨는 시각을 넘기면 낮', () => {
 
 test('속도 단계: 30·50·100 km/h를 넘을 때마다 하나씩', () => {
   assert.deepEqual([0, 29, 30, 49, 50, 99, 100, 130].map(speedTier), [0, 0, 1, 1, 2, 2, 3, 3]);
+});
+
+test('해·달 크기는 작게 < 보통 < 크게이고, 크게가 원래 크기다', () => {
+  assert.ok(ORB_SIZES.small < ORB_SIZES.medium && ORB_SIZES.medium < ORB_SIZES.large);
+  assert.equal(ORB_SIZES.large, 1);
+  assert.equal(ORB_SIZES.medium, 0.7);
 });
