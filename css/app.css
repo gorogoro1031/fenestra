@@ -585,3 +585,4 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .x2row:not(.on) .x2 { opacity: .35; }
 .x2row p { font-size: 24px; color: var(--label-2); word-break: keep-all; }
 .x2row p b { color: var(--label); }
+#screen-scale { white-space: nowrap; text-align: right; }

@@ -77,6 +77,8 @@ function fit() {
   const W = Math.round(innerWidth / scale);
   const H = Math.round(innerHeight / scale);
   stageEl.style.setProperty('--fit', String(scale));
+  // 차에서 실제로 몇 %로 보이는지 확인용 (설정 → 데모)
+  $('screen-scale').textContent = `${Math.round(scale * 100)}% · ${innerWidth}×${innerHeight} · ×${window.devicePixelRatio || 1}`;
   stageEl.style.width = `${W}px`;
   stageEl.style.height = `${H}px`;
   ['arcs', 'fx'].forEach((id) => { $(id).width = W; $(id).height = H; });

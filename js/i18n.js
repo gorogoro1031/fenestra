@@ -414,6 +414,8 @@ const STATIC_EN = {
   skip: 'Skip',
   back: 'Back',
   goBack: 'Back',
+  screenScale: 'Screen scale',
+  screenScaleSub: 'How big this looks compared with 1920×1200 · Below 100% text shrinks too',
   next: 'Next',
   tapToContinue: 'Tap to continue',
   bootTitle: "Couldn't load the app",
