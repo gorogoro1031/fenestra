@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GUESTS, GUEST_RULES, guestWeights, pickGuest, shouldSpawn } from '../js/guests.js';
+import { GUESTS, GUEST_IDS, GUEST_RULES, guestWeights, pickGuest, shouldSpawn, guestInfo } from '../js/guests.js';
+import { setLang } from '../js/i18n.js';
 import { createState, catchGuest, markGuestsSeen, rollDay, sanitize } from '../js/state.js';
 
 const day = { isNight: false, raining: false, plant: 'monstera', stage: 2 };
@@ -77,4 +78,15 @@ test('새 손님 목록도 저장값이 깨지면 만난 적 있는 아는 손�
   const s = sanitize({ guestbook: { bee: 1 }, newGuests: ['bee', 'hacker', 'snail', 'bee'] }, 'd');
   assert.deepEqual(s.newGuests, ['bee']);
   assert.deepEqual(sanitize({}, 'd').newGuests, []);
+});
+
+test('손님마다 도감 글(한 줄 소개·설명·언제)이 두 언어로 있다', () => {
+  ['ko', 'en'].forEach((lang) => {
+    setLang(lang);
+    GUEST_IDS.forEach((id) => {
+      const info = guestInfo(id);
+      assert.ok(info.tag && info.about && info.when, `${lang} ${id}`);
+    });
+  });
+  setLang('ko');
 });

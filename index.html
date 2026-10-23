@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610231511">
-<link rel="stylesheet" href="css/app.css?v=2610231511">
+<link rel="stylesheet" href="css/tokens.css?v=2610231520">
+<link rel="stylesheet" href="css/app.css?v=2610231520">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -47,7 +47,7 @@
 <svg width="0" height="0" class="sprite" aria-hidden="true">
   <symbol id="logo-leaf" viewBox="0 0 60 84"><path d="M30 82 C 4 62 2 26 30 2 C 58 26 56 62 30 82 Z"/></symbol>
   <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14H5Z"/><path d="M5 19 14 10"/></symbol>
-  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M21.2 12h-2.4M5.2 12H2.8M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7M18.5 18.5l-1.7-1.7M7.2 7.2 5.5 5.5"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path d="M10.3 2.6h3.4l.5 2.4c.6.2 1.1.5 1.6.9l2.3-.8 1.7 2.9-1.8 1.6c.1.6.1 1.2 0 1.8l1.8 1.6-1.7 2.9-2.3-.8c-.5.4-1 .7-1.6.9l-.5 2.4h-3.4l-.5-2.4c-.6-.2-1.1-.5-1.6-.9l-2.3.8-1.7-2.9 1.8-1.6a6 6 0 0 1 0-1.8L3.6 8l1.7-2.9 2.3.8c.5-.4 1-.7 1.6-.9l.5-2.4Z" transform="translate(0 1.4)"/><circle cx="12" cy="13.4" r="3"/></symbol>
   <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s-6.5 7.2-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 10.2 12 3 12 3Z"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4M18.7 18.7l-1.4-1.4M6.7 6.7 5.3 5.3"/></symbol>
   <symbol id="i-road" viewBox="0 0 24 24"><path d="M8 3 5 21M16 3l3 18M12 4v2.5M12 10.5v3M12 17.5V20"/></symbol>
@@ -90,7 +90,13 @@
         <div class="segmented hand" id="pref-hand" role="group" aria-label="버튼 위치" data-i18n-label="handLabel">
           <button type="button" data-value="driver" data-i18n="driver">운전석</button><button type="button" data-value="passenger" data-i18n="passenger">조수석</button>
         </div>
-        <button class="icon-btn" type="button" id="open-greenhouse" aria-label="온실"><svg><use href="#i-leaf"/></svg><span class="new-dot" id="guest-dot" hidden></span></button>
+        <!-- 지금 키우는 식물: 누르면 식물·손님 도감 -->
+        <button class="pick-pill" type="button" id="open-greenhouse" aria-label="도감">
+          <span class="pick-thumb"><img id="pick-img" alt="" width="1150" height="1163"></span>
+          <span class="pick-tx"><b id="pick-name"></b><span id="pick-sub"></span></span>
+          <i class="pick-chev" aria-hidden="true"></i>
+          <span class="new-dot" id="guest-dot" hidden></span>
+        </button>
         <button class="icon-btn" type="button" id="open-settings" aria-label="설정" data-i18n-label="settings"><svg><use href="#i-gear"/></svg></button>
       </nav>
     </header>
@@ -143,27 +149,38 @@
     </section>
 
     <!-- 온실: 식물 고르기·들이기 -->
-    <dialog class="sheet" id="greenhouse-sheet" aria-labelledby="greenhouse-title">
-      <div class="sheet-head">
-        <h2 id="greenhouse-title" data-i18n="greenhouse">온실</h2>
-        <button class="text-btn" type="button" data-close data-i18n="done">완료</button>
+    <dialog class="sheet page-sheet hub-sheet" id="greenhouse-sheet" aria-labelledby="greenhouse-title">
+      <!-- 전체 화면 도감: 식물 탭(카드를 누르면 식물 설명, 버튼으로 키우기·들이기)과 손님 탭(누르면 손님 설명) -->
+      <div class="g-top">
+        <button class="g-back" type="button" data-close data-i18n="goBack">돌아가기</button>
+        <div class="hub-tabs" role="tablist">
+          <button type="button" role="tab" id="tab-plants" aria-selected="true"><span data-i18n="plantsTab">식물</span><small id="tab-plants-n"></small></button>
+          <button type="button" role="tab" id="tab-guests" aria-selected="false"><span data-i18n="visitorsTab">손님</span><small id="gb-count"></small><span class="new-dot" id="tab-guests-dot" hidden></span></button>
+        </div>
+        <div class="hub-stats">
+          <span><i class="coin-dot" aria-hidden="true"></i><span data-i18n="pips">꽃씨</span> <b id="gh-coin-num">0</b></span>
+          <span><span data-i18n="totalKm">누적 거리</span> <b><span id="stat-km">0</span>km</b></span>
+          <span><span data-i18n="waterings">물 준 횟수</span> <b id="stat-water">0</b></span>
+          <span><span data-i18n="plantsGrown">다 키운 식물</span> <b id="stat-grown">0</b></span>
+        </div>
       </div>
-      <p class="gh-coins"><i class="coin-dot" aria-hidden="true"></i><span data-i18n="ghPips">꽃씨 </span><b id="gh-coin-num">0</b><span data-i18n="pipsUnit">개</span> <span data-i18n="pipsRule">· 1km 달리면 1개 · 다 키우면 +50</span></p>
-      <ul class="gh-grid" id="gh-grid"></ul>
-      <p class="section-label"><span data-i18n="visitorLog">손님 도감</span> <span class="gb-count" id="gb-count"></span></p>
-      <ul class="gb-grid" id="guestbook"></ul>
-      <div class="stats">
-        <div class="stat"><p class="s-label" data-i18n="totalKm">누적 거리</p><p class="s-value"><span id="stat-km">0</span> km</p></div>
-        <div class="stat"><p class="s-label" data-i18n="waterings">물 준 횟수</p><p class="s-value"><span id="stat-water">0</span><span data-i18n="waterUnit">번</span></p></div>
-        <div class="stat"><p class="s-label" data-i18n="plantsGrown">다 키운 식물</p><p class="s-value"><span id="stat-grown">0</span><span data-i18n="grownUnit">종</span></p></div>
-      </div>
+      <section class="hub-pane" id="hub-plants">
+        <h2 class="hub-title" id="greenhouse-title" data-i18n="plantsTab">식물</h2>
+        <p class="hub-sub" data-i18n="plantsHubSub">카드를 누르면 자세히 볼 수 있어요 · 꽃씨는 1km 달리면 1개, 다 키우면 +50</p>
+        <ul class="gh-grid" id="gh-grid"></ul>
+      </section>
+      <section class="hub-pane" id="hub-guests" hidden>
+        <h2 class="hub-title" data-i18n="visitorsTab">손님</h2>
+        <p class="hub-sub" data-i18n="visitorsHubSub">잎을 흔들면 가끔 손님이 놀러 와요 · 누르면 자세히</p>
+        <ul class="gb-grid" id="guestbook"></ul>
+      </section>
     </dialog>
 
     <!-- 식물 도감: 식물 위젯을 누르면. 소개, 원산지·알맞은 온도·두 배 조건, 다섯 단계 (안 온 단계는 실루엣) -->
-    <dialog class="sheet plant-sheet" id="plant-sheet" aria-labelledby="ps-name">
+    <dialog class="sheet page-sheet plant-sheet" id="plant-sheet" aria-labelledby="ps-name">
       <!-- 전체 화면 도감: 위에 돌아가기와 가진 식물 탭, 왼쪽 지금 단계 그림, 오른쪽 소개와 네 가지 정보, 아래 다섯 단계 -->
       <div class="g-top">
-        <button class="g-back" type="button" data-close data-i18n="goBack">돌아가기</button>
+        <button class="g-back" type="button" data-back data-i18n="goBack">돌아가기</button>
         <div class="g-tabs" id="ps-tabs"></div>
       </div>
       <div class="g-main">
@@ -182,6 +199,25 @@
       </div>
       <ol class="g-stages" id="ps-stages"></ol>
     </dialog>
+
+    <!-- 손님 설명 (도감 손님 탭에서): 큰 그림, 이름, 한 줄 소개, 설명, 만난 횟수·언제 와요·꽃씨 -->
+    <dialog class="sheet page-sheet guest-sheet" id="guest-sheet" aria-labelledby="gs-name">
+      <div class="g-top"><button class="g-back" type="button" data-back data-i18n="guestbookBack">도감</button></div>
+      <div class="gs-main">
+        <div class="gs-art"><img id="gs-img" alt="" width="512" height="512"></div>
+        <div class="g-info">
+          <h2 class="g-name" id="gs-name"></h2>
+          <p class="g-tag gs-tag" id="gs-tag"></p>
+          <p class="g-about" id="gs-about"></p>
+          <div class="g-facts gs-facts">
+            <div class="g-fact"><p data-i18n="metTimes">만난 횟수</p><b id="gs-met"></b></div>
+            <div class="g-fact"><p data-i18n="whenVisits">언제 와요</p><b id="gs-when"></b></div>
+            <div class="g-fact"><p data-i18n="leavesPips">주고 가는 꽃씨</p><b id="gs-coins"></b></div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
 
     <!-- 이슬 설명: 지금 몇 개인지 크게, 다음 이슬까지 남은 거리, 담아 둔 12칸 -->
     <dialog class="sheet detail-sheet" id="dew-sheet" aria-labelledby="dew-title" style="--c: var(--water)">
@@ -437,8 +473,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231511","./js/albums-en.js":"./js/albums-en.js?v=2610231511","./js/albums.js":"./js/albums.js?v=2610231511","./js/charge-ui.js":"./js/charge-ui.js?v=2610231511","./js/charge.js":"./js/charge.js?v=2610231511","./js/detail-ui.js":"./js/detail-ui.js?v=2610231511","./js/drive.js":"./js/drive.js?v=2610231511","./js/guest-visit.js":"./js/guest-visit.js?v=2610231511","./js/guests.js":"./js/guests.js?v=2610231511","./js/i18n.js":"./js/i18n.js?v=2610231511","./js/main.js":"./js/main.js?v=2610231511","./js/motions.js":"./js/motions.js?v=2610231511","./js/plant.js":"./js/plant.js?v=2610231511","./js/plants.js":"./js/plants.js?v=2610231511","./js/qr.js":"./js/qr.js?v=2610231511","./js/scene.js":"./js/scene.js?v=2610231511","./js/sky.js":"./js/sky.js?v=2610231511","./js/sound.js":"./js/sound.js?v=2610231511","./js/state.js":"./js/state.js?v=2610231511","./js/storage.js":"./js/storage.js?v=2610231511","./js/superchargers.js":"./js/superchargers.js?v=2610231511","./js/text.js":"./js/text.js?v=2610231511","./js/trip.js":"./js/trip.js?v=2610231511","./js/tutorial.js":"./js/tutorial.js?v=2610231511","./js/ui.js":"./js/ui.js?v=2610231511","./js/weather.js":"./js/weather.js?v=2610231511"}}</script>
-<script type="module" src="js/main.js?v=2610231511"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231520","./js/albums-en.js":"./js/albums-en.js?v=2610231520","./js/albums.js":"./js/albums.js?v=2610231520","./js/charge-ui.js":"./js/charge-ui.js?v=2610231520","./js/charge.js":"./js/charge.js?v=2610231520","./js/detail-ui.js":"./js/detail-ui.js?v=2610231520","./js/drive.js":"./js/drive.js?v=2610231520","./js/guest-visit.js":"./js/guest-visit.js?v=2610231520","./js/guests.js":"./js/guests.js?v=2610231520","./js/i18n.js":"./js/i18n.js?v=2610231520","./js/main.js":"./js/main.js?v=2610231520","./js/motions.js":"./js/motions.js?v=2610231520","./js/plant.js":"./js/plant.js?v=2610231520","./js/plants.js":"./js/plants.js?v=2610231520","./js/qr.js":"./js/qr.js?v=2610231520","./js/scene.js":"./js/scene.js?v=2610231520","./js/sky.js":"./js/sky.js?v=2610231520","./js/sound.js":"./js/sound.js?v=2610231520","./js/state.js":"./js/state.js?v=2610231520","./js/storage.js":"./js/storage.js?v=2610231520","./js/superchargers.js":"./js/superchargers.js?v=2610231520","./js/text.js":"./js/text.js?v=2610231520","./js/trip.js":"./js/trip.js?v=2610231520","./js/tutorial.js":"./js/tutorial.js?v=2610231520","./js/ui.js":"./js/ui.js?v=2610231520","./js/weather.js":"./js/weather.js?v=2610231520"}}</script>
+<script type="module" src="js/main.js?v=2610231520"></script>
 <!-- version:end -->
 </body>
 </html>

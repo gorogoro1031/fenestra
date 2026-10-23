@@ -1,7 +1,7 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
 import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, bonusInfo, stageFor, kmToNextDrop } from './state.js';
-import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf, plantName, plantHint, guideOf, conditionFor } from './plants.js';
-import { GUESTS, GUEST_IDS, guestImage, guestName } from './guests.js';
+import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf, plantName, guideOf, conditionFor } from './plants.js';
+import { GUESTS, GUEST_IDS, guestImage, guestName, guestInfo } from './guests.js';
 import { t, locale } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
@@ -82,6 +82,11 @@ export function renderStatus(state, ctx) {
   const hasNewGuest = state.newGuests.length > 0;
   $('guest-dot').hidden = !hasNewGuest;
   $('open-greenhouse').setAttribute('aria-label', t(hasNewGuest ? 'greenhouse.labelNew' : 'greenhouse.label'));
+  // 상단 식물 버튼: 지금 키우는 식물 사진·이름·단계
+  const pickSrc = plantImage(state.active, Math.max(1, stage));
+  if ($('pick-img').getAttribute('src') !== pickSrc) $('pick-img').setAttribute('src', pickSrc);
+  $('pick-name').textContent = plantName(state.active);
+  $('pick-sub').textContent = t('pick.sub', { stage: stageName(state.active, stage) });
   renderCondition(state, ctx);
 
   const check = waterCheck(state);
@@ -151,9 +156,11 @@ function waterSubtitle(state, check, ctx) {
  * @param {(id:string) => void} onPick 탭을 누르면
  */
 export function renderGuide(state, id, onPick) {
-  const plant = state.plants[id];
+  // 아직 안 들인 식물도 도감에서 볼 수 있다: 다 자란 모습은 실루엣, 단계는 모두 잠김
+  const owned = Boolean(state.plants[id]);
+  const plant = state.plants[id] || { growth: 0, grown: false };
   const thresholds = PLANTS[id].thresholds;
-  const stage = stageFor(plant.growth, thresholds);
+  const stage = owned ? stageFor(plant.growth, thresholds) : -1;
   const guide = guideOf(id);
   $('ps-tabs').replaceChildren(...PLANT_IDS.filter((p) => state.plants[p]).map((p) => {
     const tab = document.createElement('button');
@@ -164,15 +171,16 @@ export function renderGuide(state, id, onPick) {
     return tab;
   }));
   $('ps-tabs').hidden = Object.keys(state.plants).length < 2;
-  $('ps-img').src = plantImage(id, Math.max(1, stage));
-  $('ps-now').textContent = `${t('guide.badge.now')} · ${stageName(id, stage)}`;
+  $('ps-img').src = plantImage(id, owned ? Math.max(1, stage) : LAST_STAGE);
+  $('ps-img').parentElement.classList.toggle('locked', !owned);
+  $('ps-now').textContent = owned ? `${t('guide.badge.now')} · ${stageName(id, stage)}` : t('guide.notOwned', { n: PLANTS[id].price });
   $('ps-name').textContent = plantName(id);
   $('ps-tag').textContent = guide.tag;
   $('ps-about').textContent = guide.about;
   $('ps-origin').textContent = guide.origin;
   $('ps-temp').textContent = `${guide.temp[0]}–${guide.temp[1]}°`;
   $('ps-when').textContent = t(`guide.when.${PLANTS[id].rule}`);
-  $('ps-record').textContent = t('guide.record', { n: plant.growth, need: thresholds[LAST_STAGE] });
+  $('ps-record').textContent = owned ? t('guide.record', { n: plant.growth, need: thresholds[LAST_STAGE] }) : '–';
   const cards = guide.stages.map((desc, i) => {
     const li = document.createElement('li');
     li.className = `g-stage${i === stage ? ' now' : ''}${i > stage ? ' locked' : ''}`;
@@ -214,32 +222,42 @@ export function renderTrip(trip, state, now = new Date()) {
 }
 
 /**
- * 온실: 식물 카드마다 상태와 버튼(키우는 중 · 키우기 · 들이기)
+ * 도감 식물 탭: 식물 카드마다 그림·이름·한 줄 소개(누르면 설명)와 버튼(키우는 중 · 키우기 · 들이기)
  * @param {(action:'select'|'buy', id:string) => void} onPick
+ * @param {(id:string) => void} onOpen 카드를 누르면 그 식물 설명
  */
-export function renderGreenhouse(state, onPick) {
+export function renderGreenhouse(state, onPick, onOpen) {
   const cards = PLANT_IDS.map((id) => {
     const info = PLANTS[id];
     const owned = state.plants[id];
     const li = document.createElement('li');
     li.className = `gh-card${state.active === id ? ' active' : ''}${owned ? '' : ' locked'}`;
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'gh-open';
+    open.addEventListener('click', () => onOpen(id));
     const img = document.createElement('img');
     img.src = plantImage(id, owned ? Math.max(1, stageFor(owned.growth, info.thresholds)) : LAST_STAGE);
     img.alt = '';
-    // 다 키운 식물은 라틴어 이름으로, 아래에 원래 이름과 뜻
+    // 다 키운 식물은 라틴어 이름으로
     const name = document.createElement('p');
     name.className = 'gh-name';
     name.textContent = owned?.grown ? adultOf(id).name : plantName(id);
     const hint = document.createElement('p');
     hint.className = 'gh-hint';
-    hint.textContent = plantHint(id);
+    hint.textContent = guideOf(id).tag;
+    open.append(img, name, hint);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'gh-btn';
     if (state.active === id) {
       btn.classList.add('current');
-      btn.textContent = t(owned.grown ? 'gh.grownDone' : 'gh.growing');
-      btn.disabled = true;
+      btn.textContent = owned.grown ? t('gh.grownDone') : `${stageName(id, stageFor(owned.growth, info.thresholds))} · ${t('gh.more')}`;
+      btn.addEventListener('click', () => onOpen(id));
+      const tag = document.createElement('span');
+      tag.className = 'gh-tagx';
+      tag.textContent = t('gh.growing');
+      li.append(tag);
     } else if (owned) {
       btn.textContent = t(owned.grown ? 'gh.grownView' : 'gh.grow');
       btn.addEventListener('click', () => onPick('select', id));
@@ -249,40 +267,43 @@ export function renderGreenhouse(state, onPick) {
       btn.disabled = state.coins < info.price;
       btn.addEventListener('click', () => onPick('buy', id));
     }
-    const parts = [img, name];
-    if (owned?.grown) {
-      const meaning = document.createElement('p');
-      meaning.className = 'gh-meaning';
-      meaning.textContent = t('gh.meaning', { plant: plantName(id), meaning: adultOf(id).meaning });
-      parts.push(meaning);
-    }
-    li.append(...parts, hint, btn);
+    li.append(open, btn);
     return li;
   });
   $('gh-grid').replaceChildren(...cards);
-  renderGuestbook(state);
+  $('tab-plants-n').textContent = `${Object.keys(state.plants).length}/${PLANT_IDS.length}`;
   $('gh-coin-num').textContent = String(state.coins);
   $('stat-km').textContent = state.totalKm.toFixed(1);
   $('stat-water').textContent = String(state.waterCount);
   $('stat-grown').textContent = String(Object.values(state.plants).filter((p) => p.grown).length);
 }
 
-/** 손님 도감: 만난 손님은 몇 번 만났는지, 아직이면 실루엣과 물음표. 처음 만나고 아직 안 본 손님엔 NEW */
-function renderGuestbook(state) {
+/**
+ * 도감 손님 탭: 만난 손님은 그림과 이름, 아직이면 실루엣과 ???. 누르면 손님 설명
+ * @param {(id:string) => void} onOpen
+ */
+export function renderGuestbook(state, onOpen) {
   const cells = GUEST_IDS.map((id) => {
     const times = state.guestbook[id] || 0;
     const li = document.createElement('li');
     li.className = times ? 'gb-cell' : 'gb-cell unmet';
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'gb-open';
+    open.addEventListener('click', () => onOpen(id));
     const img = document.createElement('img');
     img.src = guestImage(id);
     img.alt = '';
+    const text = document.createElement('div');
     const name = document.createElement('p');
     name.className = 'gb-name';
     name.textContent = times ? guestName(id) : '???';
     const count = document.createElement('p');
     count.className = 'gb-times';
-    count.textContent = times ? t('gb.met', { n: times }) : t('gb.reward', { n: GUESTS[id].coins });
-    li.append(img, name, count);
+    count.textContent = times ? t('gb.met', { n: times }) : guestInfo(id).when;
+    text.append(name, count);
+    open.append(img, text);
+    li.append(open);
     if (state.newGuests.includes(id)) {
       const badge = document.createElement('span');
       badge.className = 'gb-new';
@@ -292,8 +313,24 @@ function renderGuestbook(state) {
     return li;
   });
   $('guestbook').replaceChildren(...cells);
-  $('gb-count').textContent = `${Object.keys(state.guestbook).length} / ${GUEST_IDS.length}`;
+  $('gb-count').textContent = `${Object.keys(state.guestbook).length}/${GUEST_IDS.length}`;
 }
+
+/** 손님 설명 화면. 아직 못 만난 손님은 실루엣과 ???, 언제 오는지만 알려 준다 */
+export function renderGuest(state, id) {
+  const times = state.guestbook[id] || 0;
+  const info = guestInfo(id);
+  $('gs-img').src = guestImage(id);
+  $('gs-img').parentElement.classList.toggle('unmet', !times);
+  $('gs-name').textContent = times ? guestName(id) : '???';
+  $('gs-tag').textContent = times ? info.tag : t('gs.unmet');
+  $('gs-about').textContent = times ? info.about : t('gs.unmetAbout');
+  $('gs-met').textContent = times ? t('gs.times', { n: times }) : t('gs.notYet');
+  $('gs-when').textContent = info.when;
+  $('gs-coins').textContent = t('gs.coins', { n: GUESTS[id].coins });
+}
+
+/** 손님 도감: 만난 손님은 몇 번 만났는지, 아직이면 실루엣과 물음표. 처음 만나고 아직 안 본 손님엔 NEW */
 
 /** 인사 한 줄: 'Good evening, ' + 이름(강조). 이름이 없으면 인사만 */
 export function renderGreeting(el, { period, name }) {

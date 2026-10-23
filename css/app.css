@@ -105,19 +105,19 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .r-value { font-size: 22px; font-weight: 600; color: var(--tint); }
 .r-value.fail { color: var(--destructive); }
 .tools { display: flex; gap: 12px; align-items: center; }
-.icon-btn { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; font-size: 36px; background: var(--panel); transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast); }
+.icon-btn { width: 104px; height: 104px; border-radius: 50%; display: grid; place-items: center; font-size: 50px; color: var(--label-2); background: var(--panel); transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast); }
 .icon-btn:active { transform: scale(.92); background: var(--grouped-2); }
 .icon-btn { position: relative; }
 /* 처음 만난 손님이 있으면 온실 버튼 오른쪽 위에 빨간 점 */
 .new-dot { position: absolute; right: 4px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background: var(--destructive); border: 4px solid var(--bg); }
-.coin-pill { display: inline-flex; align-items: center; gap: 10px; height: 92px; padding: 0 30px; border-radius: 999px; background: var(--panel); font-size: 23px; font-weight: 600; color: var(--label-2); }
-.coin-pill b { color: var(--label); font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.coin-pill { display: inline-flex; align-items: center; gap: 10px; height: 104px; padding: 0 32px; border-radius: 999px; background: var(--panel); font-size: 26px; font-weight: 600; color: var(--label-2); }
+.coin-pill b { color: var(--label); font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .coin-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 5px rgba(236, 240, 60, .18); }
 .fert-dot { width: 16px; height: 16px; border-radius: 4px; background: var(--fert); transform: rotate(45deg); box-shadow: 0 0 0 5px color-mix(in srgb, var(--fert) 20%, transparent); }
 .fert-pill { margin-right: 12px; }
 .fert-pill:active { transform: scale(.96); }
 .segmented.hand { background: var(--panel); padding: 6px; border-radius: 999px; }
-.segmented.hand button { min-height: 80px; border-radius: 999px; padding: 0 30px; font-size: 23px; font-weight: 700; color: var(--label-2); }
+.segmented.hand button { min-height: 92px; border-radius: 999px; padding: 0 30px; font-size: 26px; font-weight: 700; color: var(--label-2); }
 .segmented.hand button[aria-pressed="true"] { background: #fff; color: #000; display: inline-flex; align-items: center; gap: 10px; }
 .segmented.hand button[aria-pressed="true"]::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--tint); }
 
@@ -360,11 +360,12 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 
 /* ---------- 식물 도감 ---------- */
 /* 전체 화면 도감: 무대 전체를 덮는다. 차에서 읽히게 본문 32px, 가장 작은 글자 22px */
-.sheet.plant-sheet {
+.sheet.page-sheet {
   inset: 0; margin: 0; width: auto; height: auto; max-height: none; border-radius: 0; padding: 44px 64px 52px; box-shadow: none;
-  display: none; flex-direction: column; background: radial-gradient(circle at 22% 42%, color-mix(in srgb, var(--tint) 16%, transparent), transparent 46%), var(--bg);
+  display: none; flex-direction: column; background: radial-gradient(circle at 80% 0%, color-mix(in srgb, var(--tint) 12%, transparent), transparent 50%), var(--bg);
 }
-.sheet.plant-sheet[open] { display: flex; animation: page-in 420ms var(--ease-ios); }
+.sheet.page-sheet[open] { display: flex; animation: page-in 420ms var(--ease-ios); }
+.sheet.plant-sheet { background: radial-gradient(circle at 22% 42%, color-mix(in srgb, var(--tint) 16%, transparent), transparent 46%), var(--bg); }
 @keyframes page-in { from { opacity: 0; transform: scale(.98); } }
 .g-top { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
 .g-back { height: 96px; padding: 0 40px 0 30px; border-radius: 999px; background: var(--grouped-2); font-size: 30px; font-weight: 800; display: inline-flex; align-items: center; gap: 14px; }
@@ -376,9 +377,10 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .g-main { display: grid; grid-template-columns: 640px 1fr; gap: 56px; margin-top: 26px; flex: 1; min-height: 0; }
 .g-hero { position: relative; display: grid; place-items: end center; min-height: 0; }
 .g-hero img { width: 100%; height: 100%; max-height: 640px; object-fit: contain; object-position: bottom; }
+.g-hero.locked img { filter: brightness(0) invert(.28); opacity: .6; }
 .g-now { position: absolute; top: 10px; left: 10px; padding: 12px 22px; border-radius: 999px; background: var(--tint); color: #00260e; font-size: 24px; font-weight: 800; }
 .g-info { min-width: 0; align-self: center; }
-.plant-sheet .g-name { font-size: 104px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+.page-sheet .g-name { font-size: 104px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
 .g-tag { font-size: 34px; font-weight: 700; color: var(--tint); margin-top: 16px; }
 .g-about { font-size: 32px; line-height: 1.55; color: var(--label-2); margin-top: 26px; word-break: keep-all; text-wrap: pretty; max-width: 1060px; }
 .g-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 34px; }
@@ -587,3 +589,51 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .x2row p { font-size: 24px; color: var(--label-2); word-break: keep-all; }
 .x2row p b { color: var(--label); }
 #screen-scale { white-space: nowrap; text-align: right; }
+
+/* ---------- 상단 식물 버튼: 지금 키우는 식물 사진과 이름, 누르면 도감 ---------- */
+.pick-pill { position: relative; height: 104px; display: inline-flex; align-items: center; gap: 18px; padding: 0 34px 0 12px; border-radius: 999px; background: color-mix(in srgb, var(--tint) 16%, var(--panel)); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--tint) 45%, transparent); transition: transform var(--duration-fast) var(--ease-ios); }
+.pick-pill:active { transform: scale(.96); }
+.pick-thumb { position: relative; width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 0, 0, .35); overflow: hidden; flex: none; }
+/* 식물 그림은 큰 판 아래쪽에 그려져 있어서, 크게 놓고 아래를 맞춰 식물이 동그라미 안에 오게 */
+.pick-thumb img { position: absolute; left: 50%; bottom: -4px; width: 170px; max-width: none; height: 172px; transform: translateX(-46%); }
+.pick-tx { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.pick-tx b { font-size: 34px; font-weight: 800; white-space: nowrap; }
+.pick-tx span { font-size: 24px; font-weight: 700; color: var(--tint); white-space: nowrap; }
+.pick-chev { width: 18px; height: 18px; border-right: 5px solid var(--label-2); border-bottom: 5px solid var(--label-2); transform: rotate(-45deg); margin-left: 4px; }
+.pick-pill .new-dot { right: 6px; top: 2px; }
+
+/* ---------- 전체 화면 도감 (식물·손님) ---------- */
+.hub-tabs { display: inline-flex; gap: 6px; padding: 8px; border-radius: 999px; background: var(--grouped-2); }
+.hub-tabs button { position: relative; height: 80px; padding: 0 40px; border-radius: 999px; font-size: 30px; font-weight: 800; color: var(--label-2); display: inline-flex; align-items: center; gap: 12px; }
+.hub-tabs button[aria-selected="true"] { background: var(--label); color: var(--bg); }
+.hub-tabs small { font-size: 24px; font-weight: 700; opacity: .6; font-variant-numeric: tabular-nums; }
+.hub-tabs .new-dot { right: 10px; top: 6px; }
+.hub-stats { display: flex; gap: 28px; font-size: 24px; color: var(--label-2); align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 760px; }
+.hub-stats > span { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.hub-stats b { color: var(--label); font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.hub-pane { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.page-sheet .hub-title { font-size: 72px; font-weight: 800; letter-spacing: -.02em; margin-top: 30px; }
+.hub-sub { font-size: 26px; color: var(--label-2); margin-top: 8px; word-break: keep-all; }
+.hub-sheet .gh-grid { grid-template-columns: repeat(4, 1fr); gap: 22px; margin: 30px 0 0; }
+.hub-sheet .gh-card { border-radius: 36px; padding: 20px 22px 24px; gap: 0; }
+.gh-open { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 8px; width: 100%; }
+.hub-sheet .gh-card img { height: 360px; width: 100%; object-fit: contain; object-position: bottom; }
+.hub-sheet .gh-card.locked img { filter: brightness(0) invert(.28); opacity: .6; }
+.hub-sheet .gh-name { font-size: 40px; margin-top: 10px; }
+.hub-sheet .gh-hint { font-size: 24px; min-height: 2.9em; }
+.hub-sheet .gh-btn { margin-top: 14px; min-height: 80px; font-size: 26px; font-weight: 800; }
+.gh-tagx { position: absolute; top: 18px; left: 18px; padding: 8px 16px; border-radius: 999px; background: var(--tint); color: #00260e; font-size: 22px; font-weight: 800; }
+.hub-sheet .gb-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; margin: 30px 0 0; }
+.hub-sheet .gb-cell { border-radius: 32px; padding: 0; }
+.gb-open { width: 100%; display: grid; grid-template-columns: 180px 1fr; align-items: center; gap: 20px; padding: 22px 26px; text-align: left; }
+.hub-sheet .gb-cell img { width: 180px; height: 180px; }
+.hub-sheet .gb-name { font-size: 36px; font-weight: 800; margin-top: 0; }
+.hub-sheet .gb-times { font-size: 24px; margin-top: 6px; }
+.hub-sheet .gb-new { top: 16px; right: 16px; padding: 6px 14px; }
+
+/* 손님 설명 */
+.gs-main { display: grid; grid-template-columns: 720px 1fr; gap: 64px; align-items: center; flex: 1; min-height: 0; margin-top: 26px; }
+.gs-art { height: 100%; max-height: 760px; border-radius: 48px; background: radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--tint) 18%, transparent), transparent 62%), var(--grouped-2); display: grid; place-items: center; }
+.gs-art img { width: 520px; height: 520px; object-fit: contain; }
+.gs-art.unmet img { filter: brightness(0) invert(.3); opacity: .55; }
+.gs-facts { grid-template-columns: repeat(3, 1fr); }

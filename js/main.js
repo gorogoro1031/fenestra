@@ -4,7 +4,7 @@ import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
 import { createSky, orbPosition, sunTimes } from './sky.js';
-import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, renderGuide, renderGreeting, toast } from './ui.js';
+import { renderStatus, renderGreenhouse, renderGuestbook, renderGuest, renderChip, renderTrip, renderWeatherNow, renderGuide, renderGreeting, toast } from './ui.js';
 import { renderDewSheet, renderCondSheet } from './detail-ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch, greetSwell } from './sound.js';
 import { watchDriving } from './drive.js';
@@ -352,9 +352,9 @@ $('ds-water').addEventListener('click', () => { closeSheets(); $('water-btn').cl
 $('cs-retry').addEventListener('click', () => { toast(t('toast.recheck', { error: t(weatherNow().error) })); weatherWatch?.refresh(); });
 
 // 식물 위젯을 누르면 도감
-// 도감에서 보고 있는 식물 (탭으로 가진 식물끼리 바꿔 본다)
+// 도감에서 보고 있는 식물 (가진 식물은 탭으로 바꿔 보고, 안 가진 식물은 도감에서 열어 본다)
 let guideId = state.active;
-const showGuide = () => renderGuide(state, state.plants[guideId] ? guideId : state.active, (id) => { guideId = id; showGuide(); });
+const showGuide = () => renderGuide(state, PLANTS[guideId] ? guideId : state.active, (id) => { guideId = id; showGuide(); });
 $('grow-card').addEventListener('click', () => {
   guideId = state.active;
   showGuide();
@@ -482,7 +482,8 @@ const scrim = document.createElement('div');
 scrim.className = 'scrim';
 stageEl.append(scrim);
 
-/* 온실: 가진 식물로 바꿔 키우거나, 꽃씨로 새 식물을 들인다 */
+/* 도감(전체 화면): 식물 탭에서 바꿔 키우거나 꽃씨로 들이고, 카드를 누르면 식물 설명. 손님 탭에서 손님 설명 */
+let guestId = null;
 function renderGreenhouseSheet() {
   renderGreenhouse(state, (action, id) => {
     const next = action === 'buy' ? buyPlant(state, id) : selectPlant(state, id);
@@ -492,14 +493,34 @@ function renderGreenhouseSheet() {
     renderGreenhouseSheet();
     toast(t(action === 'buy' ? 'toast.bought' : 'toast.selected', { plant: plantName(id) }));
     if (action === 'buy' && prefs.effects) chime();
+  }, (id) => {
+    guideId = id;
+    showGuide();
+    $('plant-sheet').show();
+  });
+  renderGuestbook(state, (id) => {
+    guestId = id;
+    renderGuest(state, id);
+    $('guest-sheet').show();
   });
 }
+function showHubTab(tab) {
+  $('tab-plants').setAttribute('aria-selected', String(tab === 'plants'));
+  $('tab-guests').setAttribute('aria-selected', String(tab === 'guests'));
+  $('hub-plants').hidden = tab !== 'plants';
+  $('hub-guests').hidden = tab !== 'guests';
+}
+$('tab-plants').addEventListener('click', () => showHubTab('plants'));
+$('tab-guests').addEventListener('click', () => showHubTab('guests'));
 
 function openSheet(sheet) {
   if (sheet.id === 'greenhouse-sheet') {
-    // 이번에 연 도감에서는 NEW를 보여 주고, 빨간 점은 바로 지운다
+    // 새 손님이 있으면 손님 탭으로 연다. 이번에 연 도감에서는 NEW를 보여 주고, 빨간 점은 바로 지운다
+    const hasNew = state.newGuests.length > 0;
+    $('tab-guests-dot').hidden = !hasNew;
+    showHubTab(hasNew ? 'guests' : 'plants');
     renderGreenhouseSheet();
-    if (state.newGuests.length) commit(markGuestsSeen(state));
+    if (hasNew) commit(markGuestsSeen(state));
   }
   syncSettings();
   sheet.show();
@@ -513,6 +534,11 @@ $('open-greenhouse').addEventListener('click', () => openSheet($('greenhouse-she
 $('open-settings').addEventListener('click', () => openSheet($('settings-sheet')));
 $('album-card').addEventListener('click', () => openSheet($('album-sheet')));
 document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeSheets));
+// 식물·손님 설명의 돌아가기: 그 화면만 닫는다 (도감에서 열었으면 도감으로)
+document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => {
+  b.closest('dialog').close();
+  if (!document.querySelector('dialog[open]')) scrim.classList.remove('show');
+}));
 scrim.addEventListener('click', closeSheets);
 
 function syncSettings() {
@@ -578,6 +604,7 @@ $('pref-lang').addEventListener('click', (e) => {
   syncSettings();
   if ($('greenhouse-sheet').open) renderGreenhouseSheet();
   if ($('plant-sheet').open) showGuide();
+  if ($('guest-sheet').open && guestId) renderGuest(state, guestId);
   if ($('charge-sheet').open) showCharge();
   // 지역 이름을 새 언어로 다시 받는다
   weatherWatch?.refresh();
