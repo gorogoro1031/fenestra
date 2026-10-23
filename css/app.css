@@ -495,7 +495,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
   position: absolute; left: 0; right: 0; bottom: 0; height: 55px; background: currentColor; transform-origin: 50% 100%;
   -webkit-mask: url(../assets/car-juniper.png) center / contain no-repeat; mask: url(../assets/car-juniper.png) center / contain no-repeat;
 }
-.cn-fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* 케이블은 차 뒤로 지나가게 (차가 위) */
+.cn-fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: 0; }
+.cn-car .cn-body { z-index: 1; }
 .cn-cable { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; opacity: 0; }
 .cn-bolt { fill: #ecf03c; opacity: 0; transform-origin: 95px 8px; }
 .cn.near .cn-car, .cn.on .cn-car { color: var(--fert); }
