@@ -1,14 +1,13 @@
 // 차 스피커로 나가는 소리. 전부 코드로 만들고 아주 작게 낸다
-// 앰비언트 = 낮게 깔리는 화음(패드) + 가끔 울리는 맑은 음 + 바람·빗소리 + 숲 소리(새·풀벌레), 모두 잔향을 거친다
+// 앰비언트 = 14초마다 넘어가는 화음 + 길이가 다른 멜로디 고리 넷(이노 'Music for Airports' 방식) + 바람·빗소리 + 숲 소리, 모두 잔향을 거친다
+// 원본 들어 보기·설계: brand/sound/fenestra-ambient-v1.html
 const MASTER_GAIN = 0.5;
 const FADE_S = 2.5;
-const PAD_VOICE_GAIN = 0.035;
 const BED_GAIN = { clear: 0.018, rain: 0.05 };
 const BELL_GAIN = 0.03;
-const BELL_EVERY_MS = [5000, 11000];
 // 숲 소리: 낮엔 새, 밤엔 풀벌레. 아주 작게, 드문드문
-const BIRD_EVERY_MS = [3500, 9000];
-const CRICKET_EVERY_MS = [700, 2000];
+const BIRD_EVERY_MS = [5000, 12000];
+const CRICKET_EVERY_MS = [900, 2400];
 const FOREST_GAIN = { bird: 0.016, cricket: 0.006 };
 const RUSTLE_GAIN = 0.05;
 const BUS_TONE_HZ = 2400;
@@ -77,28 +76,6 @@ function noiseBuffer(ac, seconds = 4) {
     data[i] = last * 3.5;
   }
   return buffer;
-}
-
-/** 화음 한 음: 살짝 어긋난 두 오실레이터를 아주 느린 떨림으로 숨 쉬게 한다 */
-function padVoice(ac, out, freq, i) {
-  const gain = ac.createGain();
-  gain.gain.value = PAD_VOICE_GAIN;
-  const lfo = ac.createOscillator();
-  lfo.frequency.value = 0.03 + i * 0.013;
-  const depth = ac.createGain();
-  depth.gain.value = PAD_VOICE_GAIN * 0.7;
-  lfo.connect(depth).connect(gain.gain);
-  const oscs = [-4, 4].map((cents, k) => {
-    const osc = ac.createOscillator();
-    osc.type = k === 0 ? 'sine' : 'triangle';
-    osc.frequency.value = freq;
-    osc.detune.value = cents;
-    osc.connect(gain);
-    return osc;
-  });
-  gain.connect(out);
-  [lfo, ...oscs].forEach((n) => n.start());
-  return [lfo, ...oscs];
 }
 
 function noiseBed(ac, out, weather) {
@@ -244,6 +221,124 @@ export function leafTouch(scene = 'night', height = 0.5) {
 }
 
 /** @param {{scene:'day'|'night', weather:'clear'|'rain'}|null} mood null이면 끈다 */
+/* ---------- 앰비언트 (v1, 2026-10-23 승인) ---------- */
+// 지금 앰비언트는 효과음보다 조금 크게 (전체 0.5 → 0.72와 같은 크기)
+const AMBIENT_LEVEL = 1.44;
+export const AMBIENT = Object.freeze({
+  chordMs: 14000,
+  fadeS: 5,
+  padLevel: 0.03,
+  bassLevel: 0.045,
+  epLevel: 0.055,
+  // 화음 진행 (MIDI). 낮: Fmaj9 → Dm9 → B♭maj9 → Csus4, 밤: Dm9 → B♭maj7 → Gm9 → Asus4
+  chords: Object.freeze({
+    day: [[41, 48, 57, 64, 67], [38, 45, 53, 60, 64], [46, 53, 57, 60, 62], [48, 55, 60, 62, 65]],
+    night: [[38, 45, 53, 60, 64], [46, 53, 57, 62, 65], [43, 50, 57, 58, 65], [45, 52, 57, 62, 64]],
+  }),
+  // 펜타토닉: 어느 화음 위에서도 부딪히지 않는 음
+  scale: Object.freeze({ day: [65, 67, 69, 72, 74, 77, 79, 81], night: [62, 65, 67, 69, 72, 74, 77, 79] }),
+  // 길이가 서로 다른 고리(초). 고리마다 음 두세 개가 정해진 자리에서 계속 울린다
+  loops: Object.freeze([19, 23, 29, 37]),
+});
+const midi = (n) => 440 * 2 ** ((n - 69) / 12);
+
+/**
+ * 멜로디 고리 넷: 고리마다 음 2~3개와 고리 안에서 울리는 때(초)
+ * @returns {{len:number, hits:{at:number, note:number}[]}[]}
+ */
+export function ambientLoops(scale, random = Math.random) {
+  return AMBIENT.loops.map((len, i) => {
+    const count = 2 + (i % 2);
+    return { len, hits: Array.from({ length: count }, (_, k) => ({ at: (k / count) * len * 0.55 + random() * 1.5, note: scale[Math.floor(random() * scale.length)] })) };
+  });
+}
+
+/** 부드러운 전자 피아노: 사인 위에 짧게 사라지는 FM 배음 */
+function epiano(ac, out, freq, at, level) {
+  const car = ac.createOscillator();
+  car.frequency.value = freq;
+  const mod = ac.createOscillator();
+  mod.frequency.value = freq * 2;
+  const index = ac.createGain();
+  index.gain.setValueAtTime(freq * 1.4, at);
+  index.gain.exponentialRampToValueAtTime(freq * 0.05, at + 1.2);
+  mod.connect(index).connect(car.frequency);
+  const gain = ac.createGain();
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(level, at + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + 4.5);
+  car.connect(gain).connect(panned(ac, out));
+  [car, mod].forEach((n) => { n.start(at); n.stop(at + 4.7); });
+}
+
+/** 왼쪽·오른쪽으로 번갈아 되울리는 지연 */
+function pingPong(ac, out) {
+  const input = ac.createGain();
+  const left = ac.createDelay(2);
+  const right = ac.createDelay(2);
+  left.delayTime.value = 0.42;
+  right.delayTime.value = 0.63;
+  const feedback = ac.createGain();
+  feedback.gain.value = 0.32;
+  const tone = ac.createBiquadFilter();
+  tone.type = 'lowpass';
+  tone.frequency.value = 2200;
+  const merger = ac.createChannelMerger(2);
+  input.connect(left);
+  left.connect(tone).connect(right);
+  right.connect(feedback).connect(left);
+  left.connect(merger, 0, 0);
+  right.connect(merger, 0, 1);
+  const wet = ac.createGain();
+  wet.gain.value = 0.5;
+  merger.connect(wet).connect(out);
+  input.connect(out);
+  return input;
+}
+
+/** 화음 하나: 천천히 들어왔다 나가는 패드와 뿌리음 베이스, 필터가 아주 느리게 열고 닫힌다 */
+function chordPad(ac, out, notes, at, holdS) {
+  const env = ac.createGain();
+  env.gain.setValueAtTime(0.0001, at);
+  env.gain.linearRampToValueAtTime(1, at + AMBIENT.fadeS);
+  env.gain.setValueAtTime(1, at + holdS);
+  env.gain.linearRampToValueAtTime(0.0001, at + holdS + AMBIENT.fadeS);
+  const filter = ac.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 1100;
+  filter.Q.value = 0.3;
+  const sweep = ac.createOscillator();
+  sweep.frequency.value = 0.05;
+  const sweepDepth = ac.createGain();
+  sweepDepth.gain.value = 450;
+  sweep.connect(sweepDepth).connect(filter.frequency);
+  env.connect(filter).connect(out);
+  const end = at + holdS + AMBIENT.fadeS + 0.2;
+  notes.slice(1).forEach((n, i) => {
+    [-5, 5].forEach((cents, k) => {
+      const osc = ac.createOscillator();
+      osc.type = k ? 'triangle' : 'sine';
+      osc.frequency.value = midi(n);
+      osc.detune.value = cents;
+      const voice = ac.createGain();
+      voice.gain.value = AMBIENT.padLevel * (i === 0 ? 1.2 : 1);
+      osc.connect(voice).connect(env);
+      osc.start(at);
+      osc.stop(end);
+    });
+  });
+  const bass = ac.createOscillator();
+  bass.frequency.value = midi(notes[0]);
+  const bassGain = ac.createGain();
+  bassGain.gain.value = AMBIENT.bassLevel;
+  bass.connect(bassGain).connect(env);
+  [sweep, bass].forEach((n) => { n.start(at); n.stop(end); });
+}
+
+/**
+ * 장면·날씨에 맞는 앰비언트를 튼다. null이면 끈다. 바뀔 때는 천천히 겹쳐 넘어간다
+ * @param {{scene:'day'|'night', weather:'clear'|'rain'}|null} mood
+ */
 export function setAmbient(mood) {
   const ac = audio();
   if (!ac) return;
@@ -251,28 +346,53 @@ export function setAmbient(mood) {
     const old = ambient;
     old.timers.forEach(clearTimeout);
     old.gain.gain.setTargetAtTime(0, ac.currentTime, FADE_S / 3);
-    setTimeout(() => old.nodes.forEach((n) => n.stop()), FADE_S * 1500);
+    setTimeout(() => { old.nodes.forEach((n) => n.stop()); old.gain.disconnect(); }, FADE_S * 1500);
     ambient = null;
   }
   if (!mood) return;
   const gain = ac.createGain();
   gain.gain.value = 0;
-  gain.gain.setTargetAtTime(1, ac.currentTime, FADE_S / 3);
+  gain.gain.setTargetAtTime(AMBIENT_LEVEL, ac.currentTime, FADE_S / 3);
   gain.connect(getBus(ac).input);
-  const nodes = [
-    ...CHORDS[mood.scene].flatMap((f, i) => padVoice(ac, gain, f, i)),
-    ...noiseBed(ac, gain, mood.weather),
-  ];
-  const current = { gain, nodes, timers: [] };
-  // 일정 간격으로 무언가를 계속 울린다. 타이머는 끌 때 한꺼번에 정리
+  const current = { gain, nodes: noiseBed(ac, gain, mood.weather), timers: [] };
+  const keys = pingPong(ac, gain);
+
+  // 화음: 14초마다 다음 화음으로, 5초 동안 겹쳐 넘어간다
+  const chords = AMBIENT.chords[mood.scene];
+  let next = 0;
+  const playChord = () => {
+    chordPad(ac, gain, chords[next % chords.length], ac.currentTime + 0.05, AMBIENT.chordMs / 1000 - AMBIENT.fadeS + 1);
+    next += 1;
+    current.timers[0] = setTimeout(playChord, AMBIENT.chordMs);
+  };
+  playChord();
+
+  // 멜로디 고리: 앞으로 4초치를 미리 예약해 두고 계속 이어 붙인다
+  const loops = ambientLoops(AMBIENT.scale[mood.scene]);
+  const start = ac.currentTime + 2;
+  let until = start;
+  const schedule = () => {
+    const horizon = ac.currentTime + 4;
+    loops.forEach((loop, i) => {
+      for (let cycle = Math.floor((until - start) / loop.len); start + cycle * loop.len < horizon; cycle += 1) {
+        loop.hits.forEach((hit) => {
+          const at = start + cycle * loop.len + hit.at;
+          if (at >= until && at < horizon) epiano(ac, keys, midi(hit.note), at, AMBIENT.epLevel * (i === 3 ? 0.8 : 1));
+        });
+      }
+    });
+    until = horizon;
+    current.timers[1] = setTimeout(schedule, 1500);
+  };
+  schedule();
+
+  // 숲 소리: 낮엔 새, 밤엔 풀벌레 (비 오는 날은 쉰다)
   const repeat = (slot, range, play) => {
     current.timers[slot] = setTimeout(() => { play(); repeat(slot, range, play); }, between(range));
   };
-  const notes = BELL_NOTES[mood.scene];
-  repeat(0, BELL_EVERY_MS, () => bell(ac, gain, notes[Math.floor(Math.random() * notes.length)]));
   if (mood.weather !== 'rain') {
-    if (mood.scene === 'day') repeat(1, BIRD_EVERY_MS, () => birdCall(ac, gain));
-    else repeat(1, CRICKET_EVERY_MS, () => cricket(ac, gain));
+    if (mood.scene === 'day') repeat(2, BIRD_EVERY_MS, () => birdCall(ac, gain));
+    else repeat(2, CRICKET_EVERY_MS, () => cricket(ac, gain));
   }
   ambient = current;
 }
