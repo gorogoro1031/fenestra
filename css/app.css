@@ -648,9 +648,17 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* 지도는 화면 높이 전체로 크게 깔고, 오른쪽 프레임 쪽은 검은 그라데이션으로 덮는다 */
 .page-sheet .g-top { position: relative; z-index: 2; }
 .map-body { display: grid; grid-template-columns: 800px 1fr; gap: 0; flex: 1; min-height: 0; margin-top: 18px; }
-.map-left { position: absolute; left: 24px; top: 0; bottom: 0; width: 1100px; z-index: 0; }
-.kmap { width: 100%; height: 100%; overflow: visible; stroke: none; }
-.map-fade { grid-column: 2; grid-row: 1; position: relative; z-index: 1; margin-left: -150px; width: 150px; background: linear-gradient(90deg, transparent, var(--bg) 85%); pointer-events: none; }
+/* 지도는 오른쪽 프레임 시작(64 + 800px)을 조금 넘는 곳에서 잘라, 위쪽 제목 줄에서도 끝이 보이지 않게 그라데이션 아래로 숨긴다 */
+.map-left { position: absolute; left: 24px; top: 0; bottom: 0; width: 1100px; z-index: 0; overflow: hidden; clip-path: inset(0 216px 0 0); }
+/* 끌기·두 손가락 확대는 지도 안에서만: 브라우저가 화면 전체를 키우거나 밀지 않게 */
+.kmap { width: 100%; height: 100%; overflow: hidden; stroke: none; touch-action: none; cursor: grab; --k: 1; }
+.kmap path { vector-effect: non-scaling-stroke; }
+.km-s, .km-sel, .km-me { transform-box: fill-box; transform-origin: center; transform: scale(var(--k)); }
+.map-zoom { position: absolute; left: 40px; top: 150px; display: flex; flex-direction: column; gap: 12px; }
+.map-zoom button { width: 76px; height: 76px; border-radius: 24px; background: var(--grouped-2); color: var(--label); font-size: 40px; font-weight: 600; box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
+.map-zoom button.all { font-size: 22px; font-weight: 800; }
+.map-zoom button:active { transform: scale(.94); }
+.map-fade { position: absolute; left: 714px; top: 0; bottom: 0; width: 180px; z-index: 1; background: linear-gradient(90deg, transparent, var(--bg) 80%); pointer-events: none; }
 .kmap path { fill: #151a17; stroke: #2c3832; stroke-width: 2; }
 .km-s { cursor: pointer; }
 .km-hit { fill: transparent; }

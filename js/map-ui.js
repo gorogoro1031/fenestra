@@ -11,6 +11,13 @@ const ALL = chargers().map((c) => {
   return { ...c, x, y };
 });
 const NEAR_COUNT = 3;
+// 지도 끌기·확대: 전국 화면(index.html의 viewBox)에서 4배까지. 손가락이 이만큼 안 움직였으면 누른 것으로 본다
+const BASE_VIEW = Object.freeze({ x: 30, y: 8, w: 770, h: 980 });
+const MAX_ZOOM = 4;
+const TAP_PX = 12;
+const BUTTON_ZOOM = 1.6;
+let view = { ...BASE_VIEW };
+let selectHandler = () => {};
 
 const svg = (tag, attrs) => {
   const el = document.createElementNS(NS, tag);
@@ -26,6 +33,102 @@ function drawLand() {
   if (landDrawn) return;
   landDrawn = true;
   $('kmap-land').replaceChildren(...PROVINCE_PATHS.map((d) => svg('path', { d })));
+  setupPanZoom($('kmap'));
+}
+
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+/** 확대 배율을 지키고, 지도가 화면 밖으로 다 나가지 않게 가운데를 전국 범위 안에 둔다 */
+function clampView({ x, y, w }) {
+  const nw = clamp(w, BASE_VIEW.w / MAX_ZOOM, BASE_VIEW.w);
+  const nh = nw * (BASE_VIEW.h / BASE_VIEW.w);
+  const cx = clamp(x + w / 2, BASE_VIEW.x, BASE_VIEW.x + BASE_VIEW.w);
+  const cy = clamp(y + (w * (BASE_VIEW.h / BASE_VIEW.w)) / 2, BASE_VIEW.y, BASE_VIEW.y + BASE_VIEW.h);
+  return { x: cx - nw / 2, y: cy - nh / 2, w: nw, h: nh };
+}
+
+function applyView(el) {
+  el.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`);
+  // 점·고리는 확대해도 화면에서 같은 크기
+  el.style.setProperty('--k', String(view.w / BASE_VIEW.w));
+}
+
+/** 화면 1px이 지도 좌표 몇인지, 그리고 화면 점 → 지도 좌표 */
+function toMap(el, clientX, clientY) {
+  const box = el.getBoundingClientRect();
+  const s = Math.max(view.w / box.width, view.h / box.height);
+  // preserveAspectRatio xMinYMid: 왼쪽 맞춤, 세로 가운데
+  const offY = (box.height - view.h / s) / 2;
+  return { s, x: view.x + (clientX - box.left) * s, y: view.y + (clientY - box.top - offY) * s };
+}
+
+/** (mx, my) 지도 좌표를 그 자리에 둔 채로 factor배 확대 */
+function zoomAt(el, mx, my, factor) {
+  const w = clamp(view.w / factor, BASE_VIEW.w / MAX_ZOOM, BASE_VIEW.w);
+  const k = w / view.w;
+  view = clampView({ x: mx - (mx - view.x) * k, y: my - (my - view.y) * k, w });
+  applyView(el);
+}
+
+/** 한 손가락 끌기, 두 손가락 벌리기, 휠, + − 전국 버튼. 오른쪽 프레임은 그대로 */
+function setupPanZoom(el) {
+  const pts = new Map();
+  let start = null;
+  let pinch = null;
+  el.addEventListener('pointerdown', (e) => {
+    el.setPointerCapture(e.pointerId);
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 1) start = { x: e.clientX, y: e.clientY, moved: false };
+    if (pts.size === 2) {
+      const [a, b] = [...pts.values()];
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) };
+      if (start) start.moved = true;
+    }
+  });
+  el.addEventListener('pointermove', (e) => {
+    const prev = pts.get(e.pointerId);
+    if (!prev) return;
+    const now = { x: e.clientX, y: e.clientY };
+    pts.set(e.pointerId, now);
+    if (pts.size === 2 && pinch) {
+      const [a, b] = [...pts.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      const mid = toMap(el, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      zoomAt(el, mid.x, mid.y, d / pinch.d);
+      pinch = { d };
+      return;
+    }
+    if (start && Math.hypot(now.x - start.x, now.y - start.y) > TAP_PX) start.moved = true;
+    if (!start?.moved) return;
+    const { s } = toMap(el, now.x, now.y);
+    view = clampView({ x: view.x - (now.x - prev.x) * s, y: view.y - (now.y - prev.y) * s, w: view.w });
+    applyView(el);
+  });
+  const end = (e) => {
+    if (!pts.delete(e.pointerId)) return;
+    if (pts.size < 2) pinch = null;
+    if (pts.size > 0) return;
+    // 끌지 않고 뗐으면 그 자리의 충전소를 고른다
+    if (start && !start.moved && e.type === 'pointerup') {
+      const hit = document.elementsFromPoint(e.clientX, e.clientY).find((n) => n.closest?.('.km-s'));
+      const id = hit?.closest('.km-s').dataset.id;
+      if (id) selectHandler(Number(id));
+    }
+    start = null;
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+  el.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const m = toMap(el, e.clientX, e.clientY);
+    zoomAt(el, m.x, m.y, Math.exp(-e.deltaY / 400));
+  }, { passive: false });
+
+  const zoomCenter = (factor) => zoomAt(el, view.x + view.w / 2, view.y + view.h / 2, factor);
+  $('map-zin').addEventListener('click', () => zoomCenter(BUTTON_ZOOM));
+  $('map-zout').addEventListener('click', () => zoomCenter(1 / BUTTON_ZOOM));
+  $('map-zall').addEventListener('click', () => { view = { ...BASE_VIEW }; applyView(el); });
+  applyView(el);
 }
 
 /** 처음 열 때 고를 충전소: 가까운 곳, 위치를 모르면 가장 최근 도장, 그것도 없으면 첫 곳 */
@@ -41,18 +144,18 @@ const nearest = (me, n) => [...ALL].sort((a, b) => distanceKm(me, a) - distanceK
  * @param {{selectedId:number, me:{lat:number, lon:number}|null, onSelect:(id:number)=>void}} ctx
  */
 export function renderMap(state, { selectedId, me, onSelect }) {
+  selectHandler = onSelect;
   drawLand();
   $('map-cnt').textContent = String(Object.keys(state.stamps).length);
   $('map-total').textContent = t('map.total', { n: ALL.length });
 
   // 점: 가 본 곳은 초록 도장, 먼 곳은 노란 마름모, 나머지는 회색 점. 누르기 쉽게 투명한 큰 원을 깐다
   $('kmap-dots').replaceChildren(...ALL.map((c) => {
-    const g = svg('g', { class: 'km-s' });
+    const g = svg('g', { class: 'km-s', 'data-id': c.id });
     g.append(svg('circle', { class: 'km-hit', cx: c.x, cy: c.y, r: 18 }));
     if (state.stamps[c.id]) g.append(svg('circle', { class: 'km-v', cx: c.x, cy: c.y, r: 15 }), svg('circle', { class: 'km-vin', cx: c.x, cy: c.y, r: 6 }));
     else if (c.far) g.append(svg('rect', { class: 'km-far', x: c.x - 8, y: c.y - 8, width: 16, height: 16, transform: `rotate(45 ${c.x} ${c.y})` }));
     else g.append(svg('circle', { class: 'km-d', cx: c.x, cy: c.y, r: 6 }));
-    g.addEventListener('click', () => onSelect(c.id));
     return g;
   }));
   const meDot = $('kmap-me');
