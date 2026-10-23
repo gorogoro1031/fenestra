@@ -13,9 +13,11 @@ const STAMP_TILT = [-8, 6, -4, 9, -6, 3];
 // 빈 칸까지 채워 적어도 두 줄은 보이게
 const MIN_CELLS = 8;
 
-/** 이 슈퍼차저를 지금 언어로: 이름과 자리 설명 */
+/** 이 슈퍼차저를 지금 언어로: 부르는 이름(자리 이름, 없으면 도시), 도시, 자리 이름 */
 export function chargerPlace(c) {
-  return { city: pick(c.ko, c.en), label: c.label };
+  const city = pick(c.ko, c.en);
+  const label = pick(c.labelKo, c.labelEn);
+  return { name: label || city, city, label };
 }
 
 /**
@@ -34,16 +36,17 @@ function renderNow(session, now, gpsOn) {
   $('cn-k').textContent = t(`charge.${mode}`);
   $('cn-min').hidden = mode === 'idle';
   $('cn-bar-wrap').hidden = mode === 'idle';
-  $('cn-place').hidden = mode === 'idle' || !charger.label;
+  $('cn-place').hidden = mode === 'idle';
   if (mode === 'idle') {
     $('cn-name').textContent = t('charge.idleTitle');
     $('cn-sub').textContent = t(gpsOn ? 'charge.idleSub' : 'charge.needGps');
     return;
   }
-  const { city, label } = chargerPlace(charger);
+  const { name, city, label } = chargerPlace(charger);
   const elapsed = Math.max(0, now - session.since);
-  $('cn-name').textContent = t('charge.name', { city });
-  $('cn-place').textContent = label;
+  $('cn-name').textContent = t('charge.name', { name });
+  // 자리 이름이 있으면 아래에 도시, 없으면 제목이 이미 도시
+  $('cn-place').textContent = label ? city : t('charge.country');
   const unit = document.createElement('small');
   unit.textContent = t('charge.minUnit');
   $('cn-min').replaceChildren(String(Math.floor(elapsed / MIN)), unit);
@@ -72,9 +75,10 @@ function renderStamps(state, today) {
     li.style.setProperty('--c', STAMP_COLORS[c.id % STAMP_COLORS.length]);
     li.style.setProperty('--r', `${STAMP_TILT[c.id % STAMP_TILT.length]}deg`);
     const b = document.createElement('b');
-    b.textContent = chargerPlace(c).city;
+    const { city, label } = chargerPlace(c);
+    b.textContent = city;
     const span = document.createElement('span');
-    span.textContent = `${date.slice(5).replace('-', '.')}${c.label ? ` · ${c.label}` : ''}`;
+    span.textContent = `${date.slice(5).replace('-', '.')}${label ? ` · ${label}` : ''}`;
     li.append(b, span);
     return li;
   });

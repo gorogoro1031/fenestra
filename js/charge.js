@@ -11,10 +11,10 @@ export const CHARGE_RULES = Object.freeze({
   FIRST_STAMP_COINS: 20,
 });
 
-/** @typedef {{id:number, ko:string, en:string, label:string, lat:number, lon:number}} Charger */
+/** @typedef {{id:number, ko:string, en:string, labelKo:string, labelEn:string, lat:number, lon:number}} Charger 도시와 자리 이름(없으면 빈 글자) */
 
 /** @returns {Charger[]} */
-export const chargers = (list = SUPERCHARGERS) => list.map(([id, ko, en, label, lat, lon]) => ({ id, ko, en, label, lat, lon }));
+export const chargers = (list = SUPERCHARGERS) => list.map(([id, ko, en, labelKo, labelEn, lat, lon]) => ({ id, ko, en, labelKo, labelEn, lat, lon }));
 const ALL = chargers();
 export const chargerById = (id, all = ALL) => all.find((c) => c.id === id) || null;
 

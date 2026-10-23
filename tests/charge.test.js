@@ -14,6 +14,7 @@ test('국내 슈퍼차저 목록은 한국 안의 좌표와 한국어·영어 �
   ALL.forEach((c) => {
     assert.ok(c.lat > 33 && c.lat < 39 && c.lon > 124 && c.lon < 132, `${c.id}`);
     assert.ok(c.ko && c.en, `${c.id}`);
+    assert.equal(Boolean(c.labelKo), Boolean(c.labelEn), `${c.id}`);
   });
   assert.equal(new Set(ALL.map((c) => c.id)).size, ALL.length);
 });

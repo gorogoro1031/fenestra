@@ -361,7 +361,7 @@ function tickCharge() {
   chargeSession = r.session;
   if (r.fert || r.newStamp) {
     commit(r.state);
-    const place = chargerPlace(chargerById(chargeSession.id)).city;
+    const place = chargerPlace(chargerById(chargeSession.id)).name;
     const parts = [r.newStamp && t('toast.stamp', { place, n: CHARGE_RULES.FIRST_STAMP_COINS }), r.fert && t('toast.fert', { n: r.fert })].filter(Boolean);
     toast(parts.join(' · '));
     if (prefs.effects) chime();
