@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610231729">
-<link rel="stylesheet" href="css/app.css?v=2610231729">
+<link rel="stylesheet" href="css/tokens.css?v=2610231745">
+<link rel="stylesheet" href="css/app.css?v=2610231745">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -334,14 +334,11 @@
       </div>
       <div class="map-body">
         <div class="map-left">
-          <svg class="kmap" id="kmap" viewBox="30 8 770 980" preserveAspectRatio="xMinYMid meet" role="img" aria-label="대한민국 슈퍼차저 지도" data-i18n-label="scMap">
-            <g id="kmap-land"></g><g id="kmap-gu"></g><g id="kmap-roads"></g><g id="kmap-names"></g><g id="kmap-dots"></g>
-            <circle class="km-me km-mehalo" r="34"/><circle class="km-me km-medot" id="kmap-me" r="12"/>
-            <circle class="km-sel" id="kmap-sel" r="26"/>
-          </svg>
+          <div class="map-gl" id="map-gl" role="img" aria-label="슈퍼차저 지도" data-i18n-label="scMap"></div>
+          <p class="map-fail" id="map-fail" data-i18n="mapLoadFail" hidden>지도를 불러오지 못했어요 · 인터넷 연결을 확인해 주세요</p>
           <div class="map-zoom"><button type="button" id="map-zin" aria-label="확대" data-i18n-label="zoomIn">+</button><button type="button" id="map-zout" aria-label="축소" data-i18n-label="zoomOut">−</button><button type="button" id="map-zall" class="all" data-i18n="zoomAll">전국</button></div>
           <p class="map-leg"><span><i class="lg-v"></i><span data-i18n="legVisited">가 본 곳</span></span><span><i class="lg-d"></i><span data-i18n="legNot">아직</span></span><span><i class="lg-far"></i><span data-i18n="legFar">먼 곳 ×3</span></span><span><i class="lg-me"></i><span data-i18n="legMe">지금 위치</span></span></p>
-          <p class="map-credit">시·군·구 경계 geoBoundaries (CC BY 3.0) · 도로 Natural Earth</p>
+          <p class="map-credit">© OpenStreetMap contributors · OpenMapTiles · OpenFreeMap</p>
         </div>
         <div class="map-fade" aria-hidden="true"></div>
         <div class="map-side">
@@ -519,8 +516,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231729","./js/albums-en.js":"./js/albums-en.js?v=2610231729","./js/albums.js":"./js/albums.js?v=2610231729","./js/charge-ui.js":"./js/charge-ui.js?v=2610231729","./js/charge.js":"./js/charge.js?v=2610231729","./js/detail-ui.js":"./js/detail-ui.js?v=2610231729","./js/drive.js":"./js/drive.js?v=2610231729","./js/guest-visit.js":"./js/guest-visit.js?v=2610231729","./js/guests.js":"./js/guests.js?v=2610231729","./js/i18n.js":"./js/i18n.js?v=2610231729","./js/korea-detail.js":"./js/korea-detail.js?v=2610231729","./js/korea-map.js":"./js/korea-map.js?v=2610231729","./js/main.js":"./js/main.js?v=2610231729","./js/map-ui.js":"./js/map-ui.js?v=2610231729","./js/motions.js":"./js/motions.js?v=2610231729","./js/plant.js":"./js/plant.js?v=2610231729","./js/plants.js":"./js/plants.js?v=2610231729","./js/qr.js":"./js/qr.js?v=2610231729","./js/scene.js":"./js/scene.js?v=2610231729","./js/sky.js":"./js/sky.js?v=2610231729","./js/sound.js":"./js/sound.js?v=2610231729","./js/state.js":"./js/state.js?v=2610231729","./js/storage.js":"./js/storage.js?v=2610231729","./js/superchargers.js":"./js/superchargers.js?v=2610231729","./js/text.js":"./js/text.js?v=2610231729","./js/trip.js":"./js/trip.js?v=2610231729","./js/tutorial.js":"./js/tutorial.js?v=2610231729","./js/ui.js":"./js/ui.js?v=2610231729","./js/weather.js":"./js/weather.js?v=2610231729"}}</script>
-<script type="module" src="js/main.js?v=2610231729"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231745","./js/albums-en.js":"./js/albums-en.js?v=2610231745","./js/albums.js":"./js/albums.js?v=2610231745","./js/charge-ui.js":"./js/charge-ui.js?v=2610231745","./js/charge.js":"./js/charge.js?v=2610231745","./js/detail-ui.js":"./js/detail-ui.js?v=2610231745","./js/drive.js":"./js/drive.js?v=2610231745","./js/guest-visit.js":"./js/guest-visit.js?v=2610231745","./js/guests.js":"./js/guests.js?v=2610231745","./js/i18n.js":"./js/i18n.js?v=2610231745","./js/korea-map.js":"./js/korea-map.js?v=2610231745","./js/main.js":"./js/main.js?v=2610231745","./js/map-gl.js":"./js/map-gl.js?v=2610231745","./js/map-ui.js":"./js/map-ui.js?v=2610231745","./js/motions.js":"./js/motions.js?v=2610231745","./js/plant.js":"./js/plant.js?v=2610231745","./js/plants.js":"./js/plants.js?v=2610231745","./js/qr.js":"./js/qr.js?v=2610231745","./js/scene.js":"./js/scene.js?v=2610231745","./js/sky.js":"./js/sky.js?v=2610231745","./js/sound.js":"./js/sound.js?v=2610231745","./js/state.js":"./js/state.js?v=2610231745","./js/storage.js":"./js/storage.js?v=2610231745","./js/superchargers.js":"./js/superchargers.js?v=2610231745","./js/text.js":"./js/text.js?v=2610231745","./js/trip.js":"./js/trip.js?v=2610231745","./js/tutorial.js":"./js/tutorial.js?v=2610231745","./js/ui.js":"./js/ui.js?v=2610231745","./js/weather.js":"./js/weather.js?v=2610231745"}}</script>
+<script type="module" src="js/main.js?v=2610231745"></script>
 <!-- version:end -->
 </body>
 </html>

@@ -492,6 +492,7 @@ const STATIC_EN = {
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
   zoomAll: 'All',
+  mapLoadFail: 'Couldn’t load the map · Check your connection',
   resident: 'Local resident',
   regionStamps: 'Regional stamps',
   nearbySc: 'Nearby Superchargers',

@@ -649,38 +649,20 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .page-sheet .g-top { position: relative; z-index: 2; }
 .map-body { display: grid; grid-template-columns: 800px 1fr; gap: 0; flex: 1; min-height: 0; margin-top: 18px; }
 /* 지도는 오른쪽 프레임 시작(64 + 800px)을 조금 넘는 곳에서 잘라, 위쪽 제목 줄에서도 끝이 보이지 않게 그라데이션 아래로 숨긴다 */
-.map-left { position: absolute; left: 24px; top: 0; bottom: 0; width: 1100px; z-index: 0; overflow: hidden; clip-path: inset(0 216px 0 0); }
-/* 끌기·두 손가락 확대는 지도 안에서만: 브라우저가 화면 전체를 키우거나 밀지 않게 */
-.kmap { width: 100%; height: 100%; overflow: hidden; stroke: none; touch-action: none; cursor: grab; --k: 1; }
-.kmap path { vector-effect: non-scaling-stroke; }
-/* 확대 배율 --z: 고속도로는 늘, 주요 도로는 2배부터, 시·군·구 경계는 2배부터, 시·군 이름은 3배·구 이름은 8배부터 */
-#kmap-roads path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-#kmap-roads .km-exp { stroke: #4d5c54; stroke-width: 2.5; opacity: calc(.55 + .45 * clamp(0, (var(--z) - 1) / 2, 1)); }
-#kmap-roads .km-road { stroke: #3a4640; stroke-width: 1.5; opacity: clamp(0, (var(--z) - 2) / 2, 1); }
-#kmap-gu path { fill: none; stroke: #3f4c45; stroke-width: 1.2; stroke-dasharray: 6 5; opacity: clamp(0, (var(--z) - 2) / 1.5, 1); }
-.km-nm { fill: rgba(235, 235, 245, .5); font-size: calc(19px * var(--k)); font-weight: 600; text-anchor: middle; dominant-baseline: middle; pointer-events: none; opacity: clamp(0, (var(--z) - 3) / 1.5, 1); }
-.km-nm.gu { opacity: clamp(0, (var(--z) - 8) / 2, 1); }
-.map-credit { position: absolute; left: 460px; bottom: 14px; font-size: 16px; color: var(--label-3, rgba(235, 235, 245, .3)); }
-.km-s, .km-sel, .km-me { transform-box: fill-box; transform-origin: center; transform: scale(var(--k)); }
+.map-left { position: absolute; left: 0; top: 0; bottom: 0; width: 884px; z-index: 0; overflow: hidden; background: #111513; }
+/* 실제 길 지도(MapLibre)는 무대 배율을 되돌려 실제 화면 픽셀로 그린다. 그래야 손가락 위치가 맞는다 */
+.map-gl { position: absolute; left: 0; top: 0; width: calc(100% * var(--fit, 1)); height: calc(100% * var(--fit, 1)); transform: scale(calc(1 / var(--fit, 1))); transform-origin: 0 0; touch-action: none; }
+.map-fail { position: absolute; left: 60px; right: 120px; top: 50%; font-size: 26px; color: var(--label-2); text-align: center; word-break: keep-all; }
+.map-credit { position: absolute; left: 40px; bottom: 14px; font-size: 16px; color: rgba(235, 235, 245, .35); }
 .map-zoom { position: absolute; left: 40px; top: 150px; display: flex; flex-direction: column; gap: 12px; }
 .map-zoom button { width: 76px; height: 76px; border-radius: 24px; background: var(--grouped-2); color: var(--label); font-size: 40px; font-weight: 600; box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
 .map-zoom button.all { font-size: 22px; font-weight: 800; }
 .map-zoom button:active { transform: scale(.94); }
 .map-fade { position: absolute; left: 714px; top: 0; bottom: 0; width: 180px; z-index: 1; background: linear-gradient(90deg, transparent, var(--bg) 80%); pointer-events: none; }
-.kmap path { fill: #151a17; stroke: #2c3832; stroke-width: 2; }
-.km-s { cursor: pointer; }
-.km-hit { fill: transparent; }
-.km-d { fill: rgba(255, 255, 255, .28); }
-.km-far { fill: none; stroke: #ecf03c; stroke-width: 3; }
-.km-v { fill: color-mix(in srgb, var(--fert) 22%, transparent); stroke: var(--fert); stroke-width: 4; }
-.km-vin { fill: var(--fert); }
-.km-sel { fill: none; stroke: #fff; stroke-width: 4; pointer-events: none; }
-.km-medot { fill: var(--water); stroke: #fff; stroke-width: 4; pointer-events: none; }
-.km-mehalo { fill: color-mix(in srgb, var(--water) 25%, transparent); pointer-events: none; }
-.map-leg { position: absolute; left: 460px; bottom: 50px; display: grid; grid-template-columns: auto auto; gap: 12px 28px; font-size: 22px; color: var(--label-2); }
+.map-leg { position: absolute; left: 40px; bottom: 46px; display: flex; gap: 24px; padding: 12px 22px; border-radius: 999px; background: rgba(8, 9, 10, .72); font-size: 22px; color: var(--label-2); }
 .map-leg > span { display: inline-flex; align-items: center; gap: 8px; }
 .map-leg i { width: 18px; height: 18px; border-radius: 50%; }
-.lg-v { background: var(--fert); } .lg-d { background: rgba(255, 255, 255, .28); } .lg-me { background: var(--water); }
+.lg-v { background: var(--fert); } .lg-d { background: rgba(255, 255, 255, .62); } .lg-me { background: var(--water); }
 .lg-far { border: 3px solid #ecf03c; border-radius: 3px !important; transform: rotate(45deg); width: 14px !important; height: 14px !important; }
 .map-side { grid-column: 2; grid-row: 1; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; overflow-y: auto; background: var(--bg); }
 .mc { position: relative; flex: none; border-radius: 34px; background: color-mix(in srgb, var(--fert) 8%, var(--grouped-2)); padding: 36px 32px; color: var(--fert); }
