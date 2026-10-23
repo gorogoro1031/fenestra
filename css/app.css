@@ -645,9 +645,12 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .page-sheet .map-title { font-size: 44px; font-weight: 800; }
 .map-cnt { font-size: 26px; color: var(--label-2); display: flex; align-items: baseline; gap: 8px; }
 .map-cnt b { font: 400 52px var(--font-logo); color: var(--fert); }
-.map-body { display: grid; grid-template-columns: 900px 1fr; gap: 48px; flex: 1; min-height: 0; margin-top: 18px; }
-.map-left { min-height: 0; display: flex; flex-direction: column; }
-.kmap { width: 100%; flex: 1; min-height: 0; overflow: visible; stroke: none; }
+/* 지도는 화면 높이 전체로 크게 깔고, 오른쪽 프레임 쪽은 검은 그라데이션으로 덮는다 */
+.page-sheet .g-top { position: relative; z-index: 2; }
+.map-body { display: grid; grid-template-columns: 800px 1fr; gap: 0; flex: 1; min-height: 0; margin-top: 18px; }
+.map-left { position: absolute; left: 24px; top: 0; bottom: 0; width: 1100px; z-index: 0; }
+.kmap { width: 100%; height: 100%; overflow: visible; stroke: none; }
+.map-fade { grid-column: 2; grid-row: 1; position: relative; z-index: 1; margin-left: -150px; width: 150px; background: linear-gradient(90deg, transparent, var(--bg) 85%); pointer-events: none; }
 .kmap path { fill: #151a17; stroke: #2c3832; stroke-width: 2; }
 .km-s { cursor: pointer; }
 .km-hit { fill: transparent; }
@@ -658,20 +661,20 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .km-sel { fill: none; stroke: #fff; stroke-width: 4; pointer-events: none; }
 .km-medot { fill: var(--water); stroke: #fff; stroke-width: 4; pointer-events: none; }
 .km-mehalo { fill: color-mix(in srgb, var(--water) 25%, transparent); pointer-events: none; }
-.map-leg { display: flex; gap: 26px; font-size: 22px; color: var(--label-2); }
+.map-leg { position: absolute; left: 460px; bottom: 40px; display: grid; grid-template-columns: auto auto; gap: 12px 28px; font-size: 22px; color: var(--label-2); }
 .map-leg > span { display: inline-flex; align-items: center; gap: 8px; }
 .map-leg i { width: 18px; height: 18px; border-radius: 50%; }
 .lg-v { background: var(--fert); } .lg-d { background: rgba(255, 255, 255, .28); } .lg-me { background: var(--water); }
 .lg-far { border: 3px solid #ecf03c; border-radius: 3px !important; transform: rotate(45deg); width: 14px !important; height: 14px !important; }
-.map-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; overflow-y: auto; }
-.mc { position: relative; border-radius: 34px; background: color-mix(in srgb, var(--fert) 8%, var(--grouped-2)); padding: 28px 32px; color: var(--fert); }
+.map-side { grid-column: 2; grid-row: 1; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; overflow-y: auto; background: var(--bg); }
+.mc { position: relative; flex: none; border-radius: 34px; background: color-mix(in srgb, var(--fert) 8%, var(--grouped-2)); padding: 36px 32px; color: var(--fert); }
 .mc.far { background: color-mix(in srgb, #ecf03c 8%, var(--grouped-2)); color: #ecf03c; }
 .mc-k { font-size: 22px; font-weight: 700; padding-right: 190px; }
 .page-sheet .mc-name { font-size: 46px; font-weight: 800; color: var(--label); margin-top: 8px; padding-right: 190px; word-break: keep-all; text-wrap: balance; }
 .mc-city { font-size: 24px; color: var(--label-2); margin-top: 4px; }
 .mc-head { font-size: 22px; font-weight: 700; color: var(--label-2); margin-top: 22px; }
 .mc-rw { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
-.mc-rw > div { border-radius: 22px; background: rgba(0, 0, 0, .3); padding: 16px 20px; min-width: 0; }
+.mc-rw > div { border-radius: 22px; background: rgba(0, 0, 0, .3); padding: 26px 20px; min-width: 0; }
 .mc-rw p { font-size: 22px; font-weight: 700; color: var(--label-2); display: flex; align-items: center; gap: 8px; word-break: keep-all; }
 .mc-rw b { display: block; font-size: 28px; font-weight: 800; color: var(--label); margin-top: 6px; white-space: nowrap; }
 .mc-rw b.y { color: #ecf03c; }
@@ -684,7 +687,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .mc-car.hop .mc-bolt { animation: cn-zap 620ms var(--ease-out); }
 .map-sec { font-size: 26px; font-weight: 700; color: var(--label-2); }
 .map-regions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.mr { border-radius: 22px; background: var(--grouped-2); padding: 16px 20px; }
+.mr { border-radius: 22px; background: var(--grouped-2); padding: 26px 20px; }
 .mr.on { box-shadow: inset 0 0 0 3px var(--label); }
 .mr-top { display: flex; justify-content: space-between; align-items: baseline; }
 .mr-top b { font-size: 28px; font-weight: 800; }
@@ -694,8 +697,8 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .mr p { font-size: 22px; color: var(--label-2); margin-top: 8px; word-break: keep-all; }
 .mr p .ok { color: var(--fert); font-weight: 700; }
 .map-near { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.map-near button { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; border-radius: 22px; background: var(--grouped-2); padding: 16px 22px; text-align: left; }
+.map-near button { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; border-radius: 22px; background: var(--grouped-2); padding: 24px 22px; text-align: left; }
 .map-near b { font-size: 26px; font-weight: 800; word-break: keep-all; }
 .map-near span { font-size: 22px; color: var(--label-2); }
 .map-near em { font-style: normal; font-size: 22px; font-weight: 800; color: var(--fert); }
-.map-near .empty { grid-column: 1 / -1; font-size: 24px; color: var(--label-2); padding: 18px 22px; border-radius: 22px; background: var(--grouped-2); }
+.map-near .empty { grid-column: 1 / -1; font-size: 24px; color: var(--label-2); padding: 26px 22px; border-radius: 22px; background: var(--grouped-2); }
