@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610231607">
-<link rel="stylesheet" href="css/app.css?v=2610231607">
+<link rel="stylesheet" href="css/tokens.css?v=2610231627">
+<link rel="stylesheet" href="css/app.css?v=2610231627">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -155,7 +155,7 @@
         <button class="g-back" type="button" data-close data-i18n="goBack">돌아가기</button>
         <div class="hub-tabs" role="tablist">
           <button type="button" role="tab" id="tab-plants" aria-selected="true"><span data-i18n="plantsTab">식물</span><small id="tab-plants-n"></small></button>
-          <button type="button" role="tab" id="tab-guests" aria-selected="false"><span data-i18n="visitorsTab">손님</span><small id="gb-count"></small><span class="new-dot" id="tab-guests-dot" hidden></span></button>
+          <button type="button" role="tab" id="tab-guests" aria-selected="false"><span data-i18n="visitorsTab">프렌즈</span><small id="gb-count"></small><span class="new-dot" id="tab-guests-dot" hidden></span></button>
         </div>
         <div class="hub-stats">
           <span><i class="coin-dot" aria-hidden="true"></i><span data-i18n="pips">꽃씨</span> <b id="gh-coin-num">0</b></span>
@@ -170,8 +170,8 @@
         <ul class="gh-grid" id="gh-grid"></ul>
       </section>
       <section class="hub-pane" id="hub-guests" hidden>
-        <h2 class="hub-title" data-i18n="visitorsTab">손님</h2>
-        <p class="hub-sub" data-i18n="visitorsHubSub">잎을 흔들면 가끔 손님이 놀러 와요 · 누르면 자세히</p>
+        <h2 class="hub-title" data-i18n="visitorsTab">프렌즈</h2>
+        <p class="hub-sub" data-i18n="visitorsHubSub">잎을 흔들면 가끔 프렌즈가 놀러 와요 · 누르면 자세히</p>
         <ul class="gb-grid" id="guestbook"></ul>
       </section>
     </dialog>
@@ -412,7 +412,7 @@
           <button class="switch" type="button" role="switch" aria-checked="false" id="pref-ambient" aria-label="배경 소리" data-i18n-label="ambient"></button>
         </div>
         <div class="row">
-          <div><p class="r-title" data-i18n="effects">효과음</p><p class="r-sub" data-i18n="effectsSub">인사, 잎을 건드릴 때, 물 주기, 손님</p></div>
+          <div><p class="r-title" data-i18n="effects">효과음</p><p class="r-sub" data-i18n="effectsSub">인사, 잎을 건드릴 때, 물 주기, 프렌즈</p></div>
           <button class="switch" type="button" role="switch" aria-checked="false" id="pref-effects" aria-label="효과음" data-i18n-label="effects"></button>
         </div>
         <div class="row">
@@ -467,7 +467,7 @@
         <a class="row link" href="music-test.html" data-i18n="musicTest">Apple Music 링크 확인 (차에서)</a>
         <button class="row link" type="button" id="demo-km" data-i18n="demoKm">30km 달린 것으로 하기</button>
         <button class="row link" type="button" id="demo-coins" data-i18n="demoCoins">꽃씨 +100</button>
-        <button class="row link" type="button" id="demo-guest" data-i18n="demoGuest">손님 부르기</button>
+        <button class="row link" type="button" id="demo-guest" data-i18n="demoGuest">프렌즈 부르기</button>
         <button class="row link" type="button" id="demo-drive" data-i18n="demoDrive">운전 중 화면 보기</button>
         <button class="row link" type="button" id="demo-trip" data-i18n="demoTrip">주행 요약 보기</button>
         <button class="row link" type="button" id="demo-charge" data-i18n="demoCharge" data-lab hidden>슈퍼차저에 도착한 것으로 하기</button>
@@ -510,8 +510,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231607","./js/albums-en.js":"./js/albums-en.js?v=2610231607","./js/albums.js":"./js/albums.js?v=2610231607","./js/charge-ui.js":"./js/charge-ui.js?v=2610231607","./js/charge.js":"./js/charge.js?v=2610231607","./js/detail-ui.js":"./js/detail-ui.js?v=2610231607","./js/drive.js":"./js/drive.js?v=2610231607","./js/guest-visit.js":"./js/guest-visit.js?v=2610231607","./js/guests.js":"./js/guests.js?v=2610231607","./js/i18n.js":"./js/i18n.js?v=2610231607","./js/korea-map.js":"./js/korea-map.js?v=2610231607","./js/main.js":"./js/main.js?v=2610231607","./js/map-ui.js":"./js/map-ui.js?v=2610231607","./js/motions.js":"./js/motions.js?v=2610231607","./js/plant.js":"./js/plant.js?v=2610231607","./js/plants.js":"./js/plants.js?v=2610231607","./js/qr.js":"./js/qr.js?v=2610231607","./js/scene.js":"./js/scene.js?v=2610231607","./js/sky.js":"./js/sky.js?v=2610231607","./js/sound.js":"./js/sound.js?v=2610231607","./js/state.js":"./js/state.js?v=2610231607","./js/storage.js":"./js/storage.js?v=2610231607","./js/superchargers.js":"./js/superchargers.js?v=2610231607","./js/text.js":"./js/text.js?v=2610231607","./js/trip.js":"./js/trip.js?v=2610231607","./js/tutorial.js":"./js/tutorial.js?v=2610231607","./js/ui.js":"./js/ui.js?v=2610231607","./js/weather.js":"./js/weather.js?v=2610231607"}}</script>
-<script type="module" src="js/main.js?v=2610231607"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231627","./js/albums-en.js":"./js/albums-en.js?v=2610231627","./js/albums.js":"./js/albums.js?v=2610231627","./js/charge-ui.js":"./js/charge-ui.js?v=2610231627","./js/charge.js":"./js/charge.js?v=2610231627","./js/detail-ui.js":"./js/detail-ui.js?v=2610231627","./js/drive.js":"./js/drive.js?v=2610231627","./js/guest-visit.js":"./js/guest-visit.js?v=2610231627","./js/guests.js":"./js/guests.js?v=2610231627","./js/i18n.js":"./js/i18n.js?v=2610231627","./js/korea-map.js":"./js/korea-map.js?v=2610231627","./js/main.js":"./js/main.js?v=2610231627","./js/map-ui.js":"./js/map-ui.js?v=2610231627","./js/motions.js":"./js/motions.js?v=2610231627","./js/plant.js":"./js/plant.js?v=2610231627","./js/plants.js":"./js/plants.js?v=2610231627","./js/qr.js":"./js/qr.js?v=2610231627","./js/scene.js":"./js/scene.js?v=2610231627","./js/sky.js":"./js/sky.js?v=2610231627","./js/sound.js":"./js/sound.js?v=2610231627","./js/state.js":"./js/state.js?v=2610231627","./js/storage.js":"./js/storage.js?v=2610231627","./js/superchargers.js":"./js/superchargers.js?v=2610231627","./js/text.js":"./js/text.js?v=2610231627","./js/trip.js":"./js/trip.js?v=2610231627","./js/tutorial.js":"./js/tutorial.js?v=2610231627","./js/ui.js":"./js/ui.js?v=2610231627","./js/weather.js":"./js/weather.js?v=2610231627"}}</script>
+<script type="module" src="js/main.js?v=2610231627"></script>
 <!-- version:end -->
 </body>
 </html>

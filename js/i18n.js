@@ -35,7 +35,7 @@ const KO = {
   'toast.plantImgFail': '식물 그림을 불러오지 못했어요 · 연결을 확인해 주세요',
   'toast.guestFirst': ({ name }) => `처음 만난 ${name} · 온실 도감에 적었어요`,
   'toast.guestAgain': ({ name }) => `${withJosa(name, '을', '를')} 만났어요`,
-  'toast.guestCap': '오늘 손님 꽃씨는 다 받았어요',
+  'toast.guestCap': '오늘 프렌즈 꽃씨는 다 받았어요',
   'toast.coins': ({ n }) => `꽃씨 +${n}`,
   'toast.grown': ({ plant, adult, meaning, reward }) => `${withJosa(plant, '이', '가')} ${withJosa(adult, '이', '가')} 됐어요 · 라틴어로 ‘${meaning}’ · 꽃씨 +${reward}`,
   'toast.grew': ({ stage }) => `한 뼘 자랐어요 · ${stage}`,
@@ -50,7 +50,7 @@ const KO = {
   'stage.toNext': ({ n }) => `다음 단계까지 ${n}점`,
   latin: ({ meaning }) => `라틴어로 ‘${meaning}’`,
   'greenhouse.label': '도감',
-  'greenhouse.labelNew': '도감 · 새 손님',
+  'greenhouse.labelNew': '도감 · 새 프렌즈',
 
 
   'water.driving': '차를 세우면 줄 수 있어요',
@@ -96,8 +96,8 @@ const KO = {
   'pick.sub': ({ stage }) => `${stage} · 도감`,
   'gh.more': '자세히',
   'guide.notOwned': ({ n }) => `아직 없어요 · 꽃씨 ${n}개로 들여요`,
-  'gs.unmet': '아직 만나지 못한 손님이에요',
-  'gs.unmetAbout': '잎을 흔들면 가끔 손님이 나와요. 아래 ‘언제 와요’를 참고해 기다려 보세요.',
+  'gs.unmet': '아직 만나지 못한 프렌즈예요',
+  'gs.unmetAbout': '잎을 흔들면 가끔 프렌즈가 나와요. 아래 ‘언제 와요’를 참고해 기다려 보세요.',
   'gs.notYet': '아직',
   'gs.times': ({ n }) => `${n}번`,
   'gs.coins': ({ n }) => `${n}개`,
@@ -197,7 +197,7 @@ const KO = {
   'tour.4.title': '꽃씨로 새 식물을',
   'tour.4.body': '1km 달릴 때마다 꽃씨 1개, 식물을 다 키우면 50개를 더 받아요. 온실에서 선인장·산세베리아·고무나무를 들일 수 있어요. 식물마다 잘 자라는 조건이 달라요.',
   'tour.5.title': '운전 중엔 보기만',
-  'tour.5.body': '차가 움직이면 돌보기 버튼이 잠겨요. 운전자는 화면 대신 길을 봐 주세요. 옆자리라면 잎을 톡 건드려 보세요. 높은 잎일수록 높은 음이 나고, 가끔 숨어 있던 손님이 나와요.',
+  'tour.5.body': '차가 움직이면 돌보기 버튼이 잠겨요. 운전자는 화면 대신 길을 봐 주세요. 옆자리라면 잎을 톡 건드려 보세요. 높은 잎일수록 높은 음이 나고, 가끔 숨어 있던 프렌즈가 나와요.',
 };
 
 const EN = {
@@ -220,9 +220,9 @@ const EN = {
   'save.chipFail': 'Not saved',
 
   'toast.plantImgFail': "Couldn't load the plant · Check your connection",
-  'toast.guestFirst': ({ name }) => `First visit: ${name} · Added to the Visitor Log`,
+  'toast.guestFirst': ({ name }) => `First visit: ${name} · Added to Friends`,
   'toast.guestAgain': ({ name }) => `${name} visited`,
-  'toast.guestCap': 'No more visitor pips today',
+  'toast.guestCap': 'No more friend pips today',
   'toast.coins': ({ n }) => `Pips +${n}`,
   'toast.grown': ({ plant, adult, meaning, reward }) => `Your ${plant} became ${adult} · Latin for ‘${meaning}’ · Pips +${reward}`,
   'toast.grew': ({ stage }) => `It grew · ${stage}`,
@@ -237,7 +237,7 @@ const EN = {
   'stage.toNext': ({ n }) => `${n} pts to next stage`,
   latin: ({ meaning }) => `Latin for ‘${meaning}’`,
   'greenhouse.label': 'Field guide',
-  'greenhouse.labelNew': 'Field guide · new visitor',
+  'greenhouse.labelNew': 'Field guide · new friend',
 
 
   'water.driving': 'Park to water',
@@ -283,8 +283,8 @@ const EN = {
   'pick.sub': ({ stage }) => `${stage} · Guide`,
   'gh.more': 'Details',
   'guide.notOwned': ({ n }) => `Not yours yet · Get it for ${n} pips`,
-  'gs.unmet': 'A visitor you haven’t met yet',
-  'gs.unmetAbout': 'Shake the leaves and a visitor sometimes appears. Check “When” below and keep an eye out.',
+  'gs.unmet': 'A friend you haven’t met yet',
+  'gs.unmetAbout': 'Shake the leaves and a friend sometimes appears. Check “When” below and keep an eye out.',
   'gs.notYet': 'Not yet',
   'gs.times': ({ n }) => `${n}`,
   'gs.coins': ({ n }) => `${n}`,
@@ -383,7 +383,7 @@ const EN = {
   'tour.4.title': 'New plants with pips',
   'tour.4.body': 'Earn 1 pip per km, plus 50 when a plant is fully grown. Get a cactus, sansevieria or rubber plant in the Greenhouse. Each one thrives in its own way.',
   'tour.5.title': 'Look only while driving',
-  'tour.5.body': 'Care buttons lock while the car moves. Drivers, eyes on the road. Passengers, tap a leaf: higher leaves play higher notes, and sometimes a hidden visitor appears.',
+  'tour.5.body': 'Care buttons lock while the car moves. Drivers, eyes on the road. Passengers, tap a leaf: higher leaves play higher notes, and sometimes a hidden friend appears.',
 };
 
 // index.html 고정 글자의 영어 (data-i18n 키). 한국어는 HTML에 쓰인 그대로
@@ -414,7 +414,7 @@ const STATIC_EN = {
   ghPips: '',
   pipsUnit: ' pips',
   pipsRule: '· 1 per km · +50 when fully grown',
-  visitorLog: 'Visitor Log',
+  visitorLog: 'Friends',
   totalKm: 'Total distance',
   waterings: 'Waterings',
   waterUnit: '',
@@ -433,7 +433,7 @@ const STATIC_EN = {
   ambient: 'Background sound',
   ambientSub: 'Ambient music, wind and rain · Starts on first touch',
   effects: 'Sound effects',
-  effectsSub: 'Greeting, leaf notes, watering, visitors',
+  effectsSub: 'Greeting, leaf notes, watering, friends',
   autoSave: 'Auto-save',
   autoSaveSub: 'Saved on this device after every change · Picks up even if the browser closes',
   gps: 'Collect dew by driving',
@@ -461,7 +461,7 @@ const STATIC_EN = {
   musicTest: 'Test Apple Music link (in car)',
   demoKm: 'Pretend 30 km',
   demoCoins: 'Pips +100',
-  demoGuest: 'Call a visitor',
+  demoGuest: 'Call a friend',
   demoDrive: 'Preview driving mode',
   demoTrip: 'Preview drive summary',
   demoCharge: 'Pretend I’m at a Supercharger',
@@ -491,9 +491,9 @@ const STATIC_EN = {
   regionStamps: 'Regional stamps',
   nearbySc: 'Nearby Superchargers',
   plantsTab: 'Plants',
-  visitorsTab: 'Visitors',
+  visitorsTab: 'Friends',
   plantsHubSub: 'Tap a card for details · 1 pip per km, +50 when fully grown',
-  visitorsHubSub: 'Shake the leaves and visitors sometimes drop by · Tap for details',
+  visitorsHubSub: 'Shake the leaves and friends sometimes drop by · Tap for details',
   guestbookBack: 'Guide',
   metTimes: 'Times met',
   whenVisits: 'When',

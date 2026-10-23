@@ -279,7 +279,7 @@ export function renderGreenhouse(state, onPick, onOpen) {
 }
 
 /**
- * 도감 손님 탭: 만난 손님은 그림과 이름, 아직이면 실루엣과 ???. 누르면 손님 설명
+ * 도감 프렌즈 탭: 만난 프렌즈는 그림과 이름, 아직이면 실루엣과 ???. 누르면 프렌즈 설명
  * @param {(id:string) => void} onOpen
  */
 export function renderGuestbook(state, onOpen) {
