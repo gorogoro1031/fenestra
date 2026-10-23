@@ -377,6 +377,7 @@ const STATIC_EN = {
   fert: 'Fertilizer',
   useFert: 'Use fertilizer',
   stampBook: 'Charger Stamps',
+  car: 'Car',
   demoReset: 'Start over',
   skip: 'Skip',
   back: 'Back',

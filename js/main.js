@@ -372,6 +372,14 @@ const showCharge = () => renderCharge({ state, session: chargeSession, now: Date
 if (LAB) setInterval(tickCharge, CHARGE_TICK_MS);
 
 $('open-charge').addEventListener('click', () => { showCharge(); openSheet($('charge-sheet')); });
+// 이스터에그: 차를 누르면 깡충, 번개가 튄다
+$('cn-car').addEventListener('click', (e) => {
+  const car = e.currentTarget;
+  car.classList.remove('hop');
+  void car.getBoundingClientRect();
+  car.classList.add('hop');
+  if (prefs.effects) leafTouch(currentScene(), 0.9);
+});
 $('fert-use').addEventListener('click', () => {
   if (isDriving()) return;
   const result = fertilize(state);
