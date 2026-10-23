@@ -155,7 +155,6 @@ export function renderGuide(state, id, onPick) {
   const thresholds = PLANTS[id].thresholds;
   const stage = stageFor(plant.growth, thresholds);
   const guide = guideOf(id);
-  const adult = adultOf(id);
   $('ps-tabs').replaceChildren(...PLANT_IDS.filter((p) => state.plants[p]).map((p) => {
     const tab = document.createElement('button');
     tab.type = 'button';
@@ -168,7 +167,7 @@ export function renderGuide(state, id, onPick) {
   $('ps-img').src = plantImage(id, Math.max(1, stage));
   $('ps-now').textContent = `${t('guide.badge.now')} · ${stageName(id, stage)}`;
   $('ps-name').textContent = plantName(id);
-  $('ps-latin').textContent = t('guide.adult', { adult: adult.name, meaning: adult.meaning });
+  $('ps-tag').textContent = guide.tag;
   $('ps-about').textContent = guide.about;
   $('ps-origin').textContent = guide.origin;
   $('ps-temp').textContent = `${guide.temp[0]}–${guide.temp[1]}°`;

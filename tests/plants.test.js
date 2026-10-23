@@ -30,13 +30,13 @@ test('모르는 식물·단계는 몬스테라 이름으로', () => {
   assert.equal(stageName('monstera', 99), stageName('monstera', LAST_STAGE));
 });
 
-test('도감: 식물마다 알맞은 온도·소개·다섯 단계 설명이 두 언어로 있다', () => {
+test('도감: 식물마다 알맞은 온도·한 줄 소개·소개·다섯 단계 설명이 두 언어로 있다', () => {
   ['ko', 'en'].forEach((lang) => {
     setLang(lang);
     PLANT_IDS.forEach((id) => {
       const g = guideOf(id);
       assert.equal(g.stages.length, LAST_STAGE + 1, `${lang} ${id}`);
-      assert.ok(g.about && g.origin, `${lang} ${id}`);
+      assert.ok(g.tag && g.about && g.origin, `${lang} ${id}`);
       assert.ok(g.temp[0] < g.temp[1]);
     });
   });
