@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610231520">
-<link rel="stylesheet" href="css/app.css?v=2610231520">
+<link rel="stylesheet" href="css/tokens.css?v=2610231607">
+<link rel="stylesheet" href="css/app.css?v=2610231607">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -319,8 +319,45 @@
           </div>
         </div>
         <div class="charge-right">
-          <div class="stamps-head"><h3 data-i18n="stampBook">충전소 도장책</h3><span id="stamp-count"></span></div>
+          <div class="stamps-head"><h3 data-i18n="stampBook">충전소 도장책</h3><span id="stamp-count"></span><button class="map-open" type="button" id="open-map" data-i18n="openMap">지도로 보기</button></div>
           <ol class="stamps" id="stamps"></ol>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 슈퍼차저 지도 (실험판): 대한민국 지도 위 국내 슈퍼차저, 고른 충전소 카드, 지역 도장 모으기, 가까운 슈퍼차저 -->
+    <dialog class="sheet page-sheet map-sheet" id="map-sheet" aria-labelledby="map-title">
+      <div class="g-top">
+        <button class="g-back" type="button" data-back data-i18n="goBack">돌아가기</button>
+        <h2 class="map-title" id="map-title" data-i18n="scMap">슈퍼차저 지도</h2>
+        <p class="map-cnt"><span data-i18n="stampsLabel">도장</span><b id="map-cnt">0</b><span id="map-total"></span></p>
+      </div>
+      <div class="map-body">
+        <div class="map-left">
+          <svg class="kmap" id="kmap" viewBox="-130 0 900 1000" role="img" aria-label="대한민국 슈퍼차저 지도" data-i18n-label="scMap">
+            <g id="kmap-land"></g><g id="kmap-dots"></g>
+            <circle class="km-me km-mehalo" r="34"/><circle class="km-me km-medot" id="kmap-me" r="12"/>
+            <circle class="km-sel" id="kmap-sel" r="26"/>
+          </svg>
+          <p class="map-leg"><span><i class="lg-v"></i><span data-i18n="legVisited">가 본 곳</span></span><span><i class="lg-d"></i><span data-i18n="legNot">아직</span></span><span><i class="lg-far"></i><span data-i18n="legFar">먼 곳 ×3</span></span><span><i class="lg-me"></i><span data-i18n="legMe">지금 위치</span></span></p>
+        </div>
+        <div class="map-side">
+          <div class="mc" id="mc">
+            <button class="mc-car" type="button" id="mc-car" aria-label="차" data-i18n-label="car"><span class="mc-car-body"></span><svg class="mc-bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 1 4 14h7l-2 9 11-14h-7z"/></svg></button>
+            <p class="mc-k" id="mc-k"></p>
+            <h3 class="mc-name" id="mc-name"></h3>
+            <p class="mc-city" id="mc-city"></p>
+            <p class="mc-head" id="mc-head"></p>
+            <div class="mc-rw">
+              <div><p data-i18n="pips">꽃씨</p><b id="mc-pips"></b></div>
+              <div><p id="mc-stamp-k"></p><b id="mc-stamp"></b></div>
+              <div><p><span class="mc-sil" aria-hidden="true">?</span><span data-i18n="resident">지역 주민</span></p><b id="mc-resident"></b></div>
+            </div>
+          </div>
+          <p class="map-sec" data-i18n="regionStamps">지역 도장 모으기</p>
+          <div class="map-regions" id="map-regions"></div>
+          <p class="map-sec" data-i18n="nearbySc">가까운 슈퍼차저</p>
+          <ul class="map-near" id="map-near"></ul>
         </div>
       </div>
     </dialog>
@@ -473,8 +510,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231520","./js/albums-en.js":"./js/albums-en.js?v=2610231520","./js/albums.js":"./js/albums.js?v=2610231520","./js/charge-ui.js":"./js/charge-ui.js?v=2610231520","./js/charge.js":"./js/charge.js?v=2610231520","./js/detail-ui.js":"./js/detail-ui.js?v=2610231520","./js/drive.js":"./js/drive.js?v=2610231520","./js/guest-visit.js":"./js/guest-visit.js?v=2610231520","./js/guests.js":"./js/guests.js?v=2610231520","./js/i18n.js":"./js/i18n.js?v=2610231520","./js/main.js":"./js/main.js?v=2610231520","./js/motions.js":"./js/motions.js?v=2610231520","./js/plant.js":"./js/plant.js?v=2610231520","./js/plants.js":"./js/plants.js?v=2610231520","./js/qr.js":"./js/qr.js?v=2610231520","./js/scene.js":"./js/scene.js?v=2610231520","./js/sky.js":"./js/sky.js?v=2610231520","./js/sound.js":"./js/sound.js?v=2610231520","./js/state.js":"./js/state.js?v=2610231520","./js/storage.js":"./js/storage.js?v=2610231520","./js/superchargers.js":"./js/superchargers.js?v=2610231520","./js/text.js":"./js/text.js?v=2610231520","./js/trip.js":"./js/trip.js?v=2610231520","./js/tutorial.js":"./js/tutorial.js?v=2610231520","./js/ui.js":"./js/ui.js?v=2610231520","./js/weather.js":"./js/weather.js?v=2610231520"}}</script>
-<script type="module" src="js/main.js?v=2610231520"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231607","./js/albums-en.js":"./js/albums-en.js?v=2610231607","./js/albums.js":"./js/albums.js?v=2610231607","./js/charge-ui.js":"./js/charge-ui.js?v=2610231607","./js/charge.js":"./js/charge.js?v=2610231607","./js/detail-ui.js":"./js/detail-ui.js?v=2610231607","./js/drive.js":"./js/drive.js?v=2610231607","./js/guest-visit.js":"./js/guest-visit.js?v=2610231607","./js/guests.js":"./js/guests.js?v=2610231607","./js/i18n.js":"./js/i18n.js?v=2610231607","./js/korea-map.js":"./js/korea-map.js?v=2610231607","./js/main.js":"./js/main.js?v=2610231607","./js/map-ui.js":"./js/map-ui.js?v=2610231607","./js/motions.js":"./js/motions.js?v=2610231607","./js/plant.js":"./js/plant.js?v=2610231607","./js/plants.js":"./js/plants.js?v=2610231607","./js/qr.js":"./js/qr.js?v=2610231607","./js/scene.js":"./js/scene.js?v=2610231607","./js/sky.js":"./js/sky.js?v=2610231607","./js/sound.js":"./js/sound.js?v=2610231607","./js/state.js":"./js/state.js?v=2610231607","./js/storage.js":"./js/storage.js?v=2610231607","./js/superchargers.js":"./js/superchargers.js?v=2610231607","./js/text.js":"./js/text.js?v=2610231607","./js/trip.js":"./js/trip.js?v=2610231607","./js/tutorial.js":"./js/tutorial.js?v=2610231607","./js/ui.js":"./js/ui.js?v=2610231607","./js/weather.js":"./js/weather.js?v=2610231607"}}</script>
+<script type="module" src="js/main.js?v=2610231607"></script>
 <!-- version:end -->
 </body>
 </html>

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CHARGE_RULES, chargers, chargerNear, updateSession, fertDue, isCharging, msToNextFert, settleCharge, cleanStamps } from '../js/charge.js';
+import { CHARGE_RULES, REGIONS, chargers, chargerNear, updateSession, fertDue, isCharging, msToNextFert, settleCharge, cleanStamps, regionCount, stampCoins } from '../js/charge.js';
 import { SUPERCHARGERS } from '../js/superchargers.js';
 import { createState, fertilize, sanitize, stageOf, LAST_STAGE } from '../js/state.js';
 import { PLANTS } from '../js/plants.js';
@@ -15,6 +15,7 @@ test('국내 슈퍼차저 목록은 한국 안의 좌표와 한국어·영어 �
     assert.ok(c.lat > 33 && c.lat < 39 && c.lon > 124 && c.lon < 132, `${c.id}`);
     assert.ok(c.ko && c.en, `${c.id}`);
     assert.equal(Boolean(c.labelKo), Boolean(c.labelEn), `${c.id}`);
+    assert.ok(REGIONS.some((r) => r.id === c.region), `${c.id}`);
   });
   assert.equal(new Set(ALL.map((c) => c.id)).size, ALL.length);
 });
@@ -81,4 +82,24 @@ test('저장된 비료·도장책은 범위와 모양을 맞춘다', () => {
   assert.equal(s.fert, CHARGE_RULES.MAX_FERT);
   assert.deepEqual(s.stamps, { 1115: '2026-10-23' });
   assert.deepEqual(cleanStamps(null), {});
+});
+
+test('먼 곳은 첫 도장 꽃씨 세 배, 제주는 모두 먼 곳', () => {
+  const near = ALL.find((c) => !c.far);
+  const far = ALL.find((c) => c.far);
+  assert.equal(stampCoins(near), CHARGE_RULES.FIRST_STAMP_COINS);
+  assert.equal(stampCoins(far), CHARGE_RULES.FIRST_STAMP_COINS * CHARGE_RULES.FAR_MULT);
+  ALL.filter((c) => c.region === 'jeju').forEach((c) => assert.equal(c.far, true));
+});
+
+test('지역 첫 도장이면 씨앗(1), 두 번째면 배지와 꽃씨 100(2), 그 뒤엔 0', () => {
+  const gangwon = ALL.filter((c) => c.region === 'gangwon' && !c.far).slice(0, 3);
+  let state = createState();
+  const steps = gangwon.map((c) => {
+    const r = settleCharge(state, { id: c.id, since: 0, paid: 0 }, 10 * MIN, '2026-10-23');
+    state = r.state;
+    return [r.regionStep, r.coins];
+  });
+  assert.deepEqual(steps, [[1, 20], [2, 20 + CHARGE_RULES.REGION_COINS], [0, 20]]);
+  assert.equal(regionCount(state.stamps, 'gangwon'), 3);
 });

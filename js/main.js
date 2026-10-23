@@ -12,12 +12,13 @@ import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
 import { pickGuest, shouldSpawn, guestName } from './guests.js';
 import { createGuestVisit } from './guest-visit.js';
-import { t, setLang, applyStatic, getLang, locale } from './i18n.js';
+import { t, setLang, applyStatic, getLang, locale, pick } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
 import { greetingPeriod, cleanName } from './text.js';
-import { CHARGE_RULES, chargerNear, chargerById, updateSession, settleCharge } from './charge.js';
+import { CHARGE_RULES, chargerNear, chargerById, updateSession, settleCharge, regionById } from './charge.js';
 import { renderCharge, chargerPlace } from './charge-ui.js';
+import { renderMap, defaultCharger } from './map-ui.js';
 
 // 인트로: 로고 모션 시간(끝나면 '탭하여 계속하기'), 탭한 뒤 인사가 떠 있는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
 const LOGO_MS = 2600;
@@ -386,6 +387,7 @@ function setGps(on) {
     onSpeed: markDriving,
     onError: (key) => toast(t(key)),
     onPosition: (pos) => {
+      lastPos = pos;
       if (!LAB) return;
       nearCharger = chargerNear(pos);
       tickCharge();
@@ -400,6 +402,8 @@ const DEMO_CHARGER_ID = 1115;
 const DEMO_CHARGE_MS = 10 * 60 * 1000;
 // 마지막 위치에서 가까운 슈퍼차저. 서 있으면 위치가 잘 안 바뀌므로 마지막 값을 그대로 믿는다
 let nearCharger = null;
+// 마지막으로 받은 내 위치 (지도에서 가까운 슈퍼차저용). 주행 GPS가 없으면 날씨용 대략의 위치
+let lastPos = null;
 let chargeSession = null;
 function tickCharge() {
   const now = Date.now();
@@ -408,12 +412,18 @@ function tickCharge() {
   chargeSession = r.session;
   if (r.fert || r.newStamp) {
     commit(r.state);
-    const place = chargerPlace(chargerById(chargeSession.id)).name;
-    const parts = [r.newStamp && t('toast.stamp', { place, n: CHARGE_RULES.FIRST_STAMP_COINS }), r.fert && t('toast.fert', { n: r.fert })].filter(Boolean);
+    const charger = chargerById(chargeSession.id);
+    const place = chargerPlace(charger).name;
+    const region = regionById(charger.region);
+    const regionText = r.regionStep === 1 ? t('toast.regionSeed', { region: pick(region.ko, region.en), plant: pick(region.plantKo, region.plantEn) })
+      : r.regionStep === 2 ? t('toast.regionBadge', { region: pick(region.ko, region.en), n: CHARGE_RULES.REGION_COINS }) : '';
+    const parts = [r.newStamp && t('toast.stamp', { place, n: r.coins - (r.regionStep === 2 ? CHARGE_RULES.REGION_COINS : 0) }), regionText, r.fert && t('toast.fert', { n: r.fert })].filter(Boolean);
     toast(parts.join(' · '));
     if (prefs.effects) chime();
   }
+  if ($('map-sheet').open) showMap();
   if ($('charge-sheet').open) showCharge();
+  if ($('map-sheet').open) showMap();
   if ($('dew-sheet').open) showDewSheet();
   if ($('cond-sheet').open) showCondSheet();
 }
@@ -421,6 +431,22 @@ const showCharge = () => renderCharge({ state, session: chargeSession, now: Date
 if (LAB) setInterval(tickCharge, CHARGE_TICK_MS);
 
 $('open-charge').addEventListener('click', () => { showCharge(); openSheet($('charge-sheet')); });
+
+/* 슈퍼차저 지도: 도장책에서 열고, 점을 누르면 그 충전소 카드 */
+let mapSelected = null;
+const myPos = () => lastPos || weatherWatch?.current().coords || null;
+function showMap() {
+  if (mapSelected === null) mapSelected = defaultCharger(state, myPos());
+  renderMap(state, { selectedId: mapSelected, me: myPos(), onSelect: (id) => { mapSelected = id; showMap(); } });
+}
+$('open-map').addEventListener('click', () => { mapSelected = null; showMap(); $('map-sheet').show(); });
+$('mc-car').addEventListener('click', (e) => {
+  const car = e.currentTarget;
+  car.classList.remove('hop');
+  void car.getBoundingClientRect();
+  car.classList.add('hop');
+  if (prefs.effects) chime();
+});
 // 이스터에그: 차를 누르면 깡충, 번개가 튄다
 $('cn-car').addEventListener('click', (e) => {
   const car = e.currentTarget;

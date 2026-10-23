@@ -9,14 +9,39 @@ export const CHARGE_RULES = Object.freeze({
   FERT_GROWTH: 3,
   MAX_FERT: 9,
   FIRST_STAMP_COINS: 20,
+  // 먼 곳(근처 25km 안에 다른 슈퍼차저가 없거나 제주)은 첫 도장 꽃씨가 세 배
+  FAR_MULT: 3,
+  // 지역 도장: 한 곳이면 지역 식물 씨앗, 두 곳이면 배지와 꽃씨, 지역 주민
+  REGION_GOAL: 2,
+  REGION_COINS: 100,
 });
 
-/** @typedef {{id:number, ko:string, en:string, labelKo:string, labelEn:string, lat:number, lon:number}} Charger 도시와 자리 이름(없으면 빈 글자) */
+/** 지역 묶음과 첫 도장에 받는 지역 식물 (지역 주민은 만나기 전까지 비밀이라 여기 이름을 두지 않는다) */
+export const REGIONS = Object.freeze([
+  { id: 'capital', ko: '수도권', en: 'Capital Area', plantKo: '개나리', plantEn: 'Forsythia' },
+  { id: 'gangwon', ko: '강원', en: 'Gangwon', plantKo: '철쭉', plantEn: 'Royal Azalea' },
+  { id: 'chung', ko: '충청', en: 'Chungcheong', plantKo: '백목련', plantEn: 'White Magnolia' },
+  { id: 'jeolla', ko: '전라', en: 'Jeolla', plantKo: '동백나무', plantEn: 'Camellia' },
+  { id: 'gyeong', ko: '경상', en: 'Gyeongsang', plantKo: '백일홍', plantEn: 'Zinnia' },
+  { id: 'jeju', ko: '제주', en: 'Jeju', plantKo: '귤나무', plantEn: 'Tangerine Tree' },
+]);
+export const regionById = (id) => REGIONS.find((r) => r.id === id) || REGIONS[0];
+
+/** @typedef {{id:number, ko:string, en:string, labelKo:string, labelEn:string, lat:number, lon:number, region:string, far:boolean}} Charger 도시와 자리 이름(없으면 빈 글자), 지역, 먼 곳 */
 
 /** @returns {Charger[]} */
-export const chargers = (list = SUPERCHARGERS) => list.map(([id, ko, en, labelKo, labelEn, lat, lon]) => ({ id, ko, en, labelKo, labelEn, lat, lon }));
+export const chargers = (list = SUPERCHARGERS) => list.map(([id, ko, en, labelKo, labelEn, lat, lon, region, far]) => ({ id, ko, en, labelKo, labelEn, lat, lon, region, far: far === 1 }));
 const ALL = chargers();
 export const chargerById = (id, all = ALL) => all.find((c) => c.id === id) || null;
+
+/** 도장책에서 이 지역 도장 수 */
+export const regionCount = (stamps, region, all = ALL) => all.filter((c) => c.region === region && stamps[c.id]).length;
+
+/** 이 충전소의 첫 도장 꽃씨 (먼 곳은 세 배) */
+export const stampCoins = (charger) => CHARGE_RULES.FIRST_STAMP_COINS * (charger?.far ? CHARGE_RULES.FAR_MULT : 1);
+
+/** 두 좌표 사이 거리(km) */
+export const distanceKm = (a, b) => distanceM(a, b) / 1000;
 
 function distanceM(a, b) {
   const R = 6371000;
@@ -57,21 +82,29 @@ export const isCharging = (session, now) => fertDue(session, now) >= 1;
 export const msToNextFert = (session, now) => CHARGE_RULES.FERT_EVERY_MS - (Math.max(0, now - session.since) % CHARGE_RULES.FERT_EVERY_MS);
 
 /**
- * 밀린 비료를 주고, 처음 간 곳이면 도장을 찍는다
- * @returns {{state:object, session:ChargeSession|null, fert:number, newStamp:boolean}}
+ * 밀린 비료를 주고, 처음 간 곳이면 도장을 찍는다. 도장을 찍으면 꽃씨(먼 곳은 세 배),
+ * 그 지역 첫 도장이면 지역 식물 씨앗, 두 번째면 배지와 꽃씨
+ * @returns {{state:object, session:ChargeSession|null, fert:number, newStamp:boolean, coins:number, regionStep:0|1|2}}
+ *  coins: 이번에 받은 꽃씨 합, regionStep: 1 지역 첫 도장 · 2 지역 목표 달성 · 0 그 밖
  */
-export function settleCharge(state, session, now, today) {
+export function settleCharge(state, session, now, today, all = ALL) {
   const due = fertDue(session, now) - (session?.paid ?? 0);
-  if (due <= 0) return { state, session, fert: 0, newStamp: false };
-  const fert = Math.min(due, CHARGE_RULES.MAX_FERT - state.fert);
+  if (due <= 0) return { state, session, fert: 0, newStamp: false, coins: 0, regionStep: 0 };
+  const fert = Math.max(0, Math.min(due, CHARGE_RULES.MAX_FERT - state.fert));
   const newStamp = !state.stamps[session.id];
-  const next = {
-    ...state,
-    fert: state.fert + Math.max(0, fert),
-    coins: state.coins + (newStamp ? CHARGE_RULES.FIRST_STAMP_COINS : 0),
-    stamps: newStamp ? { ...state.stamps, [session.id]: today } : state.stamps,
-  };
-  return { state: next, session: { ...session, paid: session.paid + due }, fert: Math.max(0, fert), newStamp };
+  let coins = 0;
+  let regionStep = 0;
+  let stamps = state.stamps;
+  if (newStamp) {
+    const charger = all.find((c) => c.id === session.id);
+    stamps = { ...state.stamps, [session.id]: today };
+    coins += stampCoins(charger);
+    const n = charger ? regionCount(stamps, charger.region, all) : 0;
+    if (n === 1) regionStep = 1;
+    if (n === CHARGE_RULES.REGION_GOAL) { regionStep = 2; coins += CHARGE_RULES.REGION_COINS; }
+  }
+  const next = { ...state, fert: state.fert + fert, coins: state.coins + coins, stamps };
+  return { state: next, session: { ...session, paid: session.paid + due }, fert, newStamp, coins, regionStep };
 }
 
 /** 저장된 도장책을 믿지 않고 아는 슈퍼차저와 날짜 모양만 남긴다 */
