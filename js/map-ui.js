@@ -13,7 +13,7 @@ const ALL = chargers().map((c) => {
 const NEAR_COUNT = 3;
 // 지도 끌기·확대: 전국 화면(index.html의 viewBox)에서 4배까지. 손가락이 이만큼 안 움직였으면 누른 것으로 본다
 const BASE_VIEW = Object.freeze({ x: 30, y: 8, w: 770, h: 980 });
-const MAX_ZOOM = 4;
+const MAX_ZOOM = 16;
 const TAP_PX = 12;
 const BUTTON_ZOOM = 1.6;
 let view = { ...BASE_VIEW };
@@ -34,6 +34,24 @@ function drawLand() {
   landDrawn = true;
   $('kmap-land').replaceChildren(...PROVINCE_PATHS.map((d) => svg('path', { d })));
   setupPanZoom($('kmap'));
+  drawDetail();
+}
+
+/** 확대하면 보이는 시·군·구 경계·이름과 도로. 파일이 커서 지도를 처음 열 때 따로 불러온다 */
+async function drawDetail() {
+  try {
+    const { DISTRICTS, ROADS } = await import('./korea-detail.js');
+    $('kmap-roads').replaceChildren(...ROADS.map(([exp, d]) => svg('path', { d, class: exp ? 'km-exp' : 'km-road' })));
+    $('kmap-gu').replaceChildren(...DISTRICTS.map(([, d]) => svg('path', { d })));
+    $('kmap-names').replaceChildren(...DISTRICTS.map(([name, , x, y]) => {
+      // 구는 좁아서 더 크게 확대했을 때만 이름을 보인다
+      const text = svg('text', { x, y, class: name.endsWith('구') ? 'km-nm gu' : 'km-nm' });
+      text.textContent = name;
+      return text;
+    }));
+  } catch {
+    // 못 불러와도 시·도 지도와 슈퍼차저 점은 그대로 쓸 수 있다
+  }
 }
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -49,8 +67,9 @@ function clampView({ x, y, w }) {
 
 function applyView(el) {
   el.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`);
-  // 점·고리는 확대해도 화면에서 같은 크기
+  // 점·고리·이름은 확대해도 화면에서 같은 크기. 확대 배율(--z)에 따라 구 경계·이름·도로가 서서히 나타난다
   el.style.setProperty('--k', String(view.w / BASE_VIEW.w));
+  el.style.setProperty('--z', String(BASE_VIEW.w / view.w));
 }
 
 /** 화면 1px이 지도 좌표 몇인지, 그리고 화면 점 → 지도 좌표 */

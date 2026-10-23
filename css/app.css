@@ -653,6 +653,14 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* 끌기·두 손가락 확대는 지도 안에서만: 브라우저가 화면 전체를 키우거나 밀지 않게 */
 .kmap { width: 100%; height: 100%; overflow: hidden; stroke: none; touch-action: none; cursor: grab; --k: 1; }
 .kmap path { vector-effect: non-scaling-stroke; }
+/* 확대 배율 --z: 고속도로는 늘, 주요 도로는 2배부터, 시·군·구 경계는 2배부터, 시·군 이름은 3배·구 이름은 8배부터 */
+#kmap-roads path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#kmap-roads .km-exp { stroke: #4d5c54; stroke-width: 2.5; opacity: calc(.55 + .45 * clamp(0, (var(--z) - 1) / 2, 1)); }
+#kmap-roads .km-road { stroke: #3a4640; stroke-width: 1.5; opacity: clamp(0, (var(--z) - 2) / 2, 1); }
+#kmap-gu path { fill: none; stroke: #3f4c45; stroke-width: 1.2; stroke-dasharray: 6 5; opacity: clamp(0, (var(--z) - 2) / 1.5, 1); }
+.km-nm { fill: rgba(235, 235, 245, .5); font-size: calc(19px * var(--k)); font-weight: 600; text-anchor: middle; dominant-baseline: middle; pointer-events: none; opacity: clamp(0, (var(--z) - 3) / 1.5, 1); }
+.km-nm.gu { opacity: clamp(0, (var(--z) - 8) / 2, 1); }
+.map-credit { position: absolute; left: 460px; bottom: 14px; font-size: 16px; color: var(--label-3, rgba(235, 235, 245, .3)); }
 .km-s, .km-sel, .km-me { transform-box: fill-box; transform-origin: center; transform: scale(var(--k)); }
 .map-zoom { position: absolute; left: 40px; top: 150px; display: flex; flex-direction: column; gap: 12px; }
 .map-zoom button { width: 76px; height: 76px; border-radius: 24px; background: var(--grouped-2); color: var(--label); font-size: 40px; font-weight: 600; box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
@@ -669,7 +677,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .km-sel { fill: none; stroke: #fff; stroke-width: 4; pointer-events: none; }
 .km-medot { fill: var(--water); stroke: #fff; stroke-width: 4; pointer-events: none; }
 .km-mehalo { fill: color-mix(in srgb, var(--water) 25%, transparent); pointer-events: none; }
-.map-leg { position: absolute; left: 460px; bottom: 40px; display: grid; grid-template-columns: auto auto; gap: 12px 28px; font-size: 22px; color: var(--label-2); }
+.map-leg { position: absolute; left: 460px; bottom: 50px; display: grid; grid-template-columns: auto auto; gap: 12px 28px; font-size: 22px; color: var(--label-2); }
 .map-leg > span { display: inline-flex; align-items: center; gap: 8px; }
 .map-leg i { width: 18px; height: 18px; border-radius: 50%; }
 .lg-v { background: var(--fert); } .lg-d { background: rgba(255, 255, 255, .28); } .lg-me { background: var(--water); }
