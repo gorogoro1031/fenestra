@@ -145,10 +145,7 @@ const KO = {
   'guide.when.dry': '언제나 · 하루 두 번까지',
   'guide.when.road': '30km 넘게 달린 날',
   'guide.record': ({ n, need }) => `성장 ${n} / ${need}점`,
-  'guide.badge.done': '지남',
   'guide.badge.now': '지금',
-  'guide.badge.next': ({ n }) => `다음 · ${n}점`,
-  'guide.badge.later': '나중에',
 
   // 인사는 두 언어 모두 영어로 (브랜드 말투)
   'greet.morning': 'Good morning',
@@ -302,10 +299,7 @@ const EN = {
   'guide.when.dry': 'Always · twice a day max',
   'guide.when.road': 'Days over 30 km',
   'guide.record': ({ n, need }) => `Growth ${n} / ${need} pts`,
-  'guide.badge.done': 'Done',
   'guide.badge.now': 'Now',
-  'guide.badge.next': ({ n }) => `Next · ${n} pts`,
-  'guide.badge.later': 'Later',
 
   'greet.morning': 'Good morning',
   'greet.afternoon': 'Good afternoon',
@@ -419,6 +413,7 @@ const STATIC_EN = {
   demoReset: 'Start over',
   skip: 'Skip',
   back: 'Back',
+  goBack: 'Back',
   next: 'Next',
   tapToContinue: 'Tap to continue',
   bootTitle: "Couldn't load the app",

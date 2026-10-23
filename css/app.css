@@ -358,33 +358,43 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .tour-btn.secondary { background: var(--fill); }
 
 /* ---------- 식물 도감 ---------- */
-.sheet.plant-sheet { width: 1500px; padding: 40px 48px 44px; }
-.ps-head { display: flex; gap: 40px; align-items: flex-start; }
-.ps-hero { width: 300px; height: 300px; flex: none; border-radius: 28px; overflow: hidden; display: grid; place-items: end center; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--tint) 18%, transparent), transparent 70%), var(--grouped-2); }
-.ps-hero img { width: 290px; height: 290px; object-fit: contain; object-position: bottom; }
-.ps-body { flex: 1; min-width: 0; }
-.ps-body .sheet-head { margin-bottom: 0; }
-.ps-body h2 { font-size: 52px; font-weight: 800; }
-.ps-latin { font-size: 22px; font-weight: 700; color: var(--tint); margin-top: 4px; }
-.ps-about { font-size: 23px; line-height: 1.6; color: var(--label-2); margin-top: 16px; word-break: keep-all; text-wrap: pretty; }
-.ps-facts { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
-.ps-fact { padding: 14px 20px; border-radius: 20px; background: var(--grouped-2); }
-.ps-fact p { font-size: 22px; font-weight: 700; color: var(--label-3); }
-.ps-fact b { display: block; font-size: 24px; font-weight: 700; margin-top: 4px; }
-.ps-label { font-size: 20px; font-weight: 600; color: var(--label-2); margin: 32px 0 14px 4px; }
-.ps-stages { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
-.ps-stage { position: relative; border-radius: 24px; background: var(--grouped-2); padding: 16px 16px 20px; }
-.ps-stage .art { height: 200px; display: grid; place-items: end center; }
-.ps-stage .art img { max-height: 200px; max-width: 100%; }
-.ps-stage .art img.seed { max-height: 90px; }
-.ps-stage h3 { font-size: 24px; font-weight: 800; margin-top: 12px; }
-.ps-stage p { font-size: 22px; line-height: 1.5; color: var(--label-2); margin-top: 6px; word-break: keep-all; }
-.ps-badge { position: absolute; top: 14px; left: 14px; padding: 5px 12px; border-radius: 999px; font-size: 22px; font-weight: 800; background: rgba(118, 118, 128, .3); color: var(--label-2); }
-.ps-stage.now { box-shadow: inset 0 0 0 3px var(--tint); }
-.ps-stage.now .ps-badge { background: var(--tint); color: #00260e; }
+/* 전체 화면 도감: 무대 전체를 덮는다. 차에서 읽히게 본문 32px, 가장 작은 글자 22px */
+.sheet.plant-sheet {
+  inset: 0; margin: 0; width: auto; height: auto; max-height: none; border-radius: 0; padding: 44px 64px 52px; box-shadow: none;
+  display: none; flex-direction: column; background: radial-gradient(circle at 22% 42%, color-mix(in srgb, var(--tint) 16%, transparent), transparent 46%), var(--bg);
+}
+.sheet.plant-sheet[open] { display: flex; animation: page-in 420ms var(--ease-ios); }
+@keyframes page-in { from { opacity: 0; transform: scale(.98); } }
+.g-top { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.g-back { height: 96px; padding: 0 40px 0 30px; border-radius: 999px; background: var(--grouped-2); font-size: 30px; font-weight: 800; display: inline-flex; align-items: center; gap: 14px; }
+.g-back::before { content: ""; width: 18px; height: 18px; border-left: 5px solid currentColor; border-bottom: 5px solid currentColor; transform: rotate(45deg); margin-left: 8px; }
+.g-back:active { transform: scale(.96); }
+.g-tabs { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.g-tabs button { height: 72px; padding: 0 28px; border-radius: 999px; font-size: 26px; font-weight: 700; color: var(--label-2); background: rgba(118, 118, 128, .18); }
+.g-tabs button[aria-pressed="true"] { background: var(--label); color: var(--bg); }
+.g-main { display: grid; grid-template-columns: 640px 1fr; gap: 56px; margin-top: 26px; flex: 1; min-height: 0; }
+.g-hero { position: relative; display: grid; place-items: end center; min-height: 0; }
+.g-hero img { width: 100%; height: 100%; max-height: 640px; object-fit: contain; object-position: bottom; }
+.g-now { position: absolute; top: 10px; left: 10px; padding: 12px 22px; border-radius: 999px; background: var(--tint); color: #00260e; font-size: 24px; font-weight: 800; }
+.g-info { min-width: 0; align-self: center; }
+.plant-sheet .g-name { font-size: 104px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+.g-adult { font-size: 32px; font-weight: 700; color: var(--tint); margin-top: 14px; }
+.g-about { font-size: 32px; line-height: 1.55; color: var(--label-2); margin-top: 26px; word-break: keep-all; text-wrap: pretty; max-width: 1060px; }
+.g-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 34px; }
+.g-fact { padding: 22px 26px; border-radius: 26px; background: var(--grouped-2); }
+.g-fact p { font-size: 22px; font-weight: 700; color: var(--label-2); }
+.g-fact b { display: block; font-size: 32px; font-weight: 800; margin-top: 8px; word-break: keep-all; line-height: 1.25; }
+.g-fact b.x2 { color: #ecf03c; }
+.g-stages { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; margin-top: 30px; }
+.g-stage { display: grid; grid-template-columns: 116px 1fr; gap: 16px; align-items: center; padding: 18px 20px; border-radius: 28px; background: var(--grouped-2); }
+.g-stage .art { height: 130px; display: grid; place-items: end center; overflow: hidden; }
+.g-stage .art img { height: 130px; width: auto; max-width: 140px; object-fit: contain; object-position: bottom; }
+.g-stage h3 { font-size: 30px; font-weight: 800; }
+.g-stage p { font-size: 22px; line-height: 1.4; color: var(--label-2); margin-top: 6px; word-break: keep-all; }
+.g-stage.now { box-shadow: inset 0 0 0 4px var(--tint); }
 /* 아직 안 온 단계는 실루엣 */
-.ps-stage.locked .art img { filter: brightness(0) invert(.3); opacity: .55; }
-.ps-stage.locked h3 { color: var(--label-3); }
+.g-stage.locked .art img { filter: brightness(0) invert(.3); opacity: .55; }
+.g-stage.locked h3 { color: var(--label-3); }
 
 /* ---------- 주행 요약 ---------- */
 .sheet.trip-sheet { width: 760px; padding: 40px 44px 36px; border-radius: 40px; }

@@ -145,40 +145,51 @@ function waterSubtitle(state, check, ctx) {
 }
 
 /** 식물 도감 시트: 소개, 원산지·알맞은 온도·두 배 조건·성장 점수, 다섯 단계 카드 */
-export function renderGuide(state) {
-  const id = state.active;
-  const stage = stageOf(state);
+/**
+ * 전체 화면 식물 도감. 가진 식물은 위 탭으로 바꿔 볼 수 있다
+ * @param {string} id 볼 식물 (가진 식물)
+ * @param {(id:string) => void} onPick 탭을 누르면
+ */
+export function renderGuide(state, id, onPick) {
+  const plant = state.plants[id];
+  const thresholds = PLANTS[id].thresholds;
+  const stage = stageFor(plant.growth, thresholds);
   const guide = guideOf(id);
   const adult = adultOf(id);
+  $('ps-tabs').replaceChildren(...PLANT_IDS.filter((p) => state.plants[p]).map((p) => {
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.textContent = plantName(p);
+    tab.setAttribute('aria-pressed', String(p === id));
+    tab.addEventListener('click', () => onPick(p));
+    return tab;
+  }));
+  $('ps-tabs').hidden = Object.keys(state.plants).length < 2;
   $('ps-img').src = plantImage(id, Math.max(1, stage));
+  $('ps-now').textContent = `${t('guide.badge.now')} · ${stageName(id, stage)}`;
   $('ps-name').textContent = plantName(id);
   $('ps-latin').textContent = t('guide.adult', { adult: adult.name, meaning: adult.meaning });
   $('ps-about').textContent = guide.about;
   $('ps-origin').textContent = guide.origin;
-  $('ps-temp').textContent = `${guide.temp[0]} – ${guide.temp[1]}°C`;
+  $('ps-temp').textContent = `${guide.temp[0]}–${guide.temp[1]}°`;
   $('ps-when').textContent = t(`guide.when.${PLANTS[id].rule}`);
-  $('ps-record').textContent = t('guide.record', { n: growthOf(state), need: thresholdsOf(state)[LAST_STAGE] });
+  $('ps-record').textContent = t('guide.record', { n: plant.growth, need: thresholds[LAST_STAGE] });
   const cards = guide.stages.map((desc, i) => {
     const li = document.createElement('li');
-    li.className = `ps-stage${i === stage ? ' now' : ''}${i > stage ? ' locked' : ''}`;
-    const badge = document.createElement('span');
-    badge.className = 'ps-badge';
-    if (i < stage) badge.textContent = t('guide.badge.done');
-    else if (i === stage) badge.textContent = t('guide.badge.now');
-    else if (i === stage + 1) badge.textContent = t('guide.badge.next', { n: pointsToNext(state) });
-    else badge.textContent = t('guide.badge.later');
+    li.className = `g-stage${i === stage ? ' now' : ''}${i > stage ? ' locked' : ''}`;
     const art = document.createElement('div');
     art.className = 'art';
     const img = document.createElement('img');
     img.src = plantImage(id, i);
     img.alt = '';
-    if (i === 0) img.className = 'seed';
     art.append(img);
+    const text = document.createElement('div');
     const name = document.createElement('h3');
     name.textContent = stageName(id, i);
-    const text = document.createElement('p');
-    text.textContent = desc;
-    li.append(badge, art, name, text);
+    const p = document.createElement('p');
+    p.textContent = desc;
+    text.append(name, p);
+    li.append(art, text);
     return li;
   });
   $('ps-stages').replaceChildren(...cards);

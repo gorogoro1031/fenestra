@@ -160,22 +160,26 @@
 
     <!-- 식물 도감: 식물 위젯을 누르면. 소개, 원산지·알맞은 온도·두 배 조건, 다섯 단계 (안 온 단계는 실루엣) -->
     <dialog class="sheet plant-sheet" id="plant-sheet" aria-labelledby="ps-name">
-      <div class="ps-head">
-        <div class="ps-hero"><img id="ps-img" alt="" width="290" height="290"></div>
-        <div class="ps-body">
-          <div class="sheet-head"><h2 id="ps-name"></h2><button class="text-btn" type="button" data-close data-i18n="done">완료</button></div>
-          <p class="ps-latin" id="ps-latin"></p>
-          <p class="ps-about" id="ps-about"></p>
-          <div class="ps-facts">
-            <div class="ps-fact"><p data-i18n="origin">원산지</p><b id="ps-origin"></b></div>
-            <div class="ps-fact"><p data-i18n="bestTemp">알맞은 온도</p><b id="ps-temp"></b></div>
-            <div class="ps-fact"><p data-i18n="doubleWhen">두 배로 자라는 때</p><b id="ps-when"></b></div>
-            <div class="ps-fact"><p data-i18n="soFar">지금까지</p><b id="ps-record"></b></div>
+      <!-- 전체 화면 도감: 위에 돌아가기와 가진 식물 탭, 왼쪽 지금 단계 그림, 오른쪽 소개와 네 가지 정보, 아래 다섯 단계 -->
+      <div class="g-top">
+        <button class="g-back" type="button" data-close data-i18n="goBack">돌아가기</button>
+        <div class="g-tabs" id="ps-tabs"></div>
+      </div>
+      <div class="g-main">
+        <div class="g-hero"><img id="ps-img" alt="" width="1150" height="1163"><span class="g-now" id="ps-now"></span></div>
+        <div class="g-info">
+          <h2 class="g-name" id="ps-name"></h2>
+          <p class="g-adult" id="ps-latin"></p>
+          <p class="g-about" id="ps-about"></p>
+          <div class="g-facts">
+            <div class="g-fact"><p data-i18n="origin">원산지</p><b id="ps-origin"></b></div>
+            <div class="g-fact"><p data-i18n="bestTemp">알맞은 온도</p><b id="ps-temp"></b></div>
+            <div class="g-fact"><p data-i18n="doubleWhen">두 배로 자라는 때</p><b class="x2" id="ps-when"></b></div>
+            <div class="g-fact"><p data-i18n="soFar">지금까지</p><b id="ps-record"></b></div>
           </div>
         </div>
       </div>
-      <p class="ps-label" data-i18n="growthStages">자라는 단계</p>
-      <ol class="ps-stages" id="ps-stages"></ol>
+      <ol class="g-stages" id="ps-stages"></ol>
     </dialog>
 
     <!-- 이슬 설명: 지금 몇 개인지 크게, 다음 이슬까지 남은 거리, 담아 둔 12칸 -->
@@ -375,6 +379,10 @@
           <div class="segmented" id="demo-stage">
             <button type="button" data-value="0">씨앗</button><button type="button" data-value="1">새싹</button><button type="button" data-value="2">첫 잎</button><button type="button" data-value="3">큰 잎</button><button type="button" data-value="4">다 자람</button>
           </div>
+        </div>
+        <div class="row">
+          <div><p class="r-title" data-i18n="screenScale">화면 배율</p><p class="r-sub" data-i18n="screenScaleSub">1920×1200 기준으로 몇 %로 보이는지 · 100%보다 작으면 글자도 그만큼 작아요</p></div>
+          <span class="r-value" id="screen-scale"></span>
         </div>
         <a class="row link" href="music-test.html" data-i18n="musicTest">Apple Music 링크 확인 (차에서)</a>
         <button class="row link" type="button" id="demo-km" data-i18n="demoKm">30km 달린 것으로 하기</button>

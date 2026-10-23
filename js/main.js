@@ -329,8 +329,12 @@ $('ds-water').addEventListener('click', () => { closeSheets(); $('water-btn').cl
 $('cs-retry').addEventListener('click', () => { toast(t('toast.recheck', { error: t(weatherNow().error) })); weatherWatch?.refresh(); });
 
 // 식물 위젯을 누르면 도감
+// 도감에서 보고 있는 식물 (탭으로 가진 식물끼리 바꿔 본다)
+let guideId = state.active;
+const showGuide = () => renderGuide(state, state.plants[guideId] ? guideId : state.active, (id) => { guideId = id; showGuide(); });
 $('grow-card').addEventListener('click', () => {
-  renderGuide(state);
+  guideId = state.active;
+  showGuide();
   openSheet($('plant-sheet'));
 });
 
@@ -549,7 +553,7 @@ $('pref-lang').addEventListener('click', (e) => {
   showAlbum();
   syncSettings();
   if ($('greenhouse-sheet').open) renderGreenhouseSheet();
-  if ($('plant-sheet').open) renderGuide(state);
+  if ($('plant-sheet').open) showGuide();
   if ($('charge-sheet').open) showCharge();
   // 지역 이름을 새 언어로 다시 받는다
   weatherWatch?.refresh();
