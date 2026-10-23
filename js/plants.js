@@ -100,7 +100,7 @@ const GUIDE = Object.freeze({
   },
 });
 // 알맞은 범위에서 이만큼(°C)까지 벗어나면 '조금', 더 벗어나면 '너무'
-const TEMP_MARGIN = 5;
+export const TEMP_MARGIN = 5;
 
 const infoOf = (id) => PLANTS[id] || PLANTS[FIRST_PLANT];
 const isEn = () => getLang() === 'en';

@@ -1,10 +1,11 @@
-import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, fertilize, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, waterCheck, fertilize, stageOf, buyPlant, selectPlant, catchGuest } from './state.js';
 import { PLANTS, stageName, adultOf, plantName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
 import { createSky, orbPosition } from './sky.js';
 import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, renderGuide, renderGreeting, toast } from './ui.js';
+import { renderDewSheet, renderCondSheet } from './detail-ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch, greetSwell } from './sound.js';
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
@@ -169,6 +170,9 @@ function render() {
   if (isDriving()) guests.leave();
   renderStatus(state, { ...careContext(), driving: isDriving() });
   if (LAB) $('fert-num').textContent = String(state.fert);
+  // 설명 시트가 열려 있으면 같이 새로
+  if ($('dew-sheet').open) showDewSheet();
+  if ($('cond-sheet').open) showCondSheet();
 }
 
 function commit(next) {
@@ -309,6 +313,21 @@ $('weather-now').addEventListener('click', () => {
   weatherWatch.refresh();
 });
 
+// 이슬·컨디션 위젯을 누르면 설명 시트
+function showDewSheet() {
+  const canWater = !isDriving() && waterCheck(state).ok;
+  renderDewSheet(state, { gpsOn: prefs.useGps, canWater, waterLabel: $('water-sub').textContent });
+}
+function showCondSheet() {
+  const w = weatherNow();
+  const weatherLine = [weatherStatusText(), fixedSky() ? '' : w.place].filter(Boolean).join(' · ');
+  renderCondSheet(state, { ...careContext(), weatherLine, failed: w.status === 'error' && Boolean(weatherWatch) });
+}
+$('dew-card').addEventListener('click', () => { showDewSheet(); openSheet($('dew-sheet')); });
+$('cond').addEventListener('click', () => { showCondSheet(); openSheet($('cond-sheet')); });
+$('ds-water').addEventListener('click', () => { closeSheets(); $('water-btn').click(); });
+$('cs-retry').addEventListener('click', () => { toast(t('toast.recheck', { error: t(weatherNow().error) })); weatherWatch?.refresh(); });
+
 // 식물 위젯을 누르면 도감
 $('grow-card').addEventListener('click', () => {
   renderGuide(state);
@@ -367,6 +386,8 @@ function tickCharge() {
     if (prefs.effects) chime();
   }
   if ($('charge-sheet').open) showCharge();
+  if ($('dew-sheet').open) showDewSheet();
+  if ($('cond-sheet').open) showCondSheet();
 }
 const showCharge = () => renderCharge({ state, session: chargeSession, now: Date.now(), gpsOn: prefs.useGps, today: todayKey() });
 if (LAB) setInterval(tickCharge, CHARGE_TICK_MS);

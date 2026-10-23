@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610231153">
-<link rel="stylesheet" href="css/app.css?v=2610231153">
+<link rel="stylesheet" href="css/tokens.css?v=2610231216">
+<link rel="stylesheet" href="css/app.css?v=2610231216">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -117,21 +117,22 @@
         <p class="grow-meaning" id="grow-meaning" hidden></p>
         <p class="sr-only" id="stage-sub"></p>
       </button>
-      <div class="wd" style="--c: var(--water)">
+      <!-- 누르면 이슬 설명 -->
+      <button class="wd dew" type="button" id="dew-card" aria-haspopup="dialog" style="--c: var(--water)">
         <p class="wd-key"><span data-i18n="dew">이슬</span></p>
         <span class="wd-badge" id="gift-badge" hidden data-i18n="firstGift">첫 선물</span>
         <p class="wd-count"><span id="drops-num">0</span><small> / 12</small></p>
         <p class="wd-rule" data-i18n="dewRule">10km 달리면 1개</p>
         <div class="dots cols-6" id="drops-dots" aria-hidden="true"></div>
-      </div>
-      <!-- 컨디션: 지금 기온이 식물에게 맞는지(보여 주기만), 지금 물 주면 두 배인지 -->
-      <div class="wd cond" id="cond" data-state="unknown" style="--c: var(--tint)">
+      </button>
+      <!-- 컨디션: 지금 기온이 식물에게 맞는지(보여 주기만), 지금 물 주면 두 배인지. 누르면 컨디션 설명 -->
+      <button class="wd cond" type="button" id="cond" aria-haspopup="dialog" data-state="unknown" style="--c: var(--tint)">
         <p class="wd-key"><span data-i18n="condition">컨디션</span></p>
         <p class="cond-state" id="cond-state">온도를 몰라요</p>
         <div class="cond-bar" aria-hidden="true"><i class="range" id="cond-range"></i><b class="now" id="cond-now" hidden></b></div>
         <p class="cond-scale"><b id="cond-temp"></b><span id="cond-best"></span></p>
         <p class="cond-bonus" id="cond-bonus"></p>
-      </div>
+      </button>
       <!-- 아래 두 칸을 다 쓰는 물 주기. 이슬이 없으면 회색 카드로 바뀌고, 아이콘 둘레 고리가 다음 이슬까지 차오른다. 지금 두 배면 ×2 -->
       <button class="act water" type="button" id="water-btn">
         <span class="act-ic" aria-hidden="true"><svg><use href="#i-drop"/></svg></span>
@@ -175,6 +176,61 @@
       </div>
       <p class="ps-label" data-i18n="growthStages">자라는 단계</p>
       <ol class="ps-stages" id="ps-stages"></ol>
+    </dialog>
+
+    <!-- 이슬 설명: 지금 몇 개인지 크게, 다음 이슬까지 남은 거리, 담아 둔 12칸 -->
+    <dialog class="sheet detail-sheet" id="dew-sheet" aria-labelledby="dew-title" style="--c: var(--water)">
+      <div class="d-head">
+        <div class="d-hero">
+          <p class="d-k" data-i18n="dew">이슬</p>
+          <p class="d-big"><span id="ds-num">0</span><small>/ 12</small></p>
+          <p class="d-hero-sub" id="ds-hero-sub"></p>
+        </div>
+        <div class="d-body">
+          <div class="sheet-head"><h2 id="dew-title" data-i18n="dew">이슬</h2><button class="text-btn" type="button" data-close data-i18n="done">완료</button></div>
+          <p class="d-about" data-i18n="dewAbout">이슬은 달린 거리로 모여요. 10km마다 1개, 12개까지 담아 둘 수 있어요. 물을 줄 때마다 1개씩 쓰고, 물을 주면 식물이 자라요. 실제로 달린 거리는 ‘실제 주행으로 이슬 모으기’를 켜 둔 동안만 세요.</p>
+          <div class="d-facts">
+            <div class="d-fact"><p data-i18n="nextDew">다음 이슬까지</p><b id="ds-next"></b></div>
+            <div class="d-fact"><p data-i18n="todayDrive">오늘 주행</p><b id="ds-today"></b></div>
+            <div class="d-fact"><p data-i18n="waterings">물 준 횟수</p><b id="ds-count"></b></div>
+            <div class="d-fact"><p data-i18n="gpsShort">실제 주행으로 모으기</p><b id="ds-gps"></b></div>
+          </div>
+        </div>
+      </div>
+      <p class="d-label" data-i18n="dewStored">담아 둔 이슬</p>
+      <div class="d-drops" id="ds-drops" aria-hidden="true"></div>
+      <div class="d-km" id="ds-km-wrap"><i id="ds-km-bar"></i></div>
+      <p class="d-km-cap"><span id="ds-km-of"></span><b id="ds-km-left"></b></p>
+      <div class="d-btns">
+        <button class="d-btn go" type="button" id="ds-water"></button>
+        <button class="d-btn" type="button" data-close data-i18n="close">닫기</button>
+      </div>
+    </dialog>
+
+    <!-- 컨디션 설명: 지금 기온과 상태 크게, 식물이 좋아하는 온도 막대, 다섯 구간, 지금 두 배인지 -->
+    <dialog class="sheet detail-sheet" id="cond-sheet" aria-labelledby="cond-title" style="--c: var(--tint)">
+      <div class="d-head">
+        <div class="d-hero" id="cs-hero" data-state="unknown">
+          <p class="d-k" data-i18n="condition">컨디션</p>
+          <p class="d-big cs-temp" id="cs-temp">–°</p>
+          <p class="d-state" id="cs-state"></p>
+          <p class="d-hero-sub" id="cs-sub"></p>
+          <button class="d-retry" type="button" id="cs-retry" hidden data-i18n="recheck">다시 확인</button>
+        </div>
+        <div class="d-body">
+          <div class="sheet-head"><h2 id="cond-title" data-i18n="condition">컨디션</h2><button class="text-btn" type="button" data-close data-i18n="done">완료</button></div>
+          <p class="d-about" id="cs-about"></p>
+          <div class="t-scale" aria-hidden="true">
+            <div class="t-track"></div><div class="t-ok" id="cs-ok"></div>
+            <div class="t-now" id="cs-now"><span id="cs-now-label"></span></div>
+            <div class="t-ticks" id="cs-ticks"></div>
+          </div>
+        </div>
+      </div>
+      <p class="d-label" id="cs-zones-label"></p>
+      <ol class="t-zones" id="cs-zones"></ol>
+      <div class="x2row" id="cs-x2"><span class="x2">×2</span><p><b id="cs-x2-title"></b> <span id="cs-x2-hint"></span></p></div>
+      <div class="d-btns"><button class="d-btn" type="button" data-close data-i18n="close">닫기</button></div>
     </dialog>
 
     <!-- 주행 요약: 1km 넘게 달리고 2분 동안 멈추면 이번 주행을 정리해 보여 준다 -->
@@ -366,8 +422,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231153","./js/albums-en.js":"./js/albums-en.js?v=2610231153","./js/albums.js":"./js/albums.js?v=2610231153","./js/charge-ui.js":"./js/charge-ui.js?v=2610231153","./js/charge.js":"./js/charge.js?v=2610231153","./js/drive.js":"./js/drive.js?v=2610231153","./js/guest-visit.js":"./js/guest-visit.js?v=2610231153","./js/guests.js":"./js/guests.js?v=2610231153","./js/i18n.js":"./js/i18n.js?v=2610231153","./js/main.js":"./js/main.js?v=2610231153","./js/motions.js":"./js/motions.js?v=2610231153","./js/plant.js":"./js/plant.js?v=2610231153","./js/plants.js":"./js/plants.js?v=2610231153","./js/qr.js":"./js/qr.js?v=2610231153","./js/scene.js":"./js/scene.js?v=2610231153","./js/sky.js":"./js/sky.js?v=2610231153","./js/sound.js":"./js/sound.js?v=2610231153","./js/state.js":"./js/state.js?v=2610231153","./js/storage.js":"./js/storage.js?v=2610231153","./js/superchargers.js":"./js/superchargers.js?v=2610231153","./js/text.js":"./js/text.js?v=2610231153","./js/trip.js":"./js/trip.js?v=2610231153","./js/tutorial.js":"./js/tutorial.js?v=2610231153","./js/ui.js":"./js/ui.js?v=2610231153","./js/weather.js":"./js/weather.js?v=2610231153"}}</script>
-<script type="module" src="js/main.js?v=2610231153"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231216","./js/albums-en.js":"./js/albums-en.js?v=2610231216","./js/albums.js":"./js/albums.js?v=2610231216","./js/charge-ui.js":"./js/charge-ui.js?v=2610231216","./js/charge.js":"./js/charge.js?v=2610231216","./js/detail-ui.js":"./js/detail-ui.js?v=2610231216","./js/drive.js":"./js/drive.js?v=2610231216","./js/guest-visit.js":"./js/guest-visit.js?v=2610231216","./js/guests.js":"./js/guests.js?v=2610231216","./js/i18n.js":"./js/i18n.js?v=2610231216","./js/main.js":"./js/main.js?v=2610231216","./js/motions.js":"./js/motions.js?v=2610231216","./js/plant.js":"./js/plant.js?v=2610231216","./js/plants.js":"./js/plants.js?v=2610231216","./js/qr.js":"./js/qr.js?v=2610231216","./js/scene.js":"./js/scene.js?v=2610231216","./js/sky.js":"./js/sky.js?v=2610231216","./js/sound.js":"./js/sound.js?v=2610231216","./js/state.js":"./js/state.js?v=2610231216","./js/storage.js":"./js/storage.js?v=2610231216","./js/superchargers.js":"./js/superchargers.js?v=2610231216","./js/text.js":"./js/text.js?v=2610231216","./js/trip.js":"./js/trip.js?v=2610231216","./js/tutorial.js":"./js/tutorial.js?v=2610231216","./js/ui.js":"./js/ui.js?v=2610231216","./js/weather.js":"./js/weather.js?v=2610231216"}}</script>
+<script type="module" src="js/main.js?v=2610231216"></script>
 <!-- version:end -->
 </body>
 </html>

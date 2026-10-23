@@ -42,7 +42,7 @@ function pointsToNext(state) {
 }
 
 const roundTemp = (temp) => Math.round(temp);
-const barPercent = (temp) => ((Math.min(BAR_MAX, Math.max(BAR_MIN, temp)) - BAR_MIN) / (BAR_MAX - BAR_MIN)) * 100;
+export const barPercent = (temp) => ((Math.min(BAR_MAX, Math.max(BAR_MIN, temp)) - BAR_MIN) / (BAR_MAX - BAR_MIN)) * 100;
 
 /**
  * @typedef {{driving:boolean, isNight:boolean, sunny:boolean, temp:number|null}} StatusContext
@@ -119,7 +119,7 @@ function renderCondition(state, { temp, isNight, sunny }) {
 }
 
 /** 두 배 알약 글자: 지금이면 '지금 물 주면 ×2', 아니면 언제 되는지 */
-function bonusText({ rule, active, left }) {
+export function bonusText({ rule, active, left }) {
   if (rule === 'dry') return active ? t('bonus.dry.on', { n: left }) : t('bonus.dry.off');
   if (active) return t('bonus.on');
   return rule === 'road' ? t('bonus.road.off', { km: left }) : t(`bonus.${rule}.off`);
