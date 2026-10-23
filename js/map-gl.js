@@ -158,7 +158,8 @@ export function createGlMap(container, { scale, padding, onSelect, onFail }) {
     });
   }
 
-  let lastKey = '';
+  // 처음엔 null: 도장이 하나도 없을 때(빈 글자)도 첫 번째엔 점을 그린다
+  let lastKey = null;
   /** @param {{all:object[], stamps:object, selected:object, me:{lat:number, lon:number}|null}} data */
   function update(data) {
     if (!ready) { pending = data; return; }
