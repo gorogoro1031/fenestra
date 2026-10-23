@@ -489,7 +489,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .stamp.empty { border-style: dashed; border-color: rgba(118, 118, 128, .45); color: var(--label-3); transform: none; }
 /* 이스터에그 차: 기다릴 땐 회색으로 졸고, 근처면 초록, 충전 중이면 번개가 깜빡이고 살짝 들썩. 누르면 깡충 */
 .cn { position: relative; }
-.cn-car { position: absolute; right: 24px; top: 12px; width: 160px; height: 74px; color: #6e6e73; }
+.cn-car { position: absolute; right: 24px; top: 20px; width: 160px; height: 74px; color: #6e6e73; }
 /* 차 모양은 마스크 그림(모델 Y 주니퍼 옆모습), 색은 글자색을 따라 회색·초록 */
 .cn-body {
   position: absolute; left: 0; right: 0; bottom: 0; height: 55px; background: currentColor; transform-origin: 50% 100%;
@@ -499,7 +499,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .cn-fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: 0; }
 .cn-car .cn-body { z-index: 1; }
 .cn-cable { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; opacity: 0; }
-.cn-bolt { fill: #ecf03c; opacity: 0; transform-origin: 95px 8px; }
+.cn-bolt { fill: #ecf03c; opacity: 0; transform-origin: 95px -1px; }
 .cn.near .cn-car, .cn.on .cn-car { color: var(--fert); }
 .cn.on .cn-cable { opacity: .7; }
 .cn.on .cn-bolt { animation: cn-bolt 1.6s var(--ease-out) infinite; }
