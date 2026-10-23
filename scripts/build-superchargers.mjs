@@ -50,8 +50,63 @@ const KO_LABEL = {
 // 'Paju-si', 'Uljin County' → 'Paju', 'Uljin'
 const baseCity = (city) => city.replace(/(-si|-gun|-gu| County)$/i, '').trim();
 
-const [, , input] = process.argv;
-if (!input) throw new Error('allSites JSON 경로를 넘겨 주세요');
+// 시·도 → 지역 묶음 (지역 도장 모으기). Natural Earth admin-1의 name_ko 기준
+const REGION_OF = {
+  서울특별시: 'capital', 인천광역시: 'capital', 경기도: 'capital', 강원도: 'gangwon',
+  대전광역시: 'chung', 세종특별자치시: 'chung', 충청북도: 'chung', 충청남도: 'chung',
+  광주광역시: 'jeolla', 전라북도: 'jeolla', 전라남도: 'jeolla',
+  부산광역시: 'gyeong', 대구광역시: 'gyeong', 울산광역시: 'gyeong', 경상북도: 'gyeong', 경상남도: 'gyeong',
+  제주특별자치도: 'jeju',
+};
+// 먼 곳: 이 거리(km) 안에 다른 슈퍼차저가 없거나 제주
+const FAR_KM = 25;
+
+const ringsOf = (f) => (f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [f.geometry.coordinates]).map((poly) => poly[0]);
+function inside([x, y], ring) {
+  let c = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+}
+/** 좌표가 든 시·도. 바닷가라 경계 밖이면 가장 가까운 꼭짓점의 시·도 */
+function provinceOf(lon, lat, features) {
+  const hit = features.find((f) => ringsOf(f).some((r) => inside([lon, lat], r)));
+  if (hit) return hit.properties.name_ko;
+  let best = null;
+  let bestD = Infinity;
+  features.forEach((f) => ringsOf(f).forEach((r) => r.forEach(([x, y]) => {
+    const d = (x - lon) ** 2 + (y - lat) ** 2;
+    if (d < bestD) { bestD = d; best = f.properties.name_ko; }
+  })));
+  return best;
+}
+function km(a, b) {
+  const rad = Math.PI / 180;
+  const h = Math.sin(((b[0] - a[0]) * rad) / 2) ** 2 + Math.cos(a[0] * rad) * Math.cos(b[0] * rad) * Math.sin(((b[1] - a[1]) * rad) / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+// 지도 투영: 1920×1200 화면용 단순 등장방형 (위도 36.3°에서 가로를 줄인다). 화면 좌표 = 이 값
+const MAP = { K: 178, COS: Math.cos((36.3 * Math.PI) / 180), LON0: 124.5, LAT0: 38.7 };
+const project = (lon, lat) => [(lon - MAP.LON0) * MAP.K * MAP.COS, (MAP.LAT0 - lat) * MAP.K];
+/** 시·도 윤곽을 SVG 경로로. 1.5px보다 가까운 점은 건너뛰고, 아주 작은 섬은 뺀다 */
+function pathOf(feature) {
+  return ringsOf(feature).map((ring) => {
+    const pts = ring.map(([x, y]) => project(x, y));
+    const xs = pts.map((p) => p[0]);
+    const ys = pts.map((p) => p[1]);
+    if (Math.max(...xs) - Math.min(...xs) < 3 && Math.max(...ys) - Math.min(...ys) < 3) return '';
+    const kept = pts.filter((p, i) => i === 0 || i === pts.length - 1 || Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) >= 1.5);
+    return `M${kept.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join('L')}Z`;
+  }).join('');
+}
+
+const [, , input, provincesPath] = process.argv;
+if (!input || !provincesPath) throw new Error('allSites JSON과 Natural Earth 한국 시·도 GeoJSON 경로를 넘겨 주세요');
+const provinces = JSON.parse(readFileSync(provincesPath, 'utf8')).features;
 const all = JSON.parse(readFileSync(input, 'utf8'));
 const sites = all
   .filter((s) => s.address?.country === 'South Korea' && s.status === 'OPEN' && s.gps)
@@ -63,12 +118,29 @@ const sites = all
     const label = s.name.split(' - ').slice(1).join(' - ').trim().replace(/^\d+\s+(?=\D)/, '');
     const labelKo = label ? KO_LABEL[s.id] : '';
     if (label && !labelKo) throw new Error(`한국어 자리 이름이 없어요: ${s.id} ${label}`);
-    return [s.id, ko, en, labelKo, label, Number(s.gps.latitude.toFixed(5)), Number(s.gps.longitude.toFixed(5))];
+    const lat = Number(s.gps.latitude.toFixed(5));
+    const lon = Number(s.gps.longitude.toFixed(5));
+    const region = REGION_OF[provinceOf(lon, lat, provinces)];
+    if (!region) throw new Error(`지역을 못 찾았어요: ${s.id}`);
+    return [s.id, ko, en, labelKo, label, lat, lon, region];
   })
-  .sort((a, b) => a[0] - b[0]);
+  .sort((a, b) => a[0] - b[0])
+  .map((row, _, rows) => {
+    const far = row[7] === 'jeju' || rows.every((o) => o === row || km([row[5], row[6]], [o[5], o[6]]) > FAR_KM);
+    return [...row, far ? 1 : 0];
+  });
 
 const header = `// 국내 운영 중인 테슬라 슈퍼차저 (supercharge.info 공개 목록, scripts/build-superchargers.mjs로 만듦)
-// [id, 도시(한국어), 도시(영어), 자리 이름(한국어), 자리 이름(영어), 위도, 경도]. 자리 이름이 없으면 빈 글자
+// [id, 도시(한국어), 도시(영어), 자리 이름(한국어), 자리 이름(영어), 위도, 경도, 지역, 먼 곳(1)]. 자리 이름이 없으면 빈 글자
 `;
 writeFileSync(new URL('../js/superchargers.js', import.meta.url), `${header}export const SUPERCHARGERS = Object.freeze(${JSON.stringify(sites).replace(/\],\[/g, '],\n  [').replace(/^\[\[/, '[\n  [').replace(/\]\]$/, '],\n]')});\n`);
-console.log(`${sites.length}곳`);
+const mapHeader = `// 슈퍼차저 지도의 대한민국 시·도 윤곽 (Natural Earth 1:10m admin-1, 퍼블릭 도메인. scripts/build-superchargers.mjs로 만듦)
+// 1920×1200 화면 좌표. 슈퍼차저 점도 같은 project()로 놓는다
+`;
+writeFileSync(new URL('../js/korea-map.js', import.meta.url), `${mapHeader}export const MAP_VIEW = '-130 0 900 1000';
+const MAP = ${JSON.stringify(MAP)};
+/** 경도·위도 → 지도 좌표 */
+export const project = (lon, lat) => [(lon - MAP.LON0) * MAP.K * MAP.COS, (MAP.LAT0 - lat) * MAP.K];
+export const PROVINCE_PATHS = Object.freeze(${JSON.stringify(provinces.map(pathOf).filter(Boolean)).replace(/","/g, '",\n  "').replace(/^\["/, '[\n  "').replace(/"\]$/, '",\n]')});
+`);
+console.log(`${sites.length}곳 · 먼 곳 ${sites.filter((r) => r[8]).length}곳`);
