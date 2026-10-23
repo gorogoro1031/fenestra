@@ -113,7 +113,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .coin-pill { display: inline-flex; align-items: center; gap: 10px; height: 104px; padding: 0 32px; border-radius: 999px; background: var(--panel); font-size: 26px; font-weight: 600; color: var(--label-2); }
 .coin-pill b { color: var(--label); font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .coin-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 5px rgba(236, 240, 60, .18); }
-.fert-dot { width: 16px; height: 16px; border-radius: 4px; background: var(--fert); transform: rotate(45deg); box-shadow: 0 0 0 5px color-mix(in srgb, var(--fert) 20%, transparent); }
+.sc-bolt { width: 26px; height: 26px; fill: #ecf03c; stroke: none; }
 .fert-pill { margin-right: 12px; }
 .fert-pill:active { transform: scale(.96); }
 .segmented.hand { background: var(--panel); padding: 6px; border-radius: 999px; }

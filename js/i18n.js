@@ -472,7 +472,7 @@ const STATIC_EN = {
   demoTrip: 'Preview drive summary',
   demoCharge: 'Pretend I’m at a Supercharger',
   chargeTitle: 'Charging Rewards',
-  fert: 'Fertilizer',
+  scPill: 'Supercharger',
   useFert: 'Use fertilizer',
   stampBook: 'Charger Stamps',
   dewAbout: 'Dew comes from driving: 1 for every 10 km, up to 12. Each watering uses 1, and watering makes your plant grow. Real driving only counts while ‘Collect dew by driving’ is on.',

@@ -194,7 +194,8 @@ function syncAmbient() {
 function render() {
   if (isDriving()) guests.leave();
   renderStatus(state, { ...careContext(), driving: isDriving() });
-  if (LAB) $('fert-num').textContent = String(state.fert);
+  // 슈퍼차저 버튼: 모은 도장 수 (비료는 충전 화면과 식물 위젯에서 보여 준다)
+  if (LAB) $('sc-num').textContent = String(Object.keys(state.stamps).length);
   // 설명 시트가 열려 있으면 같이 새로
   if ($('dew-sheet').open) showDewSheet();
   if ($('cond-sheet').open) showCondSheet();
