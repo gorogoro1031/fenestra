@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610221705">
-<link rel="stylesheet" href="css/app.css?v=2610221705">
+<link rel="stylesheet" href="css/tokens.css?v=2610230933">
+<link rel="stylesheet" href="css/app.css?v=2610230933">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -237,8 +237,12 @@
           <input class="name-input" id="pref-name" type="text" maxlength="20" autocomplete="off" spellcheck="false" enterkeyhint="done" aria-label="이름" data-i18n-label="name">
         </div>
         <div class="row">
-          <div><p class="r-title" data-i18n="calmSound">잔잔한 소리</p><p class="r-sub" data-i18n="calmSoundSub">잔잔한 앰비언트 음악과 바람·빗소리 · 첫 터치부터</p></div>
-          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-sound" aria-label="잔잔한 소리" data-i18n-label="calmSound"></button>
+          <div><p class="r-title" data-i18n="ambient">배경 소리</p><p class="r-sub" data-i18n="ambientSub">잔잔한 앰비언트 음악과 바람·빗소리 · 첫 터치부터</p></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-ambient" aria-label="배경 소리" data-i18n-label="ambient"></button>
+        </div>
+        <div class="row">
+          <div><p class="r-title" data-i18n="effects">효과음</p><p class="r-sub" data-i18n="effectsSub">인사, 잎을 건드릴 때, 물 주기, 손님</p></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="pref-effects" aria-label="효과음" data-i18n-label="effects"></button>
         </div>
         <div class="row">
           <div><p class="r-title" data-i18n="autoSave">자동 저장</p><p class="r-sub" data-i18n="autoSaveSub">바뀔 때마다 이 기기에 바로 저장돼요 · 브라우저가 닫혀도 그대로 이어져요</p></div>
@@ -324,8 +328,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610221705","./js/albums-en.js":"./js/albums-en.js?v=2610221705","./js/albums.js":"./js/albums.js?v=2610221705","./js/drive.js":"./js/drive.js?v=2610221705","./js/guest-visit.js":"./js/guest-visit.js?v=2610221705","./js/guests.js":"./js/guests.js?v=2610221705","./js/i18n.js":"./js/i18n.js?v=2610221705","./js/main.js":"./js/main.js?v=2610221705","./js/motions.js":"./js/motions.js?v=2610221705","./js/plant.js":"./js/plant.js?v=2610221705","./js/plants.js":"./js/plants.js?v=2610221705","./js/qr.js":"./js/qr.js?v=2610221705","./js/scene.js":"./js/scene.js?v=2610221705","./js/sky.js":"./js/sky.js?v=2610221705","./js/sound.js":"./js/sound.js?v=2610221705","./js/state.js":"./js/state.js?v=2610221705","./js/storage.js":"./js/storage.js?v=2610221705","./js/text.js":"./js/text.js?v=2610221705","./js/trip.js":"./js/trip.js?v=2610221705","./js/tutorial.js":"./js/tutorial.js?v=2610221705","./js/ui.js":"./js/ui.js?v=2610221705","./js/weather.js":"./js/weather.js?v=2610221705"}}</script>
-<script type="module" src="js/main.js?v=2610221705"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610230933","./js/albums-en.js":"./js/albums-en.js?v=2610230933","./js/albums.js":"./js/albums.js?v=2610230933","./js/drive.js":"./js/drive.js?v=2610230933","./js/guest-visit.js":"./js/guest-visit.js?v=2610230933","./js/guests.js":"./js/guests.js?v=2610230933","./js/i18n.js":"./js/i18n.js?v=2610230933","./js/main.js":"./js/main.js?v=2610230933","./js/motions.js":"./js/motions.js?v=2610230933","./js/plant.js":"./js/plant.js?v=2610230933","./js/plants.js":"./js/plants.js?v=2610230933","./js/qr.js":"./js/qr.js?v=2610230933","./js/scene.js":"./js/scene.js?v=2610230933","./js/sky.js":"./js/sky.js?v=2610230933","./js/sound.js":"./js/sound.js?v=2610230933","./js/state.js":"./js/state.js?v=2610230933","./js/storage.js":"./js/storage.js?v=2610230933","./js/text.js":"./js/text.js?v=2610230933","./js/trip.js":"./js/trip.js?v=2610230933","./js/tutorial.js":"./js/tutorial.js?v=2610230933","./js/ui.js":"./js/ui.js?v=2610230933","./js/weather.js":"./js/weather.js?v=2610230933"}}</script>
+<script type="module" src="js/main.js?v=2610230933"></script>
 <!-- version:end -->
 </body>
 </html>

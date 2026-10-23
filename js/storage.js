@@ -8,7 +8,7 @@ const KEY_PREFS = 'fenestra:v2:prefs';
 // 처음 켤 때 언어: 브라우저가 한국어면 한국어, 아니면 영어
 const browserLang = () => (typeof navigator !== 'undefined' && !/^ko/i.test(navigator.language || 'ko') ? 'en' : 'ko');
 
-export const DEFAULT_PREFS = Object.freeze({ sound: true, useGps: false, scene: 'auto', sky: 'auto', theme: 'dark', name: '', tutorialSeen: false, hand: 'driver', musicApp: 'apple' });
+export const DEFAULT_PREFS = Object.freeze({ ambient: true, effects: true, useGps: false, scene: 'auto', sky: 'auto', theme: 'dark', name: '', tutorialSeen: false, hand: 'driver', musicApp: 'apple' });
 
 function read(key) {
   try {
@@ -34,7 +34,9 @@ export const saveState = (state) => write(KEY_STATE, state);
 export function loadPrefs() {
   const raw = read(KEY_PREFS) || {};
   return {
-    sound: raw.sound !== false,
+    // 소리: 배경 소리(앰비언트·바람·빗소리)와 효과음(인사·잎·물 주기·손님)을 따로. 예전 하나짜리 sound는 배경 소리로 옮긴다
+    ambient: (raw.ambient ?? raw.sound) !== false,
+    effects: raw.effects !== false,
     useGps: raw.useGps === true,
     scene: ['auto', 'day', 'night'].includes(raw.scene) ? raw.scene : DEFAULT_PREFS.scene,
     // 날씨: 실제(auto)가 기본, 나머지는 확인용으로 고정. 예전 'weather'(직접 고르던 값)는 버린다

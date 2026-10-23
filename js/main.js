@@ -153,7 +153,7 @@ let audioReady = false;
 let moodKey = '';
 function syncAmbient() {
   if (!audioReady) return;
-  const mood = prefs.sound ? { scene: currentScene(), weather: isWet() ? 'rain' : 'clear' } : null;
+  const mood = prefs.ambient ? { scene: currentScene(), weather: isWet() ? 'rain' : 'clear' } : null;
   const key = mood ? `${mood.scene}-${mood.weather}` : 'off';
   if (key === moodKey) return;
   moodKey = key;
@@ -227,7 +227,7 @@ stageEl.addEventListener('pointerdown', (e) => {
 /* 잎 악기: 높은 잎을 누를수록 높은 음. 흔든 잎에서 가끔 손님이 나온다 */
 function onLeafTouched(x, y, height) {
   fx.burst(x, y);
-  if (prefs.sound && audioReady) leafTouch(currentScene(), height);
+  if (prefs.effects && audioReady) leafTouch(currentScene(), height);
   const now = Date.now();
   if (shouldSpawn({ now, lastAt: lastGuestAt, present: guests.present, driving: isDriving() })) {
     lastGuestAt = now;
@@ -248,7 +248,7 @@ const guests = createGuestVisit($('guest-layer'), {
     commit(catchGuest(state, id));
     const earned = state.coins - before;
     fx.burst(x, y);
-    if (prefs.sound) chime();
+    if (prefs.effects) chime();
     const met = t(firstTime ? 'toast.guestFirst' : 'toast.guestAgain', { name: guestName(id) });
     toast(`${met} · ${earned > 0 ? t('toast.coins', { n: earned }) : t('toast.guestCap')}`);
   },
@@ -265,7 +265,7 @@ function scheduleGust() {
 }
 
 function onGust(strength) {
-  if (prefs.sound && audioReady) rustle(strength);
+  if (prefs.ambient && audioReady) rustle(strength);
 }
 
 /* ---------- 돌보기 ---------- */
@@ -277,7 +277,7 @@ $('water-btn').addEventListener('click', () => {
   fx.water(anchor);
   // 두 배로 자라면 식물 뒤로 노란 파장
   if (result.bonus) arcs.pulse();
-  if (prefs.sound) drip();
+  if (prefs.effects) drip();
   plant.glow();
   commit(result.state);
   if (result.stageUp) {
@@ -288,7 +288,7 @@ $('water-btn').addEventListener('click', () => {
       const adult = adultOf(state.active);
       if (result.grownNow) toast(t('toast.grown', { plant: plantName(state.active), adult: adult.name, meaning: adult.meaning, reward: RULES.GROWN_REWARD }));
       else toast(stage === before + 1 ? t('toast.grew', { stage: stageName(state.active, stage) }) : t('toast.grewPlain'));
-      if (prefs.sound) chime();
+      if (prefs.effects) chime();
     }, 600);
   } else {
     toast(result.bonus ? t('toast.double', { n: result.grew }) : `+${result.grew}`);
@@ -371,7 +371,7 @@ function renderGreenhouseSheet() {
     applyScene();
     renderGreenhouseSheet();
     toast(t(action === 'buy' ? 'toast.bought' : 'toast.selected', { plant: plantName(id) }));
-    if (action === 'buy' && prefs.sound) chime();
+    if (action === 'buy' && prefs.effects) chime();
   });
 }
 
@@ -396,7 +396,8 @@ document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('cli
 scrim.addEventListener('click', closeSheets);
 
 function syncSettings() {
-  $('pref-sound').setAttribute('aria-checked', String(prefs.sound));
+  $('pref-ambient').setAttribute('aria-checked', String(prefs.ambient));
+  $('pref-effects').setAttribute('aria-checked', String(prefs.effects));
   $('pref-gps').setAttribute('aria-checked', String(prefs.useGps));
   // 입력 중에는 글자를 덮어쓰지 않는다 (커서가 튀지 않게)
   const nameInput = $('pref-name');
@@ -435,8 +436,9 @@ $('pref-name').addEventListener('input', (e) => {
 $('pref-name').addEventListener('change', (e) => { e.target.value = prefs.name; });
 $('pref-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 
-$('pref-sound').addEventListener('click', () => {
-  updatePrefs({ sound: !prefs.sound });
+$('pref-effects').addEventListener('click', () => updatePrefs({ effects: !prefs.effects }));
+$('pref-ambient').addEventListener('click', () => {
+  updatePrefs({ ambient: !prefs.ambient });
   syncAmbient();
 });
 $('pref-gps').addEventListener('click', () => {
@@ -569,7 +571,7 @@ function startIntro(plantReady) {
       opening.classList.remove('ready');
       opening.classList.add('greeting');
       unlock();
-      if (prefs.sound) greetSwell(currentScene());
+      if (prefs.effects) greetSwell(currentScene());
       setTimeout(reveal, GREET_MS);
     };
     setTimeout(() => {
