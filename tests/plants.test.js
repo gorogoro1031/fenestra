@@ -53,3 +53,15 @@ test('기온 컨디션: 알맞은 범위, 5° 안쪽은 조금, 그 밖은 너�
   assert.equal(conditionFor('rubber', 26), 'warm');
   assert.equal(conditionFor('monstera', null), 'unknown');
 });
+
+test('지역마다 키울 수 있는 지역 식물이 하나씩 있고, 꽃씨로는 살 수 없다', async () => {
+  const { REGIONS } = await import('../js/charge.js');
+  const { SHOP_PLANT_IDS } = await import('../js/plants.js');
+  REGIONS.forEach((r) => {
+    assert.ok(PLANTS[r.plant], r.plant);
+    assert.equal(PLANTS[r.plant].region, r.id);
+    assert.equal(PLANTS[r.plant].price, null);
+    assert.ok(!SHOP_PLANT_IDS.includes(r.plant));
+  });
+  assert.deepEqual(SHOP_PLANT_IDS, ['monstera', 'cactus', 'sansevieria', 'rubber']);
+});

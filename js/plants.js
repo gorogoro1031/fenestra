@@ -39,13 +39,48 @@ export const PLANTS = Object.freeze({
     hint: '오늘 30km 넘게 달린 날엔 두 배로 자라요',
     en: Object.freeze({ name: 'Rubber Plant', stages: Object.freeze(['Seed', 'Seedling', 'One Stem', 'Two Stems', 'Viator']), adult: 'Viator', meaning: 'traveler', hint: 'Double growth on days you drive over 30 km' }),
   }),
-  // 지역 식물(실험판): 꽃씨로 살 수 없고, 그 지역(region) 슈퍼차저에 처음 들르면 씨앗을 받는다
+  // 지역 식물(실험판) 6종: 꽃씨로 살 수 없고, 그 지역(region) 슈퍼차저에 처음 들르면 씨앗을 받는다
   forsythia: Object.freeze({
     name: '개나리', price: null, region: 'capital', rule: 'sun', thresholds: Object.freeze([0, 2, 8, 18, 32]),
     stages: Object.freeze(['씨앗', '새싹', '어린 가지', '꽃봉오리', '아우레아']),
     adult: Object.freeze({ name: '아우레아', meaning: '황금빛의' }),
     hint: '맑은 낮에 물을 주면 두 배로 자라요',
     en: Object.freeze({ name: 'Forsythia', stages: Object.freeze(['Seed', 'Sprout', 'Young Twigs', 'Buds', 'Aurea']), adult: 'Aurea', meaning: 'golden', hint: 'Double growth when watered on sunny days' }),
+  }),
+  azalea: Object.freeze({
+    name: '철쭉', price: null, region: 'gangwon', rule: 'road', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '새싹', '잔가지', '꽃봉오리', '몬타나']),
+    adult: Object.freeze({ name: '몬타나', meaning: '산의' }),
+    hint: '오늘 30km 넘게 달린 날엔 두 배로 자라요',
+    en: Object.freeze({ name: 'Royal Azalea', stages: Object.freeze(['Seed', 'Sprout', 'Twigs', 'Buds', 'Montana']), adult: 'Montana', meaning: 'of the mountains', hint: 'Double growth on days you drive over 30 km' }),
+  }),
+  magnolia: Object.freeze({
+    name: '백목련', price: null, region: 'chung', rule: 'night', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '새싹', '어린 나무', '첫 꽃', '루키다']),
+    adult: Object.freeze({ name: '루키다', meaning: '빛나는' }),
+    hint: '달이 떠 있는 밤에 물을 주면 두 배로 자라요',
+    en: Object.freeze({ name: 'White Magnolia', stages: Object.freeze(['Seed', 'Sprout', 'Sapling', 'First Bloom', 'Lucida']), adult: 'Lucida', meaning: 'shining', hint: 'Double growth when watered under the moon' }),
+  }),
+  camellia: Object.freeze({
+    name: '동백나무', price: null, region: 'jeolla', rule: 'dry', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '새싹', '윤기 잎', '꽃봉오리', '히에말리스']),
+    adult: Object.freeze({ name: '히에말리스', meaning: '겨울의' }),
+    hint: '물은 하루 두 번이면 충분해요. 대신 한 번에 두 배',
+    en: Object.freeze({ name: 'Camellia', stages: Object.freeze(['Seed', 'Sprout', 'Glossy Leaf', 'Buds', 'Hiemalis']), adult: 'Hiemalis', meaning: 'of winter', hint: 'Two waterings a day is plenty, but each counts double' }),
+  }),
+  zinnia: Object.freeze({
+    name: '백일홍', price: null, region: 'gyeong', rule: 'sun', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '새싹', '줄기', '꽃봉오리', '페렌니스']),
+    adult: Object.freeze({ name: '페렌니스', meaning: '오래가는' }),
+    hint: '맑은 낮에 물을 주면 두 배로 자라요',
+    en: Object.freeze({ name: 'Zinnia', stages: Object.freeze(['Seed', 'Sprout', 'Stems', 'Buds', 'Perennis']), adult: 'Perennis', meaning: 'lasting', hint: 'Double growth when watered on sunny days' }),
+  }),
+  tangerine: Object.freeze({
+    name: '귤나무', price: null, region: 'jeju', rule: 'road', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '새싹', '어린 나무', '꽃·풋귤', '인술라리스']),
+    adult: Object.freeze({ name: '인술라리스', meaning: '섬의' }),
+    hint: '오늘 30km 넘게 달린 날엔 두 배로 자라요',
+    en: Object.freeze({ name: 'Tangerine Tree', stages: Object.freeze(['Seed', 'Sprout', 'Sapling', 'Blossoms', 'Insularis']), adult: 'Insularis', meaning: 'of the island', hint: 'Double growth on days you drive over 30 km' }),
   }),
 });
 
@@ -129,6 +164,81 @@ const GUIDE = Object.freeze({
       origin: 'Korea',
       about: 'A small shrub native to Korea. In spring, yellow flowers fill every branch before the leaves come, and their bell shape gives it the name golden bell. This seed came from a Capital Area Supercharger.',
       stages: ['Waiting in the soil for its first water', 'Soft new leaves on a thin twig', 'The twig branches out', 'Yellow buds form on every branch', 'A grown forsythia covered in yellow flowers'],
+    },
+  },
+  azalea: {
+    temp: [10, 25],
+    ko: {
+      tag: '산길을 달릴수록 신이 나요',
+      origin: '한국 · 중국 북동부의 산',
+      about: '봄이면 산등성이를 연분홍으로 물들이는 키 작은 나무예요. 진달래와 닮았지만 먹을 수 없어 예전엔 ‘개꽃’이라고도 불렀대요. 강원 슈퍼차저에서 받은 씨앗이에요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '작은 새잎이 돋아요', '잔가지가 여럿으로 퍼져요', '연분홍 꽃봉오리가 맺혀요', '산을 물들이는 어른 철쭉이에요'],
+    },
+    en: {
+      tag: 'Loves a long mountain drive',
+      origin: 'Mountains of Korea · Northeast China',
+      about: 'A small shrub that paints Korean ridges pale pink in spring. It looks like the edible jindallae azalea but is not edible, so people once called it the false flower. This seed came from a Gangwon Supercharger.',
+      stages: ['Waiting in the soil for its first water', 'Small new leaves appear', 'Twigs spread out', 'Pale pink buds form', 'A grown azalea that colors the mountains'],
+    },
+  },
+  magnolia: {
+    temp: [10, 25],
+    ko: {
+      tag: '달빛 아래 하얗게 빛나요',
+      origin: '중국',
+      about: '이른 봄, 잎보다 먼저 커다란 흰 꽃을 피우는 나무예요. 꽃봉오리 끝이 북쪽을 향한다고 해서 ‘북향화’라는 별명도 있어요. 충청 슈퍼차저에서 받은 씨앗이에요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '윤기 나는 새잎이 나와요', '가지가 자라 어린 나무가 돼요', '솜털 봉오리에서 첫 꽃이 열려요', '흰 꽃이 가득한 어른 백목련이에요'],
+    },
+    en: {
+      tag: 'Glows white under the moon',
+      origin: 'China',
+      about: 'A tree that opens big white flowers in early spring, before its leaves. In Korea it is nicknamed the north-facing flower, as its bud tips are said to point north. This seed came from a Chungcheong Supercharger.',
+      stages: ['Waiting in the soil for its first water', 'Glossy new leaves come out', 'Branches grow into a sapling', 'The first flower opens from a fuzzy bud', 'A grown magnolia full of white flowers'],
+    },
+  },
+  camellia: {
+    temp: [8, 22],
+    ko: {
+      tag: '물은 아껴 마시고 겨울에 피어요',
+      origin: '한국 남해안 · 일본 · 중국',
+      about: '겨울부터 이른 봄까지 붉은 꽃을 피우는 늘푸른나무예요. 벌이 드문 추운 계절이라 동박새가 꿀을 먹으며 꽃가루를 옮겨 줘요. 전라 슈퍼차저에서 받은 씨앗이에요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '작은 새잎이 돋아요', '윤기 나는 짙은 잎이 늘어요', '붉은 꽃봉오리가 맺혀요', '겨울에도 붉게 핀 어른 동백나무예요'],
+    },
+    en: {
+      tag: 'Sips little water and blooms in winter',
+      origin: 'Southern coast of Korea · Japan · China',
+      about: 'An evergreen that blooms red from winter into early spring. With few bees in the cold, little white-eye birds sip its nectar and carry its pollen. This seed came from a Jeolla Supercharger.',
+      stages: ['Waiting in the soil for its first water', 'Small new leaves appear', 'Glossy dark leaves fill in', 'Red buds form', 'A grown camellia blooming red even in winter'],
+    },
+  },
+  zinnia: {
+    temp: [18, 30],
+    ko: {
+      tag: '햇살 아래 오래오래 피어요',
+      origin: '멕시코',
+      about: '여름부터 가을까지 백 일 가까이 꽃이 핀다고 해서 백일홍이라 불러요. 햇볕과 더위를 좋아하고, 분홍·빨강·주황으로 겹겹이 핀 꽃이 오래가요. 경상 슈퍼차저에서 받은 씨앗이에요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '떡잎 사이로 새잎이 나와요', '줄기가 여럿으로 자라요', '동그란 꽃봉오리가 맺혀요', '알록달록 꽃이 오래가는 어른 백일홍이에요'],
+    },
+    en: {
+      tag: 'Blooms long under the sun',
+      origin: 'Mexico',
+      about: 'Its Korean name means a hundred days of red, for flowers that last from summer into fall. It loves sun and heat, and its layered pink, red and orange blooms keep going. This seed came from a Gyeongsang Supercharger.',
+      stages: ['Waiting in the soil for its first water', 'New leaves rise between the seed leaves', 'Several stems grow up', 'Round buds form', 'A grown zinnia with long-lasting colorful flowers'],
+    },
+  },
+  tangerine: {
+    temp: [15, 28],
+    ko: {
+      tag: '먼 섬까지 달려 온 나무',
+      origin: '중국 남부 · 일본',
+      about: '따뜻한 제주 바닷바람 속에서 자라는 귤나무예요. 봄에 하얀 꽃이 향기롭게 피고, 초록 풋귤이 가을·겨울이면 주황빛으로 익어요. 제주 슈퍼차저에서 받은 씨앗이에요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '윤기 나는 새잎이 돋아요', '가지가 자라 어린 나무가 돼요', '하얀 꽃과 초록 풋귤이 달려요', '주황 귤이 주렁주렁 열린 어른 귤나무예요'],
+    },
+    en: {
+      tag: 'A tree worth the long trip to the island',
+      origin: 'Southern China · Japan',
+      about: 'A tangerine tree that grows in Jeju’s warm sea breeze. Fragrant white flowers open in spring, and green fruits ripen to orange by fall and winter. This seed came from a Jeju Supercharger.',
+      stages: ['Waiting in the soil for its first water', 'Glossy new leaves appear', 'Branches grow into a sapling', 'White blossoms and green fruits appear', 'A grown tangerine tree heavy with orange fruit'],
     },
   },
 });
