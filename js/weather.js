@@ -110,8 +110,8 @@ function coarsePosition() {
 const ERROR_KEY = { denied: 'loc.denied', 'no-geo': 'loc.noGeo', 'no-position': 'loc.noPosition' };
 
 /**
- * @typedef {{status:'loading'|'ok'|'error', kind:SkyKind|null, temp:number|null, place:string|null, at:number, error:string}} LiveWeather
- *  error는 i18n 키, place는 지역 이름(못 받으면 null)
+ * @typedef {{status:'loading'|'ok'|'error', kind:SkyKind|null, temp:number|null, place:string|null, coords?:{lat:number, lon:number}, at:number, error:string}} LiveWeather
+ *  error는 i18n 키, place는 지역 이름(못 받으면 null), coords는 대략의 위치
  */
 
 /**
@@ -130,14 +130,16 @@ export function watchWeather(onChange, getLang = () => 'ko') {
     timer = setTimeout(refresh, WEATHER_RULES.REFRESH_MS);
     try {
       const { latitude, longitude } = await coarsePosition();
+      // 해 뜨고 지는 시각 계산용 (소수 둘째 자리까지만)
+      const coords = { lat: round(latitude), lon: round(longitude) };
       const { kind, temp } = await fetchWeather(latitude, longitude);
       // 지역 이름은 없어도 날씨는 쓴다
       const place = await fetchPlace(latitude, longitude, getLang()).catch(() => live.place);
-      emit({ status: 'ok', kind, temp, place, at: Date.now(), error: '' });
+      emit({ status: 'ok', kind, temp, place, coords, at: Date.now(), error: '' });
     } catch (err) {
       // 실패해도 1시간 안에 받은 날씨가 있으면 그대로 쓴다
       const fresh = live.kind && Date.now() - live.at < WEATHER_RULES.STALE_MS;
-      emit(fresh ? live : { status: 'error', kind: null, temp: null, place: live.place, at: live.at, error: ERROR_KEY[err.message] || 'weather.fetch' });
+      emit(fresh ? live : { status: 'error', kind: null, temp: null, place: live.place, coords: live.coords, at: live.at, error: ERROR_KEY[err.message] || 'weather.fetch' });
     }
   }
 

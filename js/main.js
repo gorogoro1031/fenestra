@@ -3,7 +3,7 @@ import { PLANTS, stageName, adultOf, plantName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
 import { createPlant } from './plant.js';
-import { createSky, orbPosition } from './sky.js';
+import { createSky, orbPosition, sunTimes } from './sky.js';
 import { renderStatus, renderGreenhouse, renderChip, renderTrip, renderWeatherNow, renderGuide, renderGreeting, toast } from './ui.js';
 import { renderDewSheet, renderCondSheet } from './detail-ui.js';
 import { setAmbient, drip, chime, unlock, rustle, leafTouch, greetSwell } from './sound.js';
@@ -12,7 +12,7 @@ import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
 import { pickGuest, shouldSpawn, guestName } from './guests.js';
 import { createGuestVisit } from './guest-visit.js';
-import { t, setLang, applyStatic, getLang } from './i18n.js';
+import { t, setLang, applyStatic, getLang, locale } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
 import { greetingPeriod, cleanName } from './text.js';
@@ -39,6 +39,8 @@ const SCENE_OVERRIDE = ['day', 'night'].includes(query.get('scene')) ? query.get
 const WEATHER_OVERRIDE = SKY_KINDS.includes(query.get('weather')) ? query.get('weather') : null;
 const TEMP_OVERRIDE = query.has('temp') && Number.isFinite(Number(query.get('temp'))) ? Number(query.get('temp')) : null;
 const HOUR_OVERRIDE = query.has('hour') && Number.isFinite(Number(query.get('hour'))) ? Number(query.get('hour')) : null;
+// ?speed=65 : 달리는 속도 고정 (해·달 움직임 확인용)
+const SPEED_OVERRIDE = query.has('speed') && Number.isFinite(Number(query.get('speed'))) ? Number(query.get('speed')) : null;
 const todayKey = () => new Date().toLocaleDateString('sv-SE');
 // ?lab: 실험판. 다듬는 중인 기능(충전 리워드)을 이 주소에서만 보인다
 const LAB = query.has('lab');
@@ -64,7 +66,8 @@ let drivingUntil = 0;
 let stopGps = () => {};
 
 const plant = createPlant($('plant-layer'));
-const sky = createSky($('sky'), $('orb'));
+const sky = createSky($('sky'), $('orb'), { reduced: matchMedia('(prefers-reduced-motion: reduce)').matches });
+sky.setMode(prefs.orb);
 const arcs = createArcs($('arcs'));
 const fx = createFx($('fx'));
 let anchor = { cx: 960, y: 600, potTop: 800 };
@@ -81,7 +84,7 @@ function fit() {
   $('screen-scale').textContent = `${Math.round(scale * 100)}% · ${innerWidth}×${innerHeight} · ×${window.devicePixelRatio || 1}`;
   stageEl.style.width = `${W}px`;
   stageEl.style.height = `${H}px`;
-  ['arcs', 'fx'].forEach((id) => { $(id).width = W; $(id).height = H; });
+  ['arcs', 'fx', 'orb'].forEach((id) => { $(id).width = W; $(id).height = H; });
   layout = plantLayout(W, H, prefs.hand);
   plant.setLayout(layout);
   const ring = plant.ring();
@@ -101,7 +104,14 @@ function currentHours() {
   const now = new Date();
   return now.getHours() + now.getMinutes() / 60;
 }
-const currentScene = () => (orbPosition(currentHours()).isDay ? 'day' : 'night');
+// 해 뜨고 지는 시각: 날씨용 대략의 위치로 계산, 아직 모르면 서울. 낮·밤·시각을 고정했으면 6·18시
+const SEOUL = { lat: 37.57, lon: 126.98 };
+function sunNow() {
+  if (HOUR_OVERRIDE !== null || SCENE_OVERRIDE || prefs.scene !== 'auto') return { rise: 6, set: 18 };
+  const coords = weatherWatch?.current().coords || SEOUL;
+  return sunTimes(new Date(), coords.lat, coords.lon);
+}
+const currentScene = () => (orbPosition(currentHours(), sunNow()).isDay ? 'day' : 'night');
 
 /* ---------- 날씨: 기본은 실제 날씨(대략의 위치 → Open-Meteo). 주소·설정으로 고정하면 위치를 묻지 않는다 ---------- */
 const fixedSky = () => WEATHER_OVERRIDE || (prefs.sky !== 'auto' ? prefs.sky : null);
@@ -145,13 +155,24 @@ function applyScene() {
   stageEl.dataset.plant = state.active;
   stageEl.dataset.weather = isWet() ? 'rain' : 'clear';
   const ready = plant.setStage(state.active, stageOf(state)).catch(() => toast(t('toast.plantImgFail')));
-  sky.draw({ hours: currentHours(), raining: isWet() });
+  renderSunTime(sky.draw({ hours: currentHours(), raining: isWet(), sun: sunNow() }));
   fx.setRain(isWet());
   renderChip();
   renderGreeting($('greet'), greetingNow());
   renderWeatherNow({ temp: weatherNow().temp, label: weatherLabel(), place: fixedSky() ? t('wn.fixed') : weatherNow().place });
   syncAmbient();
   return ready;
+}
+
+/** 해·달 고리 아래: 낮엔 일몰, 밤엔 일출 시각 */
+function renderSunTime({ isDay, x, y }) {
+  const el = $('sun-time');
+  el.hidden = prefs.orb === 'off';
+  const hours = isDay ? sunNow().set : sunNow().rise;
+  const at = new Date();
+  at.setHours(Math.floor(hours), Math.round((hours % 1) * 60), 0, 0);
+  el.textContent = t(isDay ? 'sun.set' : 'sun.rise', { time: at.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', hour12: false }) });
+  el.style.transform = `translate(calc(${x.toFixed(1)}px - 50%), ${(y + plant.ring().r + 26).toFixed(1)}px)`;
 }
 
 const isDriving = () => Date.now() < drivingUntil;
@@ -342,6 +363,7 @@ $('grow-card').addEventListener('click', () => {
 
 /* ---------- 주행 ---------- */
 function markDriving(kmh) {
+  sky.setSpeed(kmh);
   if (kmh <= DRIVING_SPEED_KMH) return;
   drivingUntil = Date.now() + DRIVING_HOLD_MS;
   if (trip) trip = markMoving(trip, Date.now());
@@ -505,7 +527,7 @@ function syncSettings() {
   $('demo-stage').querySelectorAll('button').forEach((b) => { b.textContent = stageName(state.active, Number(b.dataset.value)); });
   $('weather-status').textContent = weatherStatusText();
   renderSaveStatus();
-  [['pref-lang', prefs.lang], ['pref-theme', prefs.theme], ['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
+  [['pref-lang', prefs.lang], ['pref-orb', prefs.orb], ['pref-theme', prefs.theme], ['pref-scene', prefs.scene], ['pref-weather', prefs.sky], ['pref-hand', prefs.hand], ['demo-stage', String(stageOf(state))]].forEach(([id, value]) => {
     $(id).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
   });
 }
@@ -563,6 +585,13 @@ $('pref-lang').addEventListener('click', (e) => {
 $('pref-theme').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;
   if (value) { updatePrefs({ theme: value }); applyScene(); }
+});
+$('pref-orb').addEventListener('click', (e) => {
+  const value = e.target.closest('button')?.dataset.value;
+  if (!value) return;
+  updatePrefs({ orb: value });
+  sky.setMode(value);
+  applyScene();
 });
 $('pref-scene').addEventListener('click', (e) => {
   const value = e.target.closest('button')?.dataset.value;
@@ -700,3 +729,4 @@ syncSettings();
 requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('booting')));
 if (prefs.useGps) setGps(true);
 scheduleGust();
+if (SPEED_OVERRIDE !== null) setInterval(() => sky.setSpeed(SPEED_OVERRIDE), 2000);

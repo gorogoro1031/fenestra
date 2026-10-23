@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610231409">
-<link rel="stylesheet" href="css/app.css?v=2610231409">
+<link rel="stylesheet" href="css/tokens.css?v=2610231511">
+<link rel="stylesheet" href="css/app.css?v=2610231511">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -62,7 +62,8 @@
     <!-- 장면: 검은 바탕 → 빛 번짐 → 시간 따라 뜨고 지는 해·달 고리 → 두 배 물 주기 파장 → 식물 그림 → 비·물 주기 물방울 -->
     <div class="scene" aria-hidden="true">
       <div class="layer sky" id="sky"></div>
-      <div class="orb" id="orb"></div>
+      <canvas class="layer" id="orb" width="1920" height="1200"></canvas>
+      <p class="sun-time" id="sun-time" hidden></p>
       <canvas class="layer" id="arcs" width="1920" height="1200"></canvas>
       <div class="layer plant-layer" id="plant-layer"></div>
       <canvas class="layer" id="fx" width="1920" height="1200"></canvas>
@@ -366,6 +367,12 @@
           </div>
         </div>
         <div class="row">
+          <div><p class="r-title" data-i18n="orbPref">해·달</p><p class="r-sub" data-i18n="orbPrefSub">움직임까지는 빨리 달릴수록 빛이 천천히 커져요 · 고리만은 움직이지 않아요</p></div>
+          <div class="segmented" id="pref-orb">
+            <button type="button" data-value="motion" data-i18n="orbMotion">움직임까지</button><button type="button" data-value="ring" data-i18n="orbRing">고리만</button><button type="button" data-value="off" data-i18n="orbOff">끄기</button>
+          </div>
+        </div>
+        <div class="row">
           <div><p class="r-title" data-i18n="weather">날씨</p><p class="r-sub"><span id="weather-status">실제 날씨를 확인하는 중</span> <span data-i18n="weatherSub">· 대략의 위치 필요 · 날씨 정보 Open-Meteo</span></p></div>
           <div class="segmented" id="pref-weather">
             <button type="button" data-value="auto" data-i18n="live">실제</button><button type="button" data-value="clear" data-i18n="clear">맑음</button><button type="button" data-value="cloudy" data-i18n="cloudy">흐림</button><button type="button" data-value="rain" data-i18n="rain">비</button>
@@ -430,8 +437,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231409","./js/albums-en.js":"./js/albums-en.js?v=2610231409","./js/albums.js":"./js/albums.js?v=2610231409","./js/charge-ui.js":"./js/charge-ui.js?v=2610231409","./js/charge.js":"./js/charge.js?v=2610231409","./js/detail-ui.js":"./js/detail-ui.js?v=2610231409","./js/drive.js":"./js/drive.js?v=2610231409","./js/guest-visit.js":"./js/guest-visit.js?v=2610231409","./js/guests.js":"./js/guests.js?v=2610231409","./js/i18n.js":"./js/i18n.js?v=2610231409","./js/main.js":"./js/main.js?v=2610231409","./js/motions.js":"./js/motions.js?v=2610231409","./js/plant.js":"./js/plant.js?v=2610231409","./js/plants.js":"./js/plants.js?v=2610231409","./js/qr.js":"./js/qr.js?v=2610231409","./js/scene.js":"./js/scene.js?v=2610231409","./js/sky.js":"./js/sky.js?v=2610231409","./js/sound.js":"./js/sound.js?v=2610231409","./js/state.js":"./js/state.js?v=2610231409","./js/storage.js":"./js/storage.js?v=2610231409","./js/superchargers.js":"./js/superchargers.js?v=2610231409","./js/text.js":"./js/text.js?v=2610231409","./js/trip.js":"./js/trip.js?v=2610231409","./js/tutorial.js":"./js/tutorial.js?v=2610231409","./js/ui.js":"./js/ui.js?v=2610231409","./js/weather.js":"./js/weather.js?v=2610231409"}}</script>
-<script type="module" src="js/main.js?v=2610231409"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610231511","./js/albums-en.js":"./js/albums-en.js?v=2610231511","./js/albums.js":"./js/albums.js?v=2610231511","./js/charge-ui.js":"./js/charge-ui.js?v=2610231511","./js/charge.js":"./js/charge.js?v=2610231511","./js/detail-ui.js":"./js/detail-ui.js?v=2610231511","./js/drive.js":"./js/drive.js?v=2610231511","./js/guest-visit.js":"./js/guest-visit.js?v=2610231511","./js/guests.js":"./js/guests.js?v=2610231511","./js/i18n.js":"./js/i18n.js?v=2610231511","./js/main.js":"./js/main.js?v=2610231511","./js/motions.js":"./js/motions.js?v=2610231511","./js/plant.js":"./js/plant.js?v=2610231511","./js/plants.js":"./js/plants.js?v=2610231511","./js/qr.js":"./js/qr.js?v=2610231511","./js/scene.js":"./js/scene.js?v=2610231511","./js/sky.js":"./js/sky.js?v=2610231511","./js/sound.js":"./js/sound.js?v=2610231511","./js/state.js":"./js/state.js?v=2610231511","./js/storage.js":"./js/storage.js?v=2610231511","./js/superchargers.js":"./js/superchargers.js?v=2610231511","./js/text.js":"./js/text.js?v=2610231511","./js/trip.js":"./js/trip.js?v=2610231511","./js/tutorial.js":"./js/tutorial.js?v=2610231511","./js/ui.js":"./js/ui.js?v=2610231511","./js/weather.js":"./js/weather.js?v=2610231511"}}</script>
+<script type="module" src="js/main.js?v=2610231511"></script>
 <!-- version:end -->
 </body>
 </html>

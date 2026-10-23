@@ -37,7 +37,8 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .layer { width: 100%; height: 100%; pointer-events: none; }
 /* 해·달 고리와 그 빛 (위치·색은 sky.js가 시각에 맞춰 정함) */
 .sky { transition: background 2s ease; }
-.orb { position: absolute; left: 0; top: 0; border-radius: 50%; border: 9px solid #ecf03c; transition: transform 2s var(--ease-ios), border-color 2s ease, opacity 1s ease; }
+/* 해·달 고리 아래 작은 글씨: 낮엔 일몰, 밤엔 일출 시각 */
+.sun-time { position: absolute; left: 0; top: 0; font-size: 22px; font-weight: 600; color: rgba(255, 255, 255, .5); white-space: nowrap; font-variant-numeric: tabular-nums; transition: transform 2s var(--ease-ios); }
 
 /* 온실 손님: 잎 위에 톡 나타나 둥실거리고, 누르면 만난다. 아무도 안 누르면 위로 날아간다 */
 .guest-layer { pointer-events: none; }
@@ -460,7 +461,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
   .opening-word .ch, .opening-word .logo-leaf svg, .opening-tag { animation: none; }
   .opening-greet { transition: none; }
   .opening.ready .opening-tap { animation: none; }
-  .toast, .orb, .sky, .plant-img { transition: none; }
+  .toast, .sun-time, .sky, .plant-img { transition: none; }
   .guest, .guest img, .guest.leaving { animation: none; }
 }
 
