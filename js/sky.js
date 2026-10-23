@@ -24,6 +24,8 @@ const ECHO_EVERY_MS = { 2: 8000, 3: 5000 };
 const ECHO_LIFE_MS = 7000;
 // GPS 속도가 이만큼 끊기면 멈춘 것으로 본다
 const SPEED_STALE_MS = 6000;
+// 지평선 위로 이만큼(px)에 걸쳐 고리가 서서히 사라진다
+const HORIZON_FADE = 90;
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const mix = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
@@ -173,6 +175,21 @@ export function createSky(skyEl, canvas, { reduced = false } = {}) {
       }
     }
     ctx.globalAlpha = 1;
+    hideBelowHorizon(W, H);
+  }
+
+  // 지평선(화분 밑선) 아래는 부드럽게 지운다: 해·달이 뜨고 질 때 화면 아래에 고리가 걸려 보이지 않게
+  function hideBelowHorizon(W, H) {
+    const top = size.horizon - HORIZON_FADE;
+    const fade = ctx.createLinearGradient(0, top, 0, size.horizon);
+    fade.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    fade.addColorStop(1, 'rgba(0, 0, 0, 1)');
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, top, W, HORIZON_FADE);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, size.horizon, W, H - size.horizon);
+    ctx.globalCompositeOperation = 'source-over';
   }
 
   function frame(now) {
