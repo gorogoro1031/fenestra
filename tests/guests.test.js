@@ -90,3 +90,16 @@ test('손님마다 도감 글(한 줄 소개·설명·언제)이 두 언어로 �
   });
   setLang('ko');
 });
+
+test('지역 주민 6마리는 실험판 도감에만 더해지고, 잎을 흔들어서는 나오지 않는다', async () => {
+  const { friendIds, RESIDENT_IDS, GUEST_IDS, guestInfo, isResident } = await import('../js/guests.js');
+  const { REGIONS } = await import('../js/charge.js');
+  assert.equal(RESIDENT_IDS.length, REGIONS.length);
+  assert.deepEqual(friendIds(false), GUEST_IDS);
+  assert.equal(friendIds(true).length, GUEST_IDS.length + RESIDENT_IDS.length);
+  RESIDENT_IDS.forEach((id) => {
+    assert.ok(isResident(id));
+    assert.ok(!GUEST_IDS.includes(id));
+    assert.ok(guestInfo(id).tag && guestInfo(id).about && guestInfo(id).when);
+  });
+});

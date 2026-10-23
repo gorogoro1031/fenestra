@@ -529,7 +529,7 @@ function renderGreenhouseSheet() {
     guestId = id;
     renderGuest(state, id);
     $('guest-sheet').show();
-  });
+  }, { residents: LAB });
 }
 function showHubTab(tab) {
   $('tab-plants').setAttribute('aria-selected', String(tab === 'plants'));

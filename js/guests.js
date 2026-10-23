@@ -25,8 +25,25 @@ export const GUESTS = Object.freeze({
 });
 export const GUEST_IDS = Object.freeze(Object.keys(GUESTS));
 const GUEST_EN = Object.freeze({ ladybug: 'Ladybug', butterfly: 'Butterfly', bee: 'Bee', firefly: 'Firefly', snail: 'Snail', lizard: 'Lizard' });
-/** 지금 언어의 손님 이름 */
-export const guestName = (id) => (getLang() === 'en' ? GUEST_EN[id] : GUESTS[id]?.name);
+// 지역 주민(실험판): 한 지역 슈퍼차저 두 곳을 들르면 찾아오는 프렌즈. 잎을 흔들어선 안 나오고, 만나기 전엔 어느 지역인지 밝히지 않는다
+export const RESIDENTS = Object.freeze({
+  magpie: { region: 'capital', ko: '까치', en: 'Magpie' },
+  goral: { region: 'gangwon', ko: '아기 산양', en: 'Baby Goral' },
+  treefrog: { region: 'chung', ko: '청개구리', en: 'Tree Frog' },
+  bear: { region: 'jeolla', ko: '아기 반달가슴곰', en: 'Moon Bear Cub' },
+  otter: { region: 'gyeong', ko: '수달', en: 'Otter' },
+  dolphin: { region: 'jeju', ko: '남방큰돌고래', en: 'Bottlenose Dolphin' },
+});
+export const RESIDENT_IDS = Object.freeze(Object.keys(RESIDENTS));
+export const isResident = (id) => Object.hasOwn(RESIDENTS, id);
+/** 도감에 보일 프렌즈: 잎 프렌즈, 실험판이면 지역 주민까지 */
+export const friendIds = (withResidents) => (withResidents ? [...GUEST_IDS, ...RESIDENT_IDS] : GUEST_IDS);
+
+/** 지금 언어의 프렌즈 이름 */
+export const guestName = (id) => {
+  if (isResident(id)) return getLang() === 'en' ? RESIDENTS[id].en : RESIDENTS[id].ko;
+  return getLang() === 'en' ? GUEST_EN[id] : GUESTS[id]?.name;
+};
 export const guestImage = (id) => `assets/guests/${id}.webp`;
 
 // 손님 도감 글: 한 줄 소개, 설명, 언제 오는지 (두 언어). 언제 오는지는 위 weight 규칙과 같게
@@ -56,8 +73,38 @@ const GUEST_INFO = Object.freeze({
     en: { tag: 'Loves to stay by the cactus', about: 'A small lizard that basks between warm stones and cacti. It only visits while you grow a cactus.', when: 'While growing a cactus' },
   },
 });
-/** 지금 언어의 손님 도감 글 */
-export const guestInfo = (id) => GUEST_INFO[id]?.[getLang() === 'en' ? 'en' : 'ko'] ?? GUEST_INFO.ladybug.ko;
+// 지역 주민 도감 글. 언제 오는지는 지역을 숨긴 채 규칙만 알려 준다
+const RESIDENT_WHEN = { ko: '한 지역 슈퍼차저 두 곳', en: 'Two Superchargers in one region' };
+const RESIDENT_TEXT = {
+  magpie: {
+    ko: { tag: '반가운 소식을 물어 오는 수도권 주민', about: '까만 머리와 흰 배, 푸른빛이 도는 꼬리를 가진 새예요. 아침에 까치가 울면 반가운 손님이 온다는 이야기가 있어요.' },
+    en: { tag: 'A Capital Area local who brings good news', about: 'A bird with a black head, white belly and a blue-tinged tail. In Korea, a magpie singing in the morning means a welcome guest is on the way.' },
+  },
+  goral: {
+    ko: { tag: '강원 바위산의 꼬마 산양', about: '가파른 바위 위를 가볍게 오르내리는 산양의 아기예요. 짧은 뿔과 보송한 털이 자랑이에요.' },
+    en: { tag: 'A little goral from Gangwon’s rocky peaks', about: 'A baby goral that hops up and down steep rocks with ease. Its short horns and fluffy coat are its pride.' },
+  },
+  treefrog: {
+    ko: { tag: '충청 논둑의 초록 친구', about: '비가 오기 전이면 더 크게 우는 작은 개구리예요. 발가락 끝의 동그란 판으로 잎에도 척척 붙어요.' },
+    en: { tag: 'A green friend from Chungcheong’s rice paddies', about: 'A tiny frog that sings louder before the rain. The round pads on its toes let it stick to leaves.' },
+  },
+  bear: {
+    ko: { tag: '전라 지리산의 아기 곰', about: '가슴에 하얀 반달 무늬가 있는 아기 곰이에요. 숲속에서 도토리와 열매를 찾아다녀요.' },
+    en: { tag: 'A bear cub from Jirisan in Jeolla', about: 'A cub with a white crescent moon on its chest. It wanders the forest looking for acorns and berries.' },
+  },
+  otter: {
+    ko: { tag: '경상 강가의 장난꾸러기', about: '맑은 강에서 헤엄치고 물장구치기를 좋아해요. 작은 앞발로 조약돌을 굴리며 놀아요.' },
+    en: { tag: 'A playful otter from Gyeongsang’s rivers', about: 'It loves swimming and splashing in clear rivers, rolling pebbles around with its little paws.' },
+  },
+  dolphin: {
+    ko: { tag: '제주 바다를 헤엄치는 돌고래', about: '제주 바닷가 가까이에서 무리 지어 사는 돌고래예요. 운이 좋으면 바닷가에서 뛰어오르는 모습을 볼 수 있어요.' },
+    en: { tag: 'A dolphin from the seas around Jeju', about: 'A dolphin that lives in pods close to Jeju’s shore. With luck, you can see it leap from the coast.' },
+  },
+};
+const RESIDENT_INFO = Object.freeze(Object.fromEntries(Object.entries(RESIDENT_TEXT).map(([id, { ko, en }]) => [id, { ko: { ...ko, when: RESIDENT_WHEN.ko }, en: { ...en, when: RESIDENT_WHEN.en } }])));
+
+/** 지금 언어의 프렌즈 도감 글 */
+export const guestInfo = (id) => (GUEST_INFO[id] ?? RESIDENT_INFO[id])?.[getLang() === 'en' ? 'en' : 'ko'] ?? GUEST_INFO.ladybug.ko;
 
 /** @param {GuestContext} ctx */
 export function guestWeights(ctx) {

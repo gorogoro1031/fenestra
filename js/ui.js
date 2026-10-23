@@ -1,7 +1,8 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
 import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, bonusInfo, stageFor, kmToNextDrop } from './state.js';
 import { PLANTS, PLANT_IDS, plantImage, stageName, adultOf, plantName, guideOf, conditionFor } from './plants.js';
-import { GUESTS, GUEST_IDS, guestImage, guestName, guestInfo } from './guests.js';
+import { GUESTS, guestImage, guestName, guestInfo, friendIds, isResident } from './guests.js';
+import { CHARGE_RULES } from './charge.js';
 import { t, locale } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
@@ -281,9 +282,11 @@ export function renderGreenhouse(state, onPick, onOpen) {
 /**
  * 도감 프렌즈 탭: 만난 프렌즈는 그림과 이름, 아직이면 실루엣과 ???. 누르면 프렌즈 설명
  * @param {(id:string) => void} onOpen
+ * @param {{residents?:boolean}} opts residents: 실험판이면 지역 주민도 아직 못 만난 프렌즈로 보인다
  */
-export function renderGuestbook(state, onOpen) {
-  const cells = GUEST_IDS.map((id) => {
+export function renderGuestbook(state, onOpen, { residents = false } = {}) {
+  const ids = friendIds(residents);
+  const cells = ids.map((id) => {
     const times = state.guestbook[id] || 0;
     const li = document.createElement('li');
     li.className = times ? 'gb-cell' : 'gb-cell unmet';
@@ -313,7 +316,7 @@ export function renderGuestbook(state, onOpen) {
     return li;
   });
   $('guestbook').replaceChildren(...cells);
-  $('gb-count').textContent = `${Object.keys(state.guestbook).length}/${GUEST_IDS.length}`;
+  $('gb-count').textContent = `${ids.filter((id) => state.guestbook[id]).length}/${ids.length}`;
 }
 
 /** 손님 설명 화면. 아직 못 만난 손님은 실루엣과 ???, 언제 오는지만 알려 준다 */
@@ -323,11 +326,13 @@ export function renderGuest(state, id) {
   $('gs-img').src = guestImage(id);
   $('gs-img').parentElement.classList.toggle('unmet', !times);
   $('gs-name').textContent = times ? guestName(id) : '???';
-  $('gs-tag').textContent = times ? info.tag : t('gs.unmet');
-  $('gs-about').textContent = times ? info.about : t('gs.unmetAbout');
+  const resident = isResident(id);
+  $('gs-tag').textContent = times ? info.tag : t(resident ? 'gs.unmetResident' : 'gs.unmet');
+  $('gs-about').textContent = times ? info.about : t(resident ? 'gs.unmetResidentAbout' : 'gs.unmetAbout');
   $('gs-met').textContent = times ? t('gs.times', { n: times }) : t('gs.notYet');
   $('gs-when').textContent = info.when;
-  $('gs-coins').textContent = t('gs.coins', { n: GUESTS[id].coins });
+  // 지역 주민은 따로 꽃씨가 없어서 지역 도장 두 곳을 채울 때 받는 꽃씨를 보여 준다
+  $('gs-coins').textContent = t('gs.coins', { n: resident ? CHARGE_RULES.REGION_COINS : GUESTS[id].coins });
 }
 
 /** 손님 도감: 만난 손님은 몇 번 만났는지, 아직이면 실루엣과 물음표. 처음 만나고 아직 안 본 손님엔 NEW */
