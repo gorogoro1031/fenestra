@@ -22,8 +22,8 @@ export function createGuestVisit(host, { onCatch }) {
 
   return {
     get present() { return current !== null; },
-    /** 무대 좌표 (x, y) 잎 위에 손님을 앉힌다 */
-    arrive(id, x, y) {
+    /** 무대 좌표 (x, y) 잎 위에 손님을 앉힌다. stayMs: 아무도 안 누르면 머무는 시간 */
+    arrive(id, x, y, stayMs = GUEST_RULES.STAY_MS) {
       leave();
       const el = document.createElement('button');
       el.type = 'button';
@@ -41,7 +41,7 @@ export function createGuestVisit(host, { onCatch }) {
         onCatch(id, x, y);
       }, { once: true });
       host.append(el);
-      current = { el, timer: setTimeout(leave, GUEST_RULES.STAY_MS) };
+      current = { el, timer: setTimeout(leave, stayMs) };
     },
     leave,
   };

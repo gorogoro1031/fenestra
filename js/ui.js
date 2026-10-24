@@ -1,7 +1,7 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
 import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, bonusInfo, stageFor, kmToNextDrop } from './state.js';
 import { PLANTS, PLANT_IDS, shopPlantIds, plantImage, stageName, adultOf, plantName, guideOf, conditionFor } from './plants.js';
-import { GUESTS, guestImage, guestName, guestInfo, friendIds, isResident } from './guests.js';
+import { guestImage, guestName, guestInfo, friendIds, friendCoins, isResident, isChargeFriend } from './guests.js';
 import { CHARGE_RULES, REGIONS, regionCount } from './charge.js';
 import { t, locale, pick } from './i18n.js';
 
@@ -366,12 +366,13 @@ export function renderGuest(state, id) {
   $('gs-img').parentElement.classList.toggle('unmet', !times);
   $('gs-name').textContent = times ? guestName(id) : '???';
   const resident = isResident(id);
-  $('gs-tag').textContent = times ? info.tag : t(resident ? 'gs.unmetResident' : 'gs.unmet');
-  $('gs-about').textContent = times ? info.about : t(resident ? 'gs.unmetResidentAbout' : 'gs.unmetAbout');
+  const unmetKey = resident ? 'gs.unmetResident' : isChargeFriend(id) ? 'gs.unmetCharge' : 'gs.unmet';
+  $('gs-tag').textContent = times ? info.tag : t(unmetKey);
+  $('gs-about').textContent = times ? info.about : t(`${unmetKey}About`);
   $('gs-met').textContent = times ? t('gs.times', { n: times }) : t('gs.notYet');
   $('gs-when').textContent = info.when;
   // 지역 주민은 따로 꽃씨가 없어서 지역 도장 두 곳을 채울 때 받는 꽃씨를 보여 준다
-  $('gs-coins').textContent = t('gs.coins', { n: resident ? CHARGE_RULES.REGION_COINS : GUESTS[id].coins });
+  $('gs-coins').textContent = t('gs.coins', { n: resident ? CHARGE_RULES.REGION_COINS : friendCoins(id) });
 }
 
 /** 손님 도감: 만난 손님은 몇 번 만났는지, 아직이면 실루엣과 물음표. 처음 만나고 아직 안 본 손님엔 NEW */

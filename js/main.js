@@ -10,7 +10,7 @@ import { setAmbient, drip, chime, unlock, rustle, leafTouch, greetSwell } from '
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
-import { pickGuest, shouldSpawn, guestName } from './guests.js';
+import { pickGuest, shouldSpawn, guestName, rollChargeFriend, CHARGE_FRIEND_IDS, GUEST_RULES } from './guests.js';
 import { createGuestVisit } from './guest-visit.js';
 import { t, setLang, applyStatic, getLang, locale, pick } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
@@ -290,7 +290,20 @@ function onLeafTouched(x, y, height) {
 const GUEST_LIFT = 30;
 const GUEST_DELAY_MS = 450;
 let lastGuestAt = 0;
-const guestContext = () => ({ isNight: currentScene() === 'night', raining: isWet(), plant: state.active, stage: stageOf(state) });
+// 서 있는 채로 켜 둔 시간(길고양이): 앱을 연 때나 마지막으로 달린 때부터
+const openedAt = Date.now();
+const parkedMinutes = () => (isDriving() ? 0 : (Date.now() - Math.max(openedAt, drivingUntil)) / 60000);
+const guestContext = () => ({
+  isNight: currentScene() === 'night', raining: isWet(), plant: state.active, stage: stageOf(state),
+  lab: LAB, hour: currentHours(), month: new Date().getMonth() + 1, parkedMin: parkedMinutes(), todayKm: state.todayKm,
+});
+/** 충전 프렌즈를 식물 위에 앉힌다. 충전하는 동안 오래 머문다 */
+function arriveChargeFriend(id) {
+  const { x, y } = plant.ring();
+  guests.arrive(id, x, y + 80, GUEST_RULES.CHARGE_STAY_MS);
+  toast(t('toast.chargeFriend'));
+  if (prefs.effects) chime();
+}
 const guests = createGuestVisit($('guest-layer'), {
   onCatch: (id, x, y) => {
     const before = state.coins;
@@ -425,6 +438,12 @@ function tickCharge() {
   chargeSession = updateSession(chargeSession, nearCharger, now);
   const r = settleCharge(rollDay(state, todayKey()), chargeSession, now, todayKey());
   chargeSession = r.session;
+  // 충전으로 인정된 첫 순간에 한 번만: 그곳에 올 충전 프렌즈가 있으면 확률로 찾아온다
+  if (chargeSession && !chargeSession.friendRolled && isCharging(chargeSession, now)) {
+    chargeSession = { ...chargeSession, friendRolled: true };
+    const friend = rollChargeFriend(chargerById(chargeSession.id), new Date().getMonth() + 1);
+    if (friend) setTimeout(() => arriveChargeFriend(friend), 1200);
+  }
   if (r.fert || r.newStamp) {
     commit(grantRegionalSeeds(r.state));
     const charger = chargerById(chargeSession.id);
@@ -706,6 +725,10 @@ $('demo-guest').addEventListener('click', () => {
   closeSheets();
   const { x, y } = plant.ring();
   guests.arrive(pickGuest(guestContext()), x, y + 80);
+});
+$('demo-charge-friend').addEventListener('click', () => {
+  closeSheets();
+  arriveChargeFriend(CHARGE_FRIEND_IDS[Math.floor(Math.random() * CHARGE_FRIEND_IDS.length)]);
 });
 $('demo-drive').addEventListener('click', () => {
   closeSheets();

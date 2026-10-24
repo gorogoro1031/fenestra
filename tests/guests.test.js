@@ -95,11 +95,62 @@ test('지역 주민 6마리는 실험판 도감에만 더해지고, 잎을 흔�
   const { friendIds, RESIDENT_IDS, GUEST_IDS, guestInfo, isResident } = await import('../js/guests.js');
   const { REGIONS } = await import('../js/charge.js');
   assert.equal(RESIDENT_IDS.length, REGIONS.length);
-  assert.deepEqual(friendIds(false), GUEST_IDS);
-  assert.equal(friendIds(true).length, GUEST_IDS.length + RESIDENT_IDS.length);
+  const { leafGuestIds, CHARGE_FRIEND_IDS } = await import('../js/guests.js');
+  assert.deepEqual(friendIds(false), leafGuestIds(false));
+  assert.equal(friendIds(true).length, GUEST_IDS.length + CHARGE_FRIEND_IDS.length + RESIDENT_IDS.length);
   RESIDENT_IDS.forEach((id) => {
     assert.ok(isResident(id));
     assert.ok(!GUEST_IDS.includes(id));
     assert.ok(guestInfo(id).tag && guestInfo(id).about && guestInfo(id).when);
   });
+});
+
+test('새 잎 프렌즈는 실험판에서만, 시각·계절·주차·거리 조건에 맞을 때 온다', async () => {
+  const { guestWeights, leafGuestIds } = await import('../js/guests.js');
+  const base = { isNight: false, raining: false, plant: 'monstera', stage: 2, lab: true, hour: 13, month: 3, parkedMin: 0, todayKm: 0 };
+  assert.ok(!leafGuestIds(false).includes('sparrow'));
+  assert.equal(guestWeights({ ...base, lab: false }).sparrow, undefined);
+  const zero = guestWeights(base);
+  ['sparrow', 'dragonfly', 'squirrel', 'cat', 'hedgehog', 'owl', 'fox'].forEach((id) => assert.equal(zero[id], 0, id));
+  assert.ok(guestWeights({ ...base, hour: 7.5 }).sparrow > 0);
+  assert.ok(guestWeights({ ...base, month: 7 }).dragonfly > 0);
+  assert.ok(guestWeights({ ...base, month: 10 }).squirrel > 0);
+  assert.ok(guestWeights({ ...base, parkedMin: 31 }).cat > 0);
+  assert.ok(guestWeights({ ...base, isNight: true, plant: 'cactus' }).hedgehog > 0);
+  assert.ok(guestWeights({ ...base, isNight: true, hour: 2 }).owl > 0);
+  assert.ok(guestWeights({ ...base, todayKm: 120 }).fox > 0);
+});
+
+test('충전 프렌즈: 흰 고래는 동해 여섯 곳, 도시 프렌즈는 그 도시에서만 (이름이 같은 경기 광주는 아님)', async () => {
+  const { chargeFriendAt, rollChargeFriend, cityOf, EAST_SEA_CHARGERS, CHARGE_FRIEND_IDS, guestInfo, friendCoins } = await import('../js/guests.js');
+  const { chargers } = await import('../js/charge.js');
+  const all = chargers();
+  EAST_SEA_CHARGERS.forEach((id) => assert.equal(chargeFriendAt(all.find((c) => c.id === id), 5), 'beluga', String(id)));
+  assert.equal(chargeFriendAt(all.find((c) => c.id === 9308), 5), null);
+  assert.equal(chargeFriendAt(all.find((c) => c.id === 1115), 5), 'mallard');
+  assert.equal(chargeFriendAt(all.find((c) => c.id === 2224), 5), 'gull');
+  assert.equal(chargeFriendAt(all.find((c) => c.id === 2222), 5), 'crane');
+  assert.equal(chargeFriendAt(all.find((c) => c.id === 1911), 5), 'raccoon');
+  assert.equal(chargeFriendAt(all.find((c) => c.id === 7211), 5), 'moth');
+  assert.equal(cityOf(all.find((c) => c.id === 4348)), null);
+  // 매미는 여름에만
+  assert.equal(chargeFriendAt(all.find((c) => c.id === 1154), 7), 'cicada');
+  assert.equal(chargeFriendAt(all.find((c) => c.id === 1154), 1), null);
+  assert.equal(rollChargeFriend(all.find((c) => c.id === 1115), 5, () => 0.1), 'mallard');
+  assert.equal(rollChargeFriend(all.find((c) => c.id === 1115), 5, () => 0.9), null);
+  // 여섯 도시 모두 목록에 충전소가 하나 이상 있다
+  ['mallard', 'gull', 'crane', 'cicada', 'raccoon', 'moth'].forEach((f) => assert.ok(all.some((c) => chargeFriendAt(c, 7) === f), f));
+  CHARGE_FRIEND_IDS.forEach((id) => { assert.ok(guestInfo(id).tag && guestInfo(id).when); assert.ok(friendCoins(id) > 0); });
+});
+
+test('충전 프렌즈를 만나면 하루 한도와 상관없이 꽃씨를 받고 도감에 남는다', async () => {
+  const { createState, catchGuest, sanitize } = await import('../js/state.js');
+  const capped = { ...createState(), guestCoinsToday: GUEST_RULES.DAILY_COINS };
+  const met = catchGuest(capped, 'beluga');
+  assert.equal(met.coins, 30);
+  assert.equal(met.guestbook.beluga, 1);
+  assert.deepEqual(met.newGuests, ['beluga']);
+  assert.equal(sanitize(met).guestbook.beluga, 1);
+  // 지역 주민은 아직 잎에서 만나지 않는다
+  assert.equal(catchGuest(createState(), 'magpie').guestbook.magpie, undefined);
 });

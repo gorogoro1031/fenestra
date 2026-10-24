@@ -1,6 +1,6 @@
 // 게임 규칙과 상태 변화. 화면·브라우저에 의존하지 않는 순수 함수만 둔다
 import { PLANTS, PLANT_IDS, FIRST_PLANT } from './plants.js';
-import { GUESTS, GUEST_IDS, GUEST_RULES } from './guests.js';
+import { GUEST_RULES, ALL_FRIEND_IDS, friendCoins, isResident, isChargeFriend } from './guests.js';
 import { CHARGE_RULES, cleanStamps, regionCount } from './charge.js';
 
 // 이슬: 달린 거리로 모아 물을 줄 때 쓴다 (코드에선 drops)
@@ -86,13 +86,15 @@ export function rollDay(state, today) {
 
 /** 손님을 만났다: 도감에 쌓고 꽃씨를 받는다 (하루 한도까지). 처음 만난 손님은 새 손님으로 남긴다 */
 export function catchGuest(state, id) {
-  if (!GUESTS[id]) return state;
+  if (!ALL_FRIEND_IDS.includes(id) || isResident(id)) return state;
+  // 충전 프렌즈는 충전 한 번에 한 번만 오므로 하루 한도와 상관없이 다 받는다
+  const charged = isChargeFriend(id);
   const room = Math.max(0, GUEST_RULES.DAILY_COINS - state.guestCoinsToday);
-  const earned = Math.min(room, GUESTS[id].coins);
+  const earned = charged ? friendCoins(id) : Math.min(room, friendCoins(id));
   return {
     ...state,
     coins: state.coins + earned,
-    guestCoinsToday: state.guestCoinsToday + earned,
+    guestCoinsToday: state.guestCoinsToday + (charged ? 0 : earned),
     guestbook: { ...state.guestbook, [id]: (state.guestbook[id] || 0) + 1 },
     newGuests: state.guestbook[id] ? state.newGuests : [...state.newGuests, id],
   };
@@ -265,9 +267,9 @@ export function sanitize(raw, today = '') {
     waterCount: Math.floor(num(raw.waterCount, 0, 1e7)),
     coins: Math.floor(num(raw.coins, 0, 1e7)),
     coinRemainder: num(raw.coinRemainder, 0, 1),
-    guestbook: Object.fromEntries(GUEST_IDS.filter((id) => Number.isFinite(raw.guestbook?.[id]) && raw.guestbook[id] > 0).map((id) => [id, Math.floor(raw.guestbook[id])])),
+    guestbook: Object.fromEntries(ALL_FRIEND_IDS.filter((id) => Number.isFinite(raw.guestbook?.[id]) && raw.guestbook[id] > 0).map((id) => [id, Math.floor(raw.guestbook[id])])),
     guestCoinsToday: Math.floor(num(raw.guestCoinsToday, 0, GUEST_RULES.DAILY_COINS)),
-    newGuests: GUEST_IDS.filter((id) => Array.isArray(raw.newGuests) && raw.newGuests.includes(id) && raw.guestbook?.[id] > 0),
+    newGuests: ALL_FRIEND_IDS.filter((id) => Array.isArray(raw.newGuests) && raw.newGuests.includes(id) && raw.guestbook?.[id] > 0),
     fert: Math.floor(num(raw.fert, 0, CHARGE_RULES.MAX_FERT)),
     stamps: cleanStamps(raw.stamps),
     active: plants[raw.active] ? raw.active : FIRST_PLANT,
