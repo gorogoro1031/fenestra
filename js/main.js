@@ -192,8 +192,8 @@ function placeSunTime(gap = 24) {
 
 /* ---------- 동행(실험판): 태운 프렌즈가 화분 테두리에 앉아 있다. 달리는 중엔 졸고, 누르면 함께 온 거리를 말한다 ---------- */
 function placeCompanion() {
-  // 위젯 쪽 빈자리에: 운전석 모드면 화분 왼쪽, 조수석 모드면 오른쪽
-  const { x, y, size } = plant.seatSpot(prefs.hand === 'passenger' ? 1 : -1);
+  // 위젯 반대쪽 빈자리에: 운전석 모드면 화분 오른쪽, 조수석 모드면 왼쪽
+  const { x, y, size } = plant.seatSpot(prefs.hand === 'passenger' ? -1 : 1);
   const el = $('companion');
   el.style.setProperty('--cmp-size', `${size.toFixed(0)}px`);
   el.style.transform = `translate(${(x - size / 2).toFixed(1)}px, ${(y - size).toFixed(1)}px)`;

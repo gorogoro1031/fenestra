@@ -144,7 +144,7 @@ export function createPlant(host) {
       return { x: cx, y: base - (PLANT_IMAGE.potBottom - PLANT_IMAGE.tallestTop) * scale };
     },
     /**
-     * 동행 친구가 앉을 자리: 화분 옆 바닥, 위젯 쪽 빈자리 (무대 좌표, x는 가운데, y는 발끝). size: 그림 크기
+     * 동행 친구가 앉을 자리: 화분 옆 바닥 (무대 좌표, x는 가운데, y는 발끝). size: 그림 크기
      * @param {-1|1} side -1이면 화분 왼쪽, 1이면 오른쪽
      */
     seatSpot(side = -1) {
