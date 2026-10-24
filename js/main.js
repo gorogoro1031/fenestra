@@ -97,6 +97,7 @@ function fit() {
   sky.setLayout(ring, { W, H, horizon: layout.base });
   arcs.set({ x: ring.x, y: ring.y });
   anchor = plant.anchor();
+  placeSunTime();
 }
 addEventListener('resize', () => { fit(); applyScene(); });
 fit();
@@ -180,15 +181,20 @@ function applyScene() {
   return ready;
 }
 
-/** 해·달 고리 아래: 낮엔 일몰, 밤엔 일출 시각 */
-function renderSunTime({ isDay, x, y }) {
+// 해·달 시각 글자: 식물 가운데 위에 고정. 가장 큰 식물 잎 끝에서 gap만큼 위 (fit()이 먼저 불러서 함수 안에 둔다)
+function placeSunTime(gap = 24) {
+  const { x, y } = plant.labelSpot();
+  $('sun-time').style.transform = `translate(calc(${x.toFixed(1)}px - 50%), calc(${(y - gap).toFixed(1)}px - 100%))`;
+}
+
+/** 해·달 시각 글자: 낮엔 일몰, 밤엔 일출 시각 */
+function renderSunTime({ isDay }) {
   const el = $('sun-time');
   el.hidden = prefs.orb === 'off';
   const hours = isDay ? sunNow().set : sunNow().rise;
   const at = new Date();
   at.setHours(Math.floor(hours), Math.round((hours % 1) * 60), 0, 0);
   el.textContent = t(isDay ? 'sun.set' : 'sun.rise', { time: at.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', hour12: false }) });
-  el.style.transform = `translate(calc(${x.toFixed(1)}px - 50%), ${(y + sky.radius() + 26).toFixed(1)}px)`;
 }
 
 const isDriving = () => Date.now() < drivingUntil;

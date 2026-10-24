@@ -11,6 +11,8 @@ export const PLANT_IMAGE = Object.freeze({
   potX: 510.5, potBottom: 1153, potTop: 933,
   // 몬스테라 시안에서 식물을 감싸던 원: 해·달이 정오·자정에 오는 자리
   ringX: 512.4, ringY: 370.4, ringR: 353.5,
+  // 다 자란 식물 중 가장 높은 잎 끝 (산세베리아): 해·달 시각 글자가 식물에 가리지 않는 높이
+  tallestTop: 11,
 });
 
 const SWAP_MS = 900;
@@ -135,6 +137,11 @@ export function createPlant(host) {
         y: base - (PLANT_IMAGE.potBottom - PLANT_IMAGE.ringY) * scale,
         r: PLANT_IMAGE.ringR * scale,
       };
+    },
+    /** 해·달 시각 글자 자리: 화분 가운데 위, 가장 큰 식물보다 위 (무대 좌표, y는 글자 아래 끝) */
+    labelSpot() {
+      const { cx, base, scale } = layout;
+      return { x: cx, y: base - (PLANT_IMAGE.potBottom - PLANT_IMAGE.tallestTop) * scale };
     },
     /** 물방울 떨어질 자리 */
     anchor() {
