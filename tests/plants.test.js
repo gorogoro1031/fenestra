@@ -65,3 +65,16 @@ test('지역마다 키울 수 있는 지역 식물이 하나씩 있고, 꽃씨�
   });
   assert.deepEqual(SHOP_PLANT_IDS, ['monstera', 'cactus', 'sansevieria', 'rubber']);
 });
+
+test('새 식물 4종은 실험판 온실에만 보이고 꽃씨로 들일 수 있다', async () => {
+  const { SHOP_PLANT_IDS, shopPlantIds } = await import('../js/plants.js');
+  const fresh = ['hydrangea', 'lavender', 'olive', 'pilea'];
+  fresh.forEach((id) => {
+    assert.ok(!SHOP_PLANT_IDS.includes(id));
+    assert.ok(shopPlantIds(true).includes(id));
+    assert.ok(PLANTS[id].price > 0);
+    assert.ok(guideOf(id).about);
+  });
+  assert.deepEqual(shopPlantIds(false), SHOP_PLANT_IDS);
+  assert.ok(shopPlantIds(true).every((id) => !PLANTS[id].region));
+});

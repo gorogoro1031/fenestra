@@ -1,6 +1,6 @@
 // 상태를 화면 글자·게이지로 옮기는 함수들
 import { RULES, LAST_STAGE, stageOf, growthOf, thresholdsOf, waterCheck, bonusNow, bonusInfo, stageFor, kmToNextDrop } from './state.js';
-import { PLANTS, PLANT_IDS, SHOP_PLANT_IDS, plantImage, stageName, adultOf, plantName, guideOf, conditionFor } from './plants.js';
+import { PLANTS, PLANT_IDS, shopPlantIds, plantImage, stageName, adultOf, plantName, guideOf, conditionFor } from './plants.js';
 import { GUESTS, guestImage, guestName, guestInfo, friendIds, isResident } from './guests.js';
 import { CHARGE_RULES, REGIONS, regionCount } from './charge.js';
 import { t, locale, pick } from './i18n.js';
@@ -104,7 +104,8 @@ export function renderStatus(state, ctx) {
 }
 
 /** 컨디션 위젯: 지금 기온이 식물에게 맞는지(막대), 지금 물 주면 두 배인지(알약) */
-function renderCondition(state, { temp, isNight, sunny }) {
+function renderCondition(state, ctx) {
+  const { temp } = ctx;
   const condition = conditionFor(state.active, temp);
   const [low, high] = guideOf(state.active).temp;
   $('cond').dataset.state = condition;
@@ -117,7 +118,7 @@ function renderCondition(state, { temp, isNight, sunny }) {
   if (known) $('cond-now').style.left = `${barPercent(temp)}%`;
   $('cond-temp').textContent = known ? t('cond.now', { temp: roundTemp(temp) }) : '';
   $('cond-best').textContent = t('cond.best', { low, high });
-  const bonus = bonusInfo(state, { isNight, sunny });
+  const bonus = bonusInfo(state, ctx);
   const pill = $('cond-bonus');
   const grown = stageOf(state) === LAST_STAGE;
   pill.classList.toggle('on', bonus.active && !grown);
@@ -128,7 +129,8 @@ function renderCondition(state, { temp, isNight, sunny }) {
 export function bonusText({ rule, active, left }) {
   if (rule === 'dry') return active ? t('bonus.dry.on', { n: left }) : t('bonus.dry.off');
   if (active) return t('bonus.on');
-  return rule === 'road' ? t('bonus.road.off', { km: left }) : t(`bonus.${rule}.off`);
+  if (rule === 'road') return t('bonus.road.off', { km: left });
+  return rule === 'streak' ? t('bonus.streak.off', { n: left }) : t(`bonus.${rule}.off`);
 }
 
 /** 로고 아래 지금 날씨: 큰 기온, 날씨 이름, 지역 */
@@ -228,11 +230,13 @@ export function renderTrip(trip, state, now = new Date()) {
  * @param {(id:string) => void} onOpen 카드를 누르면 그 식물 설명
  */
 export function renderGreenhouse(state, onPick, onOpen, { regional = false } = {}) {
-  const cards = SHOP_PLANT_IDS.map((id) => plantCard(state, id, onPick, onOpen));
+  // 실험판이면 새 식물도 온실에 (지역 식물은 아래 따로)
+  const shop = shopPlantIds(regional);
+  const cards = shop.map((id) => plantCard(state, id, onPick, onOpen));
   $('gh-grid').replaceChildren(...cards);
   const seeds = regional ? renderRegionalPlants(state, onPick, onOpen) : 0;
-  const shopOwned = SHOP_PLANT_IDS.filter((id) => state.plants[id]).length;
-  $('tab-plants-n').textContent = `${shopOwned + seeds}/${SHOP_PLANT_IDS.length + (regional ? REGIONS.length : 0)}`;
+  const shopOwned = shop.filter((id) => state.plants[id]).length;
+  $('tab-plants-n').textContent = `${shopOwned + seeds}/${shop.length + (regional ? REGIONS.length : 0)}`;
   $('gh-coin-num').textContent = String(state.coins);
   $('stat-km').textContent = state.totalKm.toFixed(1);
   $('stat-water').textContent = String(state.waterCount);

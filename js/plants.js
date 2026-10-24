@@ -4,11 +4,13 @@
 import { getLang } from './i18n.js';
 
 /**
- * @typedef {'sun'|'dry'|'night'|'road'} Rule
+ * @typedef {'sun'|'dry'|'night'|'road'|'rain'|'twilight'|'charge'|'streak'} Rule
  *  sun: 맑은 낮(맑음·구름 조금)에 물을 주면 두 배
  *  dry: 물은 하루 두 번까지만, 대신 한 번에 두 배
  *  night: 달이 떠 있는 밤에 주면 두 배
  *  road: 오늘 많이 달린 날엔 두 배
+ *  rain: 비·눈 오는 날 두 배 · twilight: 해 뜨고 지는 시각 앞뒤 한 시간에 두 배
+ *  charge: 슈퍼차저에서 충전 중이면 두 배 · streak: 며칠 이어서 물을 주면 두 배
  */
 export const PLANTS = Object.freeze({
   monstera: Object.freeze({
@@ -38,6 +40,35 @@ export const PLANTS = Object.freeze({
     adult: Object.freeze({ name: '비아토르', meaning: '길 떠나는 사람' }),
     hint: '오늘 30km 넘게 달린 날엔 두 배로 자라요',
     en: Object.freeze({ name: 'Rubber Plant', stages: Object.freeze(['Seed', 'Seedling', 'One Stem', 'Two Stems', 'Viator']), adult: 'Viator', meaning: 'traveler', hint: 'Double growth on days you drive over 30 km' }),
+  }),
+  // 새 식물(실험판) 4종: 실험판 온실에서만 꽃씨로 들일 수 있다
+  hydrangea: Object.freeze({
+    name: '수국', price: 250, lab: true, rule: 'rain', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '새싹', '넓은 잎', '첫 꽃송이', '플루비아']),
+    adult: Object.freeze({ name: '플루비아', meaning: '비' }),
+    hint: '비 오는 날 물을 주면 두 배로 자라요',
+    en: Object.freeze({ name: 'Hydrangea', stages: Object.freeze(['Seed', 'Sprout', 'Broad Leaves', 'First Blooms', 'Pluvia']), adult: 'Pluvia', meaning: 'rain', hint: 'Double growth when watered on rainy days' }),
+  }),
+  lavender: Object.freeze({
+    name: '라벤더', price: 250, lab: true, rule: 'twilight', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '새싹', '은빛 잎', '꽃대', '베스페라']),
+    adult: Object.freeze({ name: '베스페라', meaning: '저녁 하늘' }),
+    hint: '해 뜰 무렵과 해 질 무렵에 물을 주면 두 배로 자라요',
+    en: Object.freeze({ name: 'Lavender', stages: Object.freeze(['Seed', 'Sprout', 'Silver Leaves', 'Flower Spikes', 'Vespera']), adult: 'Vespera', meaning: 'evening sky', hint: 'Double growth when watered around sunrise or sunset' }),
+  }),
+  olive: Object.freeze({
+    name: '올리브나무', price: 400, lab: true, rule: 'charge', thresholds: Object.freeze([0, 2, 10, 22, 38]),
+    stages: Object.freeze(['씨앗', '새싹', '어린 나무', '은빛 나무', '비고르']),
+    adult: Object.freeze({ name: '비고르', meaning: '힘' }),
+    hint: '슈퍼차저에서 충전하는 동안 물을 주면 두 배로 자라요',
+    en: Object.freeze({ name: 'Olive Tree', stages: Object.freeze(['Seed', 'Sprout', 'Sapling', 'Silver Tree', 'Vigor']), adult: 'Vigor', meaning: 'strength', hint: 'Double growth when watered while Supercharging' }),
+  }),
+  pilea: Object.freeze({
+    name: '필레아', price: 150, lab: true, rule: 'streak', thresholds: Object.freeze([0, 2, 8, 18, 32]),
+    stages: Object.freeze(['씨앗', '동전 잎', '잎 몇 장', '동전 다발', '아미카']),
+    adult: Object.freeze({ name: '아미카', meaning: '친구' }),
+    hint: '사흘 넘게 이어서 물을 주면 그날부터 두 배로 자라요',
+    en: Object.freeze({ name: 'Pilea', stages: Object.freeze(['Seed', 'Coin Leaf', 'A Few Leaves', 'Coin Bunch', 'Amica']), adult: 'Amica', meaning: 'friend', hint: 'Double growth from the third day in a row you water it' }),
   }),
   // 지역 식물(실험판) 6종: 꽃씨로 살 수 없고, 그 지역(region) 슈퍼차저에 처음 들르면 씨앗을 받는다
   forsythia: Object.freeze({
@@ -85,8 +116,9 @@ export const PLANTS = Object.freeze({
 });
 
 export const PLANT_IDS = Object.freeze(Object.keys(PLANTS));
-/** 꽃씨로 들일 수 있는 식물 (지역 식물 빼고) */
-export const SHOP_PLANT_IDS = Object.freeze(PLANT_IDS.filter((id) => !PLANTS[id].region));
+/** 꽃씨로 들일 수 있는 식물 (지역 식물 빼고, 새 식물은 실험판에서만) */
+export const SHOP_PLANT_IDS = Object.freeze(PLANT_IDS.filter((id) => !PLANTS[id].region && !PLANTS[id].lab));
+export const shopPlantIds = (lab) => (lab ? PLANT_IDS.filter((id) => !PLANTS[id].region) : SHOP_PLANT_IDS);
 export const FIRST_PLANT = 'monstera';
 
 // 도감: 원산지, 알맞은 온도(°C, 여러 원예 자료에서 겹치는 값), 소개, 단계별 한 줄 설명
@@ -149,6 +181,66 @@ const GUIDE = Object.freeze({
       origin: 'Northeast India · Southeast Asia',
       about: 'A tree from Northeast India and Southeast Asia. Its stem gives a white sap once used for rubber, and in the wild it can grow over 30 m tall. The farther you drive, the faster this traveler grows.',
       stages: ['Waiting in the soil for its first water', 'Two round seed leaves appear', 'One stem with glossy leaves', 'The stem becomes two', 'A grown rubber tree, ready for the road'],
+    },
+  },
+  hydrangea: {
+    temp: [15, 25],
+    ko: {
+      tag: '빗소리를 들으면 꽃이 피어요',
+      origin: '일본',
+      about: '장마철에 탐스러운 꽃송이를 피우는 꽃나무예요. 이름처럼 물을 아주 좋아하고, 흙이 산성이면 파랗게, 알칼리성이면 분홍색으로 꽃 색이 바뀌어요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '톱니 모양 잎 몇 장이 나와요', '넓은 잎이 풍성하게 퍼져요', '작은 꽃이 모여 첫 꽃송이가 생겨요', '동그란 꽃송이가 가득한 어른 수국이에요'],
+    },
+    en: {
+      tag: 'Blooms at the sound of rain',
+      origin: 'Japan',
+      about: 'A flowering shrub that opens big round blooms in the rainy season. It loves water, and its flowers turn blue in acidic soil and pink in alkaline soil.',
+      stages: ['Waiting in the soil for its first water', 'A few saw-edged leaves appear', 'Broad leaves spread out', 'Tiny flowers gather into the first blooms', 'A grown hydrangea full of round blooms'],
+    },
+  },
+  lavender: {
+    temp: [15, 28],
+    ko: {
+      tag: '해가 뜨고 질 때 향이 짙어져요',
+      origin: '지중해 연안',
+      about: '지중해의 볕 좋은 언덕에서 자라는 허브예요. 은빛 잎과 보라색 꽃대에서 은은한 향이 나고, 옛날부터 빨래와 목욕물에 넣어 썼어요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '가느다란 새싹이 올라와요', '은빛이 도는 좁은 잎이 늘어나요', '보라색 꽃대가 올라오기 시작해요', '보랏빛 꽃대가 가득한 어른 라벤더예요'],
+    },
+    en: {
+      tag: 'Its scent deepens at dawn and dusk',
+      origin: 'Mediterranean coast',
+      about: 'A herb from the sunny hills of the Mediterranean. Its silvery leaves and purple spikes have a soft scent, and people have added it to washing and baths for centuries.',
+      stages: ['Waiting in the soil for its first water', 'A slender sprout comes up', 'Narrow silvery leaves fill out', 'Purple flower spikes begin to rise', 'A grown lavender full of purple spikes'],
+    },
+  },
+  olive: {
+    temp: [12, 28],
+    ko: {
+      tag: '충전하는 동안 힘을 모아요',
+      origin: '지중해 연안',
+      about: '수백 년, 길게는 천 년 넘게 사는 튼튼한 나무예요. 잎 뒷면이 은빛이라 바람이 불면 나무 전체가 반짝이고, 오래전부터 평화와 힘을 뜻해 왔어요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '좁고 단단한 잎 몇 장이 나와요', '가는 줄기가 나무 모양을 갖춰요', '구부러진 줄기에 은빛 잎이 무성해져요', '꽃과 열매를 단 어른 올리브나무예요'],
+    },
+    en: {
+      tag: 'Gathers strength while you charge',
+      origin: 'Mediterranean coast',
+      about: 'A sturdy tree that can live for hundreds of years, some for over a thousand. The silvery undersides of its leaves make the whole tree shimmer in the wind, and it has long stood for peace and strength.',
+      stages: ['Waiting in the soil for its first water', 'A few narrow, tough leaves appear', 'A thin stem takes the shape of a tree', 'Silvery leaves crowd the twisting trunk', 'A grown olive tree with flowers and fruit'],
+    },
+  },
+  pilea: {
+    temp: [15, 25],
+    ko: {
+      tag: '매일 만나면 친구가 돼요',
+      origin: '중국 윈난',
+      about: '동전처럼 동그란 잎이 달린 풀이에요. 뿌리 옆으로 아기 포기가 잘 나와서 떼어 나눠 주기 좋아, 친구 식물이라고도 불려요.',
+      stages: ['흙 속에서 첫 물을 기다려요', '동전 같은 잎 두세 장이 나와요', '가는 잎자루 끝에 잎이 늘어나요', '동그란 잎이 다발처럼 모여요', '동전 잎이 둥글게 가득한 어른 필레아예요'],
+    },
+    en: {
+      tag: 'Meet it every day and it becomes a friend',
+      origin: 'Yunnan, China',
+      about: 'A plant with round, coin-like leaves. It sends up little offshoots beside its roots that are easy to pass on, so it is also called the friendship plant.',
+      stages: ['Waiting in the soil for its first water', 'Two or three coin-like leaves appear', 'More leaves on thin stalks', 'Round leaves gather into a bunch', 'A grown pilea, round and full of coin leaves'],
     },
   },
   forsythia: {

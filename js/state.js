@@ -17,12 +17,30 @@ export const RULES = Object.freeze({
   // 선인장은 하루 물 두 번까지, 고무나무는 오늘 이만큼 달리면 보너스
   DRY_LIMIT: 2,
   ROAD_KM: 30,
+  // 필레아는 이만큼 날을 이어서 물을 주면 그날부터 두 배
+  STREAK_DAYS: 3,
 });
 
 // 단계는 씨앗(0)부터 다 자람(4)까지 다섯. 이름은 식물마다 다르다 (plants.js)
 export const LAST_STAGE = 4;
 
-const newPlant = () => ({ growth: 0, waterToday: 0, grown: false });
+// streak·lastDay: 물을 이어서 준 날 수와 마지막으로 준 날 (필레아)
+const newPlant = () => ({ growth: 0, waterToday: 0, grown: false, streak: 0, lastDay: '' });
+
+/** 'YYYY-MM-DD' 하루 전 날짜 */
+function dayBefore(day) {
+  const d = new Date(`${day}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return '';
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/** 오늘 물을 주면 며칠째 이어서 주는 것인지 (오늘 이미 줬으면 그 값 그대로) */
+export function streakToday(plant, today) {
+  if (!today) return 1;
+  if (plant.lastDay === today) return plant.streak;
+  return plant.lastDay && plant.lastDay === dayBefore(today) ? plant.streak + 1 : 1;
+}
 
 export function createState(today = '') {
   return {
@@ -124,8 +142,8 @@ export function waterCheck(state) {
 export const canWater = (state) => waterCheck(state).ok;
 
 /**
- * @typedef {{isNight?:boolean, sunny?:boolean}} BonusContext 화면 쪽에서 알려 주는 지금 상황
- *  sunny: 실제 날씨가 맑거나 구름 조금인 낮
+ * @typedef {{isNight?:boolean, sunny?:boolean, raining?:boolean, twilight?:boolean, charging?:boolean}} BonusContext 화면 쪽에서 알려 주는 지금 상황
+ *  sunny: 실제 날씨가 맑거나 구름 조금인 낮, raining: 비·눈, twilight: 해 뜨고 지는 무렵, charging: 슈퍼차저에서 충전 중
  */
 
 /** 이번에 물을 주면 보너스(두 배)를 받는지 @param {BonusContext} ctx */
@@ -135,12 +153,16 @@ export function bonusNow(state, ctx = {}) {
     case 'dry': return true;
     case 'night': return Boolean(ctx.isNight);
     case 'road': return state.todayKm >= RULES.ROAD_KM;
+    case 'rain': return Boolean(ctx.raining);
+    case 'twilight': return Boolean(ctx.twilight);
+    case 'charge': return Boolean(ctx.charging);
+    case 'streak': return streakToday(activePlant(state), state.today) >= RULES.STREAK_DAYS;
     default: return false;
   }
 }
 
 /**
- * 두 배 안내용: 지금 두 배인지와, 고무나무는 남은 거리, 선인장은 오늘 남은 물 횟수
+ * 두 배 안내용: 지금 두 배인지와, 고무나무는 남은 거리, 선인장은 오늘 남은 물 횟수, 필레아는 남은 날 수
  * @param {BonusContext} ctx
  * @returns {{rule:string, active:boolean, left?:number}}
  */
@@ -153,6 +175,10 @@ export function bonusInfo(state, ctx = {}) {
   if (rule === 'dry') {
     const left = Math.max(0, RULES.DRY_LIMIT - activePlant(state).waterToday);
     return { rule, active: left > 0, left };
+  }
+  if (rule === 'streak') {
+    const left = Math.max(0, RULES.STREAK_DAYS - streakToday(activePlant(state), state.today));
+    return { rule, active: left === 0, left };
   }
   return { rule, active: bonusNow(state, ctx) };
 }
@@ -168,7 +194,7 @@ export function water(state, ctx = {}) {
   const grew = bonus ? RULES.GROWTH_BONUS : RULES.GROWTH_PER_WATER;
   const before = stageOf(state);
   const plant = activePlant(state);
-  let next = withActive(state, { growth: plant.growth + grew, waterToday: plant.waterToday + 1 });
+  let next = withActive(state, { growth: plant.growth + grew, waterToday: plant.waterToday + 1, streak: streakToday(plant, state.today), lastDay: state.today });
   next = {
     ...next,
     drops: state.drops - 1,
@@ -224,6 +250,8 @@ export function sanitize(raw, today = '') {
     growth: num(p?.growth, 0, 1e6),
     waterToday: Math.floor(num(p?.waterToday, 0, 100)),
     grown: p?.grown === true,
+    streak: Math.floor(num(p?.streak, 0, 1e5)),
+    lastDay: typeof p?.lastDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(p.lastDay) ? p.lastDay : '',
   });
   const rawPlants = raw.plants && typeof raw.plants === 'object' ? raw.plants : { [FIRST_PLANT]: { growth: raw.growth } };
   const plants = Object.fromEntries(PLANT_IDS.filter((id) => rawPlants[id]).map((id) => [id, cleanPlant(rawPlants[id])]));

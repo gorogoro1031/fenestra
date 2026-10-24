@@ -167,7 +167,41 @@ test('지역 식물은 꽃씨로 살 수 없고, 그 지역 슈퍼차저 도장�
   const capital = chargers().find((c) => c.region === 'capital');
   const stamped = { ...rich, stamps: { [capital.id]: '2026-10-23' } };
   const granted = grantRegionalSeeds(stamped);
-  assert.deepEqual(granted.plants.forsythia, { growth: 0, waterToday: 0, grown: false });
+  assert.deepEqual(granted.plants.forsythia, { growth: 0, waterToday: 0, grown: false, streak: 0, lastDay: '' });
   assert.equal(granted.active, stamped.active);
   assert.equal(grantRegionalSeeds(granted), granted);
+});
+
+// 새 식물(실험판) 네 가지 두 배 조건
+const newPlantState = (id, patch = {}) => ({ ...createState('2026-10-24'), drops: 5, active: id, plants: { monstera: { growth: 0, waterToday: 0, grown: false, streak: 0, lastDay: '' }, [id]: { growth: 0, waterToday: 0, grown: false, streak: 0, lastDay: '' } }, ...patch });
+
+test('수국은 비 오는 날, 라벤더는 해 뜨고 질 무렵, 올리브나무는 충전 중에 두 배', () => {
+  assert.equal(water(newPlantState('hydrangea'), { raining: true }).grew, RULES.GROWTH_BONUS);
+  assert.equal(water(newPlantState('hydrangea'), { sunny: true }).grew, RULES.GROWTH_PER_WATER);
+  assert.equal(water(newPlantState('lavender'), { twilight: true }).grew, RULES.GROWTH_BONUS);
+  assert.equal(water(newPlantState('lavender'), { isNight: true }).grew, RULES.GROWTH_PER_WATER);
+  assert.equal(water(newPlantState('olive'), { charging: true }).grew, RULES.GROWTH_BONUS);
+  assert.equal(water(newPlantState('olive'), {}).grew, RULES.GROWTH_PER_WATER);
+  assert.deepEqual(bonusInfo(newPlantState('olive'), { charging: true }), { rule: 'charge', active: true });
+});
+
+test('필레아는 사흘째 이어서 물을 주는 날부터 두 배, 하루 거르면 처음부터', () => {
+  const pilea = (streak, lastDay) => newPlantState('pilea', { plants: { monstera: { growth: 0, waterToday: 0, grown: false, streak: 0, lastDay: '' }, pilea: { growth: 0, waterToday: 0, grown: false, streak, lastDay } } });
+  assert.deepEqual(bonusInfo(pilea(0, '')), { rule: 'streak', active: false, left: 2 });
+  assert.deepEqual(bonusInfo(pilea(2, '2026-10-23')), { rule: 'streak', active: true, left: 0 });
+  assert.equal(water(pilea(2, '2026-10-23')).grew, RULES.GROWTH_BONUS);
+  assert.equal(water(pilea(2, '2026-10-21')).grew, RULES.GROWTH_PER_WATER);
+  const after = water(pilea(1, '2026-10-23')).state.plants.pilea;
+  assert.deepEqual([after.streak, after.lastDay], [2, '2026-10-24']);
+  // 같은 날 두 번 줘도 이어진 날 수는 그대로
+  const twice = water(water(pilea(1, '2026-10-23')).state).state.plants.pilea;
+  assert.equal(twice.streak, 2);
+  // 달이 바뀌어도 하루 전으로 이어진다
+  assert.equal(water({ ...pilea(2, '2026-09-30'), today: '2026-10-01' }).grew, RULES.GROWTH_BONUS);
+});
+
+test('저장값의 이어서 준 날 수와 날짜 모양을 다듬는다', () => {
+  const s = sanitize({ plants: { monstera: { growth: 3, streak: 4.7, lastDay: '2026-10-23' }, pilea: { growth: 1, streak: -2, lastDay: 'yesterday' } } });
+  assert.deepEqual([s.plants.monstera.streak, s.plants.monstera.lastDay], [4, '2026-10-23']);
+  assert.deepEqual([s.plants.pilea.streak, s.plants.pilea.lastDay], [0, '']);
 });

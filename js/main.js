@@ -16,7 +16,7 @@ import { t, setLang, applyStatic, getLang, locale, pick } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
 import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './trip.js';
 import { greetingPeriod, cleanName } from './text.js';
-import { CHARGE_RULES, chargerNear, chargerById, updateSession, settleCharge, regionById } from './charge.js';
+import { CHARGE_RULES, chargerNear, chargerById, updateSession, settleCharge, regionById, isCharging } from './charge.js';
 import { renderCharge, chargerPlace } from './charge-ui.js';
 import { renderMap, defaultCharger } from './map-ui.js';
 
@@ -66,6 +66,8 @@ let weatherWatch = null;
 // 이번 주행 (실제 주행으로 이슬 모으기를 켰을 때만 쌓인다)
 let trip = null;
 let drivingUntil = 0;
+// 슈퍼차저 근처에 머무는 중 (충전 리워드, 실험판). 두 배 조건(올리브나무)도 쓰므로 위에 둔다
+let chargeSession = null;
 let stopGps = () => {};
 
 const plant = createPlant($('plant-layer'));
@@ -136,10 +138,20 @@ function weatherLabel({ short = false } = {}) {
 }
 // 몬스테라가 두 배로 자라는 '맑은 낮': 해가 떠 있고 맑음이나 구름 조금
 const SUNNY_KINDS = ['clear', 'partly'];
+// 라벤더가 두 배로 자라는 '해 뜨고 질 무렵': 해 뜨는·지는 시각 앞뒤 이만큼(시간)
+const TWILIGHT_HOURS = 1;
+function isTwilight() {
+  const h = currentHours();
+  const { rise, set } = sunNow();
+  return Math.abs(h - rise) <= TWILIGHT_HOURS || Math.abs(h - set) <= TWILIGHT_HOURS;
+}
 /** 두 배 조건·컨디션에 넘기는 지금 상황 */
 function careContext() {
   const isNight = currentScene() === 'night';
-  return { isNight, sunny: !isNight && SUNNY_KINDS.includes(weatherNow().kind), temp: weatherNow().temp };
+  return {
+    isNight, sunny: !isNight && SUNNY_KINDS.includes(weatherNow().kind), temp: weatherNow().temp,
+    raining: isWet(), twilight: isTwilight(), charging: LAB && isCharging(chargeSession, Date.now()),
+  };
 }
 /** 위치 권한을 묻고 날씨를 받기 시작한다. 처음 안내가 끝난 뒤에 부른다 */
 function startWeather() {
@@ -408,7 +420,6 @@ const DEMO_CHARGE_MS = 10 * 60 * 1000;
 let nearCharger = null;
 // 마지막으로 받은 내 위치 (지도에서 가까운 슈퍼차저용). 주행 GPS가 없으면 날씨용 대략의 위치
 let lastPos = null;
-let chargeSession = null;
 function tickCharge() {
   const now = Date.now();
   chargeSession = updateSession(chargeSession, nearCharger, now);

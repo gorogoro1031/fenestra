@@ -45,7 +45,8 @@ export function renderDewSheet(state, { gpsOn, canWater, waterLabel }) {
  * @param {{temp:number|null, isNight:boolean, sunny:boolean, weatherLine:string, failed:boolean}} ctx
  *  weatherLine: 날씨·지역·언제 확인했는지 한 줄, failed: 날씨를 못 받았으면 '다시 확인'을 보인다
  */
-export function renderCondSheet(state, { temp, isNight, sunny, weatherLine, failed }) {
+export function renderCondSheet(state, ctx) {
+  const { temp, weatherLine, failed } = ctx;
   const id = state.active;
   const plant = plantName(id);
   const condition = conditionFor(id, temp);
@@ -93,7 +94,7 @@ export function renderCondSheet(state, { temp, isNight, sunny, weatherLine, fail
   }));
 
   const grown = stageOf(state) === LAST_STAGE;
-  const bonus = bonusInfo(state, { isNight, sunny });
+  const bonus = bonusInfo(state, ctx);
   const on = bonus.active && !grown;
   $('cs-x2').classList.toggle('on', on);
   $('cs-x2-title').textContent = grown ? t('water.grown') : on ? t('cs.x2on') : bonusText(bonus);
