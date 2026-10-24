@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/tokens.css?v=2610241726">
-<link rel="stylesheet" href="css/app.css?v=2610241726">
+<link rel="stylesheet" href="css/tokens.css?v=2610242348">
+<link rel="stylesheet" href="css/app.css?v=2610242348">
 <script>
   // 시작 지킴이: 앱 스크립트가 10초 안에 돌지 않으면 로고에 멈춰 있지 않고 이유와 다시 불러오기 버튼을 보여 준다
   (function () {
@@ -89,7 +89,8 @@
       </div>
       <nav class="tools" aria-label="메뉴" data-i18n-label="menu">
         <button class="coin-pill fert-pill" type="button" id="open-charge" aria-label="충전 리워드" data-i18n-label="chargeTitle" data-lab hidden><svg class="sc-bolt" aria-hidden="true"><use href="#i-bolt"/></svg><span data-i18n="scPill">슈퍼차저</span> <b id="sc-num">0</b></button>
-        <span class="coin-pill" aria-label="꽃씨" data-i18n-label="pips"><i class="coin-dot" aria-hidden="true"></i><span data-i18n="pips">꽃씨</span> <b id="coin-num">0</b></span>
+        <!-- 꽃씨: 노란 점 + 개수만 (영어에서도 상단 메뉴가 화면 안에 들어오게) -->
+        <span class="coin-pill" aria-label="꽃씨" data-i18n-label="pips"><i class="coin-dot" aria-hidden="true"></i><b id="coin-num">0</b></span>
         <div class="segmented hand" id="pref-hand" role="group" aria-label="버튼 위치" data-i18n-label="handLabel">
           <button type="button" data-value="driver" data-i18n="driver">운전석</button><button type="button" data-value="passenger" data-i18n="passenger">조수석</button>
         </div>
@@ -531,8 +532,8 @@
   </div>
 </div>
 <!-- version:start (npm run stamp 가 고쳐 쓴다) -->
-<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610241726","./js/albums-en.js":"./js/albums-en.js?v=2610241726","./js/albums.js":"./js/albums.js?v=2610241726","./js/charge-ui.js":"./js/charge-ui.js?v=2610241726","./js/charge.js":"./js/charge.js?v=2610241726","./js/companion-ui.js":"./js/companion-ui.js?v=2610241726","./js/detail-ui.js":"./js/detail-ui.js?v=2610241726","./js/drive.js":"./js/drive.js?v=2610241726","./js/guest-visit.js":"./js/guest-visit.js?v=2610241726","./js/guests.js":"./js/guests.js?v=2610241726","./js/i18n.js":"./js/i18n.js?v=2610241726","./js/korea-map.js":"./js/korea-map.js?v=2610241726","./js/main.js":"./js/main.js?v=2610241726","./js/map-gl.js":"./js/map-gl.js?v=2610241726","./js/map-ui.js":"./js/map-ui.js?v=2610241726","./js/motions.js":"./js/motions.js?v=2610241726","./js/plant.js":"./js/plant.js?v=2610241726","./js/plants.js":"./js/plants.js?v=2610241726","./js/qr.js":"./js/qr.js?v=2610241726","./js/scene.js":"./js/scene.js?v=2610241726","./js/sky.js":"./js/sky.js?v=2610241726","./js/sound.js":"./js/sound.js?v=2610241726","./js/state.js":"./js/state.js?v=2610241726","./js/storage.js":"./js/storage.js?v=2610241726","./js/superchargers.js":"./js/superchargers.js?v=2610241726","./js/text.js":"./js/text.js?v=2610241726","./js/trip.js":"./js/trip.js?v=2610241726","./js/tutorial.js":"./js/tutorial.js?v=2610241726","./js/ui.js":"./js/ui.js?v=2610241726","./js/weather.js":"./js/weather.js?v=2610241726"}}</script>
-<script type="module" src="js/main.js?v=2610241726"></script>
+<script type="importmap">{"imports":{"./js/album-card.js":"./js/album-card.js?v=2610242348","./js/albums-en.js":"./js/albums-en.js?v=2610242348","./js/albums.js":"./js/albums.js?v=2610242348","./js/charge-ui.js":"./js/charge-ui.js?v=2610242348","./js/charge.js":"./js/charge.js?v=2610242348","./js/companion-ui.js":"./js/companion-ui.js?v=2610242348","./js/detail-ui.js":"./js/detail-ui.js?v=2610242348","./js/drive.js":"./js/drive.js?v=2610242348","./js/guest-visit.js":"./js/guest-visit.js?v=2610242348","./js/guests.js":"./js/guests.js?v=2610242348","./js/i18n.js":"./js/i18n.js?v=2610242348","./js/korea-map.js":"./js/korea-map.js?v=2610242348","./js/main.js":"./js/main.js?v=2610242348","./js/map-gl.js":"./js/map-gl.js?v=2610242348","./js/map-ui.js":"./js/map-ui.js?v=2610242348","./js/motions.js":"./js/motions.js?v=2610242348","./js/plant.js":"./js/plant.js?v=2610242348","./js/plants.js":"./js/plants.js?v=2610242348","./js/qr.js":"./js/qr.js?v=2610242348","./js/scene.js":"./js/scene.js?v=2610242348","./js/sky.js":"./js/sky.js?v=2610242348","./js/sound.js":"./js/sound.js?v=2610242348","./js/state.js":"./js/state.js?v=2610242348","./js/storage.js":"./js/storage.js?v=2610242348","./js/superchargers.js":"./js/superchargers.js?v=2610242348","./js/text.js":"./js/text.js?v=2610242348","./js/trip.js":"./js/trip.js?v=2610242348","./js/tutorial.js":"./js/tutorial.js?v=2610242348","./js/ui.js":"./js/ui.js?v=2610242348","./js/weather.js":"./js/weather.js?v=2610242348"}}</script>
+<script type="module" src="js/main.js?v=2610242348"></script>
 <!-- version:end -->
 </body>
 </html>

@@ -100,6 +100,7 @@ function fit() {
   anchor = plant.anchor();
   placeSunTime();
   placeCompanion();
+  fitTools();
 }
 addEventListener('resize', () => { fit(); applyScene(); });
 fit();
@@ -257,6 +258,21 @@ function render() {
   // 설명 시트가 열려 있으면 같이 새로
   if ($('dew-sheet').open) showDewSheet();
   if ($('cond-sheet').open) showCondSheet();
+  fitTools();
+}
+
+/* 상단 메뉴: 글자가 긴 언어·식물 이름이라 로고 블록 옆 자리를 넘치면 메뉴 전체를 그 자리에 맞게 줄인다 (설정 버튼이 화면 밖으로 밀리지 않게).
+   fit()이 먼저 불러서 간격은 함수 안에 둔다 */
+function fitTools(gap = 24) {
+  const tools = document.querySelector('.tools');
+  tools.style.transform = '';
+  const room = document.querySelector('.top').clientWidth - document.querySelector('.brand').offsetWidth - gap;
+  const scale = Math.min(1, room / tools.scrollWidth);
+  if (scale >= 1) return;
+  // 넘칠 땐 로고 블록 쪽 끝이 고정되므로 그쪽을 축으로 줄인다
+  const passenger = prefs.hand === 'passenger';
+  tools.style.transformOrigin = passenger ? 'right top' : 'left top';
+  tools.style.transform = `translateX(${passenger ? -gap : gap}px) scale(${scale.toFixed(3)})`;
 }
 
 function commit(next) {
