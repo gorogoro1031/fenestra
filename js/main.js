@@ -1,4 +1,4 @@
-import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, waterCheck, fertilize, stageOf, buyPlant, selectPlant, catchGuest, grantRegionalSeeds, toggleCompanion, recordTrip } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, waterCheck, fertilize, stageOf, buyPlant, selectPlant, catchGuest, grantRegionalSeeds, toggleCompanion, recordTrip, unlockAll } from './state.js';
 import { PLANTS, stageName, adultOf, plantName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
@@ -783,6 +783,12 @@ $('demo-guest').addEventListener('click', () => {
   closeSheets();
   const { x, y } = plant.ring();
   guests.arrive(pickGuest(guestContext()), x, y + 80);
+});
+// 데모: 모든 식물·프렌즈를 열어 바로 키우고 태워 볼 수 있게 (있던 진행은 그대로)
+$('demo-unlock').addEventListener('click', () => {
+  commit(unlockAll(state));
+  syncSettings();
+  toast(t('toast.demoUnlock'));
 });
 $('demo-charge-friend').addEventListener('click', () => {
   closeSheets();

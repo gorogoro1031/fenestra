@@ -160,6 +160,7 @@ const KO = {
   'toast.fertUsed': ({ n }) => `비료로 +${n} 자랐어요`,
   'toast.demoCharge': '슈퍼차저에 도착한 것으로 했어요 · 10분 지난 상태',
   'toast.chargeFriend': '충전하는 동안 누가 찾아왔어요 · 식물을 봐 주세요',
+  'toast.demoUnlock': '모든 식물과 프렌즈를 열었어요 · 도감에서 골라 보세요',
 
   'gh.growing': '키우는 중',
   'gh.regionalSeed': '씨앗을 받았어요\n곧 키울 수 있어요',
@@ -377,6 +378,7 @@ const EN = {
   'toast.fertUsed': ({ n }) => `Fertilizer: grew +${n}`,
   'toast.demoCharge': 'Pretending you’ve been at a Supercharger for 10 min',
   'toast.chargeFriend': 'Someone came by while you charge · check your plant',
+  'toast.demoUnlock': 'All plants and friends unlocked · pick from the guide',
 
   'gh.growing': 'Growing',
   'gh.regionalSeed': 'Seed collected · Growing soon',
@@ -526,6 +528,7 @@ const STATIC_EN = {
   demoTrip: 'Preview drive summary',
   demoCharge: 'Pretend I’m at a Supercharger',
   demoChargeFriend: 'Call a charging friend',
+  demoUnlock: 'Unlock all plants & friends',
   cmpTrips: 'Places together',
   chargeTitle: 'Charging Rewards',
   scPill: 'Supercharger',

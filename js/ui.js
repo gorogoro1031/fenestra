@@ -295,8 +295,9 @@ function plantCard(state, id, onPick, onOpen) {
  */
 function renderRegionalPlants(state, onPick, onOpen) {
   const cards = REGIONS.map((r) => {
+    // 이미 가진 지역 식물(데모로 연 것 포함)은 도장이 없어도 바로 키울 수 있다
+    if (state.plants[r.plant]) return plantCard(state, r.plant, onPick, onOpen);
     const seed = regionCount(state.stamps, r.id) >= 1;
-    if (seed && state.plants[r.plant]) return plantCard(state, r.plant, onPick, onOpen);
     const li = document.createElement('li');
     li.className = `gh-card${seed ? '' : ' locked'}`;
     const body = document.createElement('div');
@@ -315,7 +316,7 @@ function renderRegionalPlants(state, onPick, onOpen) {
     return li;
   });
   $('gh-regional').replaceChildren(...cards);
-  return REGIONS.filter((r) => regionCount(state.stamps, r.id) >= 1).length;
+  return REGIONS.filter((r) => state.plants[r.plant] || regionCount(state.stamps, r.id) >= 1).length;
 }
 
 /**

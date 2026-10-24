@@ -272,6 +272,13 @@ export function recordTrip(state, chargerId, day) {
   return { ...state, trips: { ...state.trips, [id]: trips } };
 }
 
+/** 데모(실험판): 모든 식물을 들이고 모든 프렌즈를 만난 것으로. 이미 있는 진행은 그대로 둔다 */
+export function unlockAll(state) {
+  const plants = Object.fromEntries(PLANT_IDS.map((id) => [id, state.plants[id] || newPlant()]));
+  const guestbook = Object.fromEntries(ALL_FRIEND_IDS.map((id) => [id, state.guestbook[id] || 1]));
+  return { ...state, plants, guestbook };
+}
+
 /** 가진 식물 중에서 키울 식물을 바꾼다 */
 export function selectPlant(state, id) {
   if (!state.plants[id] || state.active === id) return state;

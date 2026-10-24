@@ -243,3 +243,17 @@ test('동행: 동행 중 새 도장은 함께 간 곳으로 최근 것부터 남
   // 만난 적 없는 친구는 태운 채로 불러오지 않는다
   assert.equal(sanitize({ companion: 'owl', guestbook: {} }).companion, null);
 });
+
+test('데모 모두 열기: 모든 식물과 프렌즈가 열리고, 있던 진행은 그대로', async () => {
+  const { unlockAll } = await import('../js/state.js');
+  const { PLANT_IDS } = await import('../js/plants.js');
+  const { ALL_FRIEND_IDS } = await import('../js/guests.js');
+  const s = { ...createState(), guestbook: { fox: 3 }, plants: { monstera: { growth: 9, waterToday: 1, grown: false, streak: 0, lastDay: '' } } };
+  const all = unlockAll(s);
+  assert.deepEqual(Object.keys(all.plants).sort(), [...PLANT_IDS].sort());
+  assert.equal(all.plants.monstera.growth, 9);
+  assert.equal(all.guestbook.fox, 3);
+  assert.ok(ALL_FRIEND_IDS.every((id) => all.guestbook[id] >= 1));
+  assert.deepEqual(all.newGuests, []);
+  assert.deepEqual(sanitize(all).guestbook, all.guestbook);
+});
