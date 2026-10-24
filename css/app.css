@@ -400,6 +400,9 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .g-stage.locked h3 { color: var(--label-3); }
 
 /* ---------- 주행 요약 ---------- */
+/* 설정: 한국어 설명이 줄바꿈되지 않게 넓게 */
+.sheet#settings-sheet { width: 1600px; }
+.sheet#settings-sheet .r-title, .sheet#settings-sheet .r-sub { white-space: nowrap; }
 .sheet.trip-sheet { width: 760px; padding: 40px 44px 36px; border-radius: 40px; }
 .trip-when { font-size: 24px; font-weight: 700; color: var(--label-2); }
 .trip-km { font: 400 120px/1 var(--font-logo); margin-top: 10px; }
