@@ -71,7 +71,8 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 /* 로고와 그 아래 인사·날씨·주행 블록. 무대가 세로로 길수록(로고와 위젯 사이 빈 공간이 클수록) 글자가 커진다.
    빈 공간 ≈ 무대 높이 - 1110px(로고·인사·주행 줄·위젯·여백), 기온 숫자는 그 공간을 대부분 채우되 96~320px */
 .stage { container-type: size; }
-.brand { display: flex; flex-direction: column; align-items: flex-start; height: calc(100cqh - 48px * 2 - var(--wd) * 2 - var(--wd-gap) * 2 - var(--act-h)); }
+/* 아래 위젯 두 칸만큼 넓게: 날씨·지역 글자가 줄바꿈되지 않게 */
+.brand { min-width: calc(var(--wd) * 2 + var(--wd-gap)); display: flex; flex-direction: column; align-items: flex-start; height: calc(100cqh - 48px * 2 - var(--wd) * 2 - var(--wd-gap) * 2 - var(--act-h)); }
 .brand > .greet { margin-top: auto; }
 .brand > .today-line { margin-bottom: auto; }
 /* 지금 날씨: 로고 아래 큰 기온, 옆에 날씨 이름과 지역 */
@@ -82,10 +83,10 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .wn-temp { font: 400 128px/.9 var(--font-logo); font-size: clamp(96px, calc((100cqh - 1110px) * 1.1), 320px); letter-spacing: -.02em; color: var(--temp-color, #ecf03c); transition: color 2s ease; }
 .stage[data-scene="day"] { --temp-color: #ecf03c; }
 .stage[data-scene="night"] { --temp-color: #a8d8ff; }
-.wn-text { display: flex; flex-direction: column; gap: 6px; }
+.wn-text { display: flex; flex-direction: column; gap: 6px; white-space: nowrap; }
 .wn-text b { font-size: 34px; font-size: clamp(32px, calc(14px + 2.2cqh), 56px); font-weight: 700; }
 .wn-text span { font-size: 24px; font-size: clamp(22px, calc(8px + 1.6cqh), 38px); font-weight: 600; color: var(--label-2); }
-.today-line { display: flex; align-items: baseline; gap: 28px; margin-top: 10px; padding-top: 14px; border-top: 2px solid rgba(255, 255, 255, .12); font-variant-numeric: tabular-nums; }
+.today-line { align-self: stretch; display: flex; align-items: baseline; gap: 28px; margin-top: 10px; padding-top: 14px; border-top: 2px solid rgba(255, 255, 255, .12); font-variant-numeric: tabular-nums; }
 .today-line .clock { font-size: 28px; font-size: clamp(26px, calc(8px + 1.8cqh), 40px); font-weight: 600; color: var(--label-2); }
 .today-km { display: inline-flex; align-items: baseline; gap: 8px; }
 .today-km b { font-size: 48px; font-size: clamp(46px, calc(10px + 3.4cqh), 80px); font-weight: 800; letter-spacing: -.02em; }
