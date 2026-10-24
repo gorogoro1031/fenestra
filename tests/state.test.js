@@ -205,3 +205,41 @@ test('저장값의 이어서 준 날 수와 날짜 모양을 다듬는다', () =
   assert.deepEqual([s.plants.monstera.streak, s.plants.monstera.lastDay], [4, '2026-10-23']);
   assert.deepEqual([s.plants.pilea.streak, s.plants.pilea.lastDay], [0, '']);
 });
+
+test('동행: 만난 프렌즈만 태우고, 한 번 더 누르면 내려 준다', async () => {
+  const { toggleCompanion } = await import('../js/state.js');
+  const s = { ...createState(), guestbook: { fox: 1 } };
+  assert.equal(toggleCompanion(s, 'owl'), s);
+  const riding = toggleCompanion(s, 'fox');
+  assert.equal(riding.companion, 'fox');
+  assert.equal(toggleCompanion(riding, 'fox').companion, null);
+});
+
+test('동행: 태운 친구와 달린 거리가 쌓여 50·300·1000·3000km마다 하트가 찬다', async () => {
+  const { toggleCompanion, bondOf } = await import('../js/state.js');
+  let s = toggleCompanion({ ...createState(), guestbook: { fox: 1, owl: 1 } }, 'fox');
+  s = addDistance(s, 60);
+  assert.deepEqual(bondOf(s, 'fox'), { km: 60, hearts: 1, left: 240 });
+  assert.equal(bondOf(s, 'owl').km, 0);
+  s = addDistance(s, 3000);
+  assert.deepEqual(bondOf(s, 'fox'), { km: 3060, hearts: 4, left: 0 });
+  // 내려 주면 더 쌓이지 않는다
+  s = addDistance(toggleCompanion(s, 'fox'), 10);
+  assert.equal(bondOf(s, 'fox').km, 3060);
+});
+
+test('동행: 동행 중 새 도장은 함께 간 곳으로 최근 것부터 남고, 저장값을 다듬는다', async () => {
+  const { toggleCompanion, recordTrip, COMPANION } = await import('../js/state.js');
+  assert.equal(recordTrip(createState(), 1418, '2026-10-24').trips.fox, undefined);
+  let s = toggleCompanion({ ...createState(), guestbook: { fox: 1 } }, 'fox');
+  s = recordTrip(recordTrip(s, 1418, '2026-10-23'), 1396, '2026-10-24');
+  assert.deepEqual(s.trips.fox.map((t) => t.id), [1396, 1418]);
+  for (let i = 0; i < COMPANION.MAX_TRIPS + 5; i += 1) s = recordTrip(s, 1115, '2026-10-25');
+  assert.equal(s.trips.fox.length, COMPANION.MAX_TRIPS);
+  const clean = sanitize({ ...s, companion: 'fox', bond: { fox: 12.5, nobody: 3, owl: 'x' }, trips: { fox: [{ id: 1418, day: '2026-10-24' }, { id: 'x', day: 'nope' }] } });
+  assert.equal(clean.companion, 'fox');
+  assert.deepEqual(clean.bond, { fox: 12.5 });
+  assert.deepEqual(clean.trips.fox, [{ id: 1418, day: '2026-10-24' }]);
+  // 만난 적 없는 친구는 태운 채로 불러오지 않는다
+  assert.equal(sanitize({ companion: 'owl', guestbook: {} }).companion, null);
+});

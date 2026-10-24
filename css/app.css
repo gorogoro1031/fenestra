@@ -42,6 +42,18 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 
 /* 온실 손님: 잎 위에 톡 나타나 둥실거리고, 누르면 만난다. 아무도 안 누르면 위로 날아간다 */
 .guest-layer { pointer-events: none; }
+/* 동행 친구: 화분 테두리에 앉아 천천히 둥실, 달리는 중엔 움직임 없이 어둡게 졸기 */
+.companion { position: absolute; left: 0; top: 0; width: var(--cmp-size, 150px); height: var(--cmp-size, 150px); pointer-events: auto; }
+.companion img { width: 100%; height: 100%; object-fit: contain; transform-origin: 50% 100%; animation: cmp-bob 3.2s ease-in-out infinite; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); transition: filter 900ms ease; }
+@keyframes cmp-bob { 50% { transform: translateY(-8px); } }
+.companion.hop img { animation: cmp-hop 520ms var(--ease-ios); }
+@keyframes cmp-hop { 40% { transform: translateY(-34px); } }
+.companion.sleep { pointer-events: none; }
+.companion.sleep img { animation: none; transform: rotate(-6deg); filter: brightness(.55) saturate(.7) drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); }
+.cmp-z { position: absolute; right: -6px; top: -12px; font-size: 34px; font-weight: 800; letter-spacing: 4px; color: rgba(255, 255, 255, .7); display: none; }
+.companion.sleep .cmp-z { display: block; }
+.companion.sleep .cmp-bubble { display: none; }
+.cmp-bubble { position: absolute; left: 50%; bottom: calc(100% + 12px); transform: translateX(-50%); white-space: nowrap; padding: 10px 20px; border-radius: 999px; background: rgba(28, 28, 30, .88); font-size: 26px; font-weight: 700; color: #fff; }
 .guest { position: absolute; width: 132px; height: 132px; margin: -112px 0 0 -66px; pointer-events: auto; border-radius: 50%; animation: guest-in 620ms var(--ease-ios) both; }
 .guest img { width: 100%; height: 100%; object-fit: contain; animation: guest-bob 2.6s ease-in-out 620ms infinite; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); }
 .guest:active img { transform: scale(.9); }
@@ -471,6 +483,7 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
   .opening.ready .opening-tap { animation: none; }
   .toast, .sun-time, .sky, .plant-img { transition: none; }
   .guest, .guest img, .guest.leaving { animation: none; }
+  .companion img, .companion.hop img { animation: none; }
 }
 
 /* 데모 단계 선택은 칸이 5개라 버튼을 좁게 */
@@ -652,6 +665,27 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .gs-art img { width: 520px; height: 520px; object-fit: contain; }
 .gs-art.unmet img { filter: brightness(0) invert(.3); opacity: .55; }
 .gs-facts { grid-template-columns: repeat(3, 1fr); }
+/* 동행: 하트 네 칸과 함께 달린 거리, 함께 간 곳, 같이 다니기 버튼 */
+.gs-cmp .bond { display: flex; align-items: center; gap: 22px; margin-top: 30px; }
+.gs-cmp .hearts { display: flex; gap: 8px; }
+.gs-cmp .hearts svg { width: 44px; height: 44px; }
+.gs-cmp .hearts path { fill: none; stroke: var(--tint); stroke-width: 1.8; opacity: .45; }
+.gs-cmp .hearts .on path { fill: var(--tint); opacity: 1; }
+.gs-cmp .bond p { font-size: 26px; font-weight: 600; color: var(--label-2); }
+.gs-cmp .bond b { font-size: 30px; color: var(--label); }
+.gs-cmp .trips { margin-top: 24px; }
+.gs-cmp .trips > p { font-size: 22px; font-weight: 700; color: var(--label-2); margin-bottom: 10px; }
+.gs-cmp .trips ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 230px; overflow-y: auto; }
+.gs-cmp .trips li { display: flex; justify-content: space-between; gap: 20px; padding: 16px 24px; border-radius: 20px; background: var(--grouped-2); font-size: 26px; font-weight: 600; }
+.gs-cmp .trips li span { color: var(--label-2); font-variant-numeric: tabular-nums; }
+.cmp-btn { display: flex; align-items: center; gap: 14px; margin-top: 30px; min-height: 88px; padding: 0 36px; border-radius: 999px; border: 3px solid var(--tint); color: var(--tint); font-size: 30px; font-weight: 800; }
+.cmp-btn i { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--tint); }
+.cmp-btn.on { background: color-mix(in srgb, var(--tint) 20%, transparent); }
+.cmp-btn.on i { background: var(--tint); }
+.cmp-btn:active { transform: scale(.97); }
+/* 도감: 태운 친구 칸 */
+.gb-cell.cmp-on { outline: 4px solid var(--tint); outline-offset: -4px; }
+.gb-cmp { position: absolute; top: 16px; right: 16px; padding: 6px 14px; border-radius: 999px; background: var(--tint); color: #08130c; font-size: 22px; font-weight: 800; }
 
 /* ---------- 슈퍼차저 지도 (실험판 ?lab) ---------- */
 .stamps-head { gap: 16px; }

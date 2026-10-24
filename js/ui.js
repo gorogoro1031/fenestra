@@ -329,6 +329,9 @@ export function renderGuestbook(state, onOpen, { residents = false } = {}) {
     const times = state.guestbook[id] || 0;
     const li = document.createElement('li');
     li.className = times ? 'gb-cell' : 'gb-cell unmet';
+    // 동행(실험판): 태운 친구 칸엔 테두리와 표시
+    const riding = residents && state.companion === id;
+    li.classList.toggle('cmp-on', riding);
     const open = document.createElement('button');
     open.type = 'button';
     open.className = 'gb-open';
@@ -346,7 +349,12 @@ export function renderGuestbook(state, onOpen, { residents = false } = {}) {
     text.append(name, count);
     open.append(img, text);
     li.append(open);
-    if (state.newGuests.includes(id)) {
+    if (riding) {
+      const tag = document.createElement('span');
+      tag.className = 'gb-cmp';
+      tag.textContent = t('cmp.tag');
+      li.append(tag);
+    } else if (state.newGuests.includes(id)) {
       const badge = document.createElement('span');
       badge.className = 'gb-new';
       badge.textContent = 'NEW';

@@ -1,4 +1,4 @@
-import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, waterCheck, fertilize, stageOf, buyPlant, selectPlant, catchGuest, grantRegionalSeeds } from './state.js';
+import { RULES, createState, sanitize, rollDay, addDistance, markGuestsSeen, water, waterCheck, fertilize, stageOf, buyPlant, selectPlant, catchGuest, grantRegionalSeeds, toggleCompanion, recordTrip } from './state.js';
 import { PLANTS, stageName, adultOf, plantName } from './plants.js';
 import { loadState, saveState, loadPrefs, savePrefs, clearAll } from './storage.js';
 import { plantLayout, createArcs, createFx } from './scene.js';
@@ -10,7 +10,7 @@ import { setAmbient, drip, chime, unlock, rustle, leafTouch, greetSwell } from '
 import { watchDriving } from './drive.js';
 import { createTutorial } from './tutorial.js';
 import { renderAlbum } from './album-card.js';
-import { pickGuest, shouldSpawn, guestName, rollChargeFriend, CHARGE_FRIEND_IDS, GUEST_RULES } from './guests.js';
+import { pickGuest, shouldSpawn, guestName, guestImage, rollChargeFriend, CHARGE_FRIEND_IDS, GUEST_RULES } from './guests.js';
 import { createGuestVisit } from './guest-visit.js';
 import { t, setLang, applyStatic, getLang, locale, pick } from './i18n.js';
 import { watchWeather, skyInfo, SKY_KINDS } from './weather.js';
@@ -18,6 +18,7 @@ import { startTrip, addToTrip, markMoving, tripEnded, worthShowing } from './tri
 import { greetingPeriod, cleanName } from './text.js';
 import { CHARGE_RULES, chargerNear, chargerById, updateSession, settleCharge, regionById, isCharging } from './charge.js';
 import { renderCharge, chargerPlace } from './charge-ui.js';
+import { renderCompanionPanel } from './companion-ui.js';
 import { renderMap, defaultCharger } from './map-ui.js';
 
 // 인트로: 로고 모션 시간(끝나면 '탭하여 계속하기'), 탭한 뒤 인사가 떠 있는 시간, 그 뒤 식물이 자라 오르는 동안 막이 걷힌다
@@ -98,6 +99,7 @@ function fit() {
   arcs.set({ x: ring.x, y: ring.y });
   anchor = plant.anchor();
   placeSunTime();
+  placeCompanion();
 }
 addEventListener('resize', () => { fit(); applyScene(); });
 fit();
@@ -187,6 +189,41 @@ function placeSunTime(gap = 24) {
   $('sun-time').style.transform = `translate(calc(${x.toFixed(1)}px - 50%), calc(${(y - gap).toFixed(1)}px - 100%))`;
 }
 
+/* ---------- 동행(실험판): 태운 프렌즈가 화분 테두리에 앉아 있다. 달리는 중엔 졸고, 누르면 함께 온 거리를 말한다 ---------- */
+function placeCompanion() {
+  const { x, y, size } = plant.seatSpot();
+  const el = $('companion');
+  el.style.setProperty('--cmp-size', `${size.toFixed(0)}px`);
+  el.style.transform = `translate(${(x - size / 2).toFixed(1)}px, ${(y - size).toFixed(1)}px)`;
+}
+function renderCompanion() {
+  const el = $('companion');
+  const id = LAB ? state.companion : null;
+  el.hidden = !id;
+  if (!id) return;
+  const src = guestImage(id);
+  if ($('companion-img').getAttribute('src') !== src) $('companion-img').src = src;
+  el.setAttribute('aria-label', guestName(id));
+  el.classList.toggle('sleep', isDriving());
+}
+const COMPANION_BUBBLE_MS = 2600;
+let bubbleTimer = 0;
+$('companion').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (isDriving() || !state.companion) return;
+  const el = $('companion');
+  el.classList.remove('hop');
+  void el.offsetWidth;
+  el.classList.add('hop');
+  const bubble = $('companion-bubble');
+  const km = Math.floor(state.bond[state.companion] || 0);
+  bubble.textContent = km > 0 ? t('cmp.together', { km: km.toLocaleString(locale()) }) : t('cmp.hello');
+  bubble.hidden = false;
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => { bubble.hidden = true; }, COMPANION_BUBBLE_MS);
+  if (prefs.effects && audioReady) chime();
+});
+
 /** 해·달 시각 글자: 낮엔 일몰, 밤엔 일출 시각 */
 function renderSunTime({ isDay }) {
   const el = $('sun-time');
@@ -213,6 +250,7 @@ function syncAmbient() {
 
 function render() {
   if (isDriving()) guests.leave();
+  renderCompanion();
   renderStatus(state, { ...careContext(), driving: isDriving() });
   // 슈퍼차저 버튼: 모은 도장 수 (비료는 충전 화면과 식물 위젯에서 보여 준다)
   if (LAB) $('sc-num').textContent = String(Object.keys(state.stamps).length);
@@ -451,7 +489,8 @@ function tickCharge() {
     if (friend) setTimeout(() => arriveChargeFriend(friend), 1200);
   }
   if (r.fert || r.newStamp) {
-    commit(grantRegionalSeeds(r.state));
+    const next = grantRegionalSeeds(r.state);
+    commit(r.newStamp ? recordTrip(next, chargeSession.id, todayKey()) : next);
     const charger = chargerById(chargeSession.id);
     const place = chargerPlace(charger).name;
     const region = regionById(charger.region);
@@ -566,10 +605,23 @@ function renderGreenhouseSheet() {
   }, { regional: LAB });
   renderGuestbook(state, (id) => {
     guestId = id;
-    renderGuest(state, id);
+    showGuest();
     $('guest-sheet').show();
   }, { residents: LAB });
 }
+function showGuest() {
+  renderGuest(state, guestId);
+  renderCompanionPanel(state, guestId, { lab: LAB });
+}
+// 같이 다니기 / 내려 주기
+$('gs-cmp-btn').addEventListener('click', () => {
+  if (!guestId) return;
+  const riding = state.companion === guestId;
+  commit(toggleCompanion(state, guestId));
+  showGuest();
+  renderGreenhouseSheet();
+  toast(t(riding ? 'toast.cmpOff' : 'toast.cmpOn', { name: guestName(guestId) }));
+});
 function showHubTab(tab) {
   $('tab-plants').setAttribute('aria-selected', String(tab === 'plants'));
   $('tab-guests').setAttribute('aria-selected', String(tab === 'guests'));
@@ -670,7 +722,7 @@ $('pref-lang').addEventListener('click', (e) => {
   syncSettings();
   if ($('greenhouse-sheet').open) renderGreenhouseSheet();
   if ($('plant-sheet').open) showGuide();
-  if ($('guest-sheet').open && guestId) renderGuest(state, guestId);
+  if ($('guest-sheet').open && guestId) showGuest();
   if ($('charge-sheet').open) showCharge();
   // 지역 이름을 새 언어로 다시 받는다
   weatherWatch?.refresh();

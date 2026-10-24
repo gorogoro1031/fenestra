@@ -21,6 +21,14 @@ export const RULES = Object.freeze({
   STREAK_DAYS: 3,
 });
 
+// 동행(실험판): 만난 프렌즈 한 마리를 태우고 다닌다. 함께 달린 거리로 하트가 차고, 동행 중 새 도장은 함께 간 곳으로 남는다
+export const COMPANION = Object.freeze({
+  // 하트 한 칸씩 차는 함께 달린 거리(km)
+  HEART_KM: Object.freeze([50, 300, 1000, 3000]),
+  // 친구마다 함께 간 곳은 최근 이만큼만 남긴다
+  MAX_TRIPS: 30,
+});
+
 // 단계는 씨앗(0)부터 다 자람(4)까지 다섯. 이름은 식물마다 다르다 (plants.js)
 export const LAST_STAGE = 4;
 
@@ -50,6 +58,8 @@ export function createState(today = '') {
     guestbook: {}, guestCoinsToday: 0, newGuests: [],
     // 충전 리워드(실험판): 비료 수와 충전소 도장책({슈퍼차저 id: 처음 간 날})
     fert: 0, stamps: {},
+    // 동행(실험판): 태운 프렌즈, 프렌즈별 함께 달린 거리(km), 함께 간 곳([{id: 슈퍼차저 id, day}], 최근 것이 앞)
+    companion: null, bond: {}, trips: {},
     active: FIRST_PLANT,
     plants: { [FIRST_PLANT]: newPlant() },
   };
@@ -120,8 +130,10 @@ export function addDistance(state, km) {
   const drops = Math.min(RULES.MAX_DROPS, state.drops + earned);
   const coinPool = state.coinRemainder + km * RULES.COINS_PER_KM;
   const coins = Math.floor(coinPool);
+  const bond = state.companion ? { ...state.bond, [state.companion]: (state.bond[state.companion] || 0) + km } : state.bond;
   return {
     ...state,
+    bond,
     drops,
     kmRemainder: drops === RULES.MAX_DROPS ? 0 : pool - earned * RULES.KM_PER_DROP,
     coins: state.coins + coins,
@@ -237,6 +249,29 @@ export function grantRegionalSeeds(state) {
   return { ...state, plants: { ...state.plants, ...Object.fromEntries(due.map((id) => [id, newPlant()])) } };
 }
 
+/** 만난 프렌즈를 태운다. 이미 태운 친구면 내려 준다 (한 번에 한 마리) */
+export function toggleCompanion(state, id) {
+  if (state.companion === id) return { ...state, companion: null };
+  if (!state.guestbook[id]) return state;
+  return { ...state, companion: id };
+}
+
+/** 함께 달린 거리로 찬 하트 수 (0~4)와 다음 하트까지 남은 km (다 찼으면 0) */
+export function bondOf(state, id) {
+  const km = state.bond[id] || 0;
+  const hearts = COMPANION.HEART_KM.filter((need) => km >= need).length;
+  const next = COMPANION.HEART_KM[hearts];
+  return { km, hearts, left: next === undefined ? 0 : next - km };
+}
+
+/** 동행 중에 새 도장을 찍었으면 그 친구의 함께 간 곳에 남긴다 */
+export function recordTrip(state, chargerId, day) {
+  const id = state.companion;
+  if (!id) return state;
+  const trips = [{ id: chargerId, day }, ...(state.trips[id] || [])].slice(0, COMPANION.MAX_TRIPS);
+  return { ...state, trips: { ...state.trips, [id]: trips } };
+}
+
 /** 가진 식물 중에서 키울 식물을 바꾼다 */
 export function selectPlant(state, id) {
   if (!state.plants[id] || state.active === id) return state;
@@ -272,7 +307,20 @@ export function sanitize(raw, today = '') {
     newGuests: ALL_FRIEND_IDS.filter((id) => Array.isArray(raw.newGuests) && raw.newGuests.includes(id) && raw.guestbook?.[id] > 0),
     fert: Math.floor(num(raw.fert, 0, CHARGE_RULES.MAX_FERT)),
     stamps: cleanStamps(raw.stamps),
+    ...cleanCompanion(raw),
     active: plants[raw.active] ? raw.active : FIRST_PLANT,
     plants,
   };
+}
+
+/** 저장된 동행 값: 아는 프렌즈만, 거리는 숫자로, 함께 간 곳은 날짜 모양과 개수를 맞춘다 */
+function cleanCompanion(raw) {
+  const known = (id) => ALL_FRIEND_IDS.includes(id);
+  const bond = Object.fromEntries(Object.entries(raw.bond && typeof raw.bond === 'object' ? raw.bond : {})
+    .filter(([id, km]) => known(id) && Number.isFinite(km) && km > 0).map(([id, km]) => [id, Math.min(km, 1e7)]));
+  const trips = Object.fromEntries(Object.entries(raw.trips && typeof raw.trips === 'object' ? raw.trips : {})
+    .filter(([id, list]) => known(id) && Array.isArray(list))
+    .map(([id, list]) => [id, list.filter((t) => Number.isInteger(t?.id) && /^\d{4}-\d{2}-\d{2}$/.test(t?.day)).map((t) => ({ id: t.id, day: t.day })).slice(0, COMPANION.MAX_TRIPS)]));
+  const companion = known(raw.companion) && raw.guestbook?.[raw.companion] > 0 ? raw.companion : null;
+  return { companion, bond, trips };
 }
