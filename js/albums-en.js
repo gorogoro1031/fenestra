@@ -11,7 +11,6 @@ const EN = {
   1714304663: { country: 'Japan', genre: 'Folk · Chamber', about: 'Ichiko Aoba wrote it as a soundtrack for an imaginary island. Guitar, a whispering voice and strings spread like the smell of the sea.' },
   1663628050: { country: 'Norway', genre: 'Acoustic Folk', about: 'The debut of Kings of Convenience, two friends from Bergen. Just like the title, soft guitars and harmonies keep things calm.' },
   281116024: { country: 'UK', genre: 'Electronica · IDM', about: 'The first full album from Scottish brothers Boards of Canada. Faded synths, like old film, bring back childhood memories.' },
-  1490459058: { country: 'USA', genre: 'Electronic · Chillwave', about: 'From Tycho, the project of designer and musician Scott Hansen. Bright synths and guitar keep time with the scenery passing by.' },
   1169245868: { country: 'UK', genre: 'Downtempo · Electronica', about: "British producer Bonobo's album about people on the move. Soft beats and sounds from around the world suit a long journey." },
   1451056840: { country: 'Germany', genre: 'Modern Classical · Piano', about: "German pianist Nils Frahm recorded it at night with felt on the strings so he wouldn't wake his neighbors. You can hear the keys and even his breathing up close." },
   1390704147: { country: 'Iceland', genre: 'Neo-classical', about: 'Icelandic composer Ólafur Arnalds plays piano while other pianos answer him on their own. The sound rises slowly.' },
