@@ -77,16 +77,17 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1
 .brand > .today-line { margin-bottom: auto; }
 /* 지금 날씨: 로고 아래 큰 기온, 옆에 날씨 이름과 지역 */
 /* 인사: 이름은 기온과 같은 색(낮 옐로·밤 스카이블루) */
-.greet { font-size: 46px; font-weight: 300; letter-spacing: -.01em; white-space: nowrap; }
+.greet { font-size: 46px; line-height: 1.1; font-weight: 300; letter-spacing: -.01em; white-space: nowrap; }
 .greet b { color: var(--temp-color, #ecf03c); font-weight: 800; transition: color 2s ease; }
-.weather-now { display: flex; align-items: center; gap: 24px; align-self: flex-start; text-align: left; margin-top: auto; }
-.wn-temp { font: 400 128px/.9 var(--font-logo); font-size: clamp(96px, calc((100cqh - 1110px) * 1.1), 320px); letter-spacing: -.02em; color: var(--temp-color, #ecf03c); transition: color 2s ease; }
+/* 기온은 왼쪽 끝에 크게, 날씨·지역은 오른쪽 끝에: 아래 위젯 두 칸 너비에 양끝을 맞춘다 */
+.weather-now { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; align-self: stretch; text-align: left; margin-top: auto; }
+.wn-temp { font: 400 128px/.74 var(--font-logo); font-size: clamp(96px, max(11.5cqh, calc((100cqh - 1110px) * 1.1)), 320px); margin-left: -.03em; letter-spacing: -.02em; color: var(--temp-color, #ecf03c); transition: color 2s ease; }
 .stage[data-scene="day"] { --temp-color: #ecf03c; }
 .stage[data-scene="night"] { --temp-color: #a8d8ff; }
-.wn-text { display: flex; flex-direction: column; gap: 6px; white-space: nowrap; }
+.wn-text { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; white-space: nowrap; }
 .wn-text b { font-size: 34px; font-size: clamp(32px, calc(14px + 2.2cqh), 56px); font-weight: 700; }
 .wn-text span { font-size: 24px; font-size: clamp(22px, calc(8px + 1.6cqh), 38px); font-weight: 600; color: var(--label-2); }
-.today-line { align-self: stretch; display: flex; align-items: baseline; gap: 28px; margin-top: 10px; padding-top: 14px; border-top: 2px solid rgba(255, 255, 255, .12); font-variant-numeric: tabular-nums; }
+.today-line { align-self: stretch; display: flex; align-items: baseline; gap: 28px; margin-top: 14px; padding-top: 10px; line-height: 1.1; border-top: 2px solid rgba(255, 255, 255, .12); font-variant-numeric: tabular-nums; }
 .today-line .clock { font-size: 28px; font-size: clamp(26px, calc(8px + 1.8cqh), 40px); font-weight: 600; color: var(--label-2); }
 .today-km { display: inline-flex; align-items: baseline; gap: 8px; }
 .today-km b { font-size: 48px; font-size: clamp(46px, calc(10px + 3.4cqh), 80px); font-weight: 800; letter-spacing: -.02em; }
