@@ -143,10 +143,14 @@ export function createPlant(host) {
       const { cx, base, scale } = layout;
       return { x: cx, y: base - (PLANT_IMAGE.potBottom - PLANT_IMAGE.tallestTop) * scale };
     },
-    /** 동행 친구가 앉을 자리: 화분 테두리 오른쪽 (무대 좌표, y는 앉은 발끝), size: 화분 폭에 맞춘 그림 크기 */
-    seatSpot() {
+    /**
+     * 동행 친구가 앉을 자리: 화분 옆 바닥, 위젯 쪽 빈자리 (무대 좌표, x는 가운데, y는 발끝). size: 그림 크기
+     * @param {-1|1} side -1이면 화분 왼쪽, 1이면 오른쪽
+     */
+    seatSpot(side = -1) {
       const { cx, base, scale } = layout;
-      return { x: cx + 82 * scale, y: base - (PLANT_IMAGE.potBottom - 948) * scale, size: 170 * scale };
+      const size = 300 * scale;
+      return { x: cx + side * (170 * scale + size / 2), y: base, size };
     },
     /** 물방울 떨어질 자리 */
     anchor() {
